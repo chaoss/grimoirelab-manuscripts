@@ -23,7 +23,6 @@
 #   Alvaro del Castillo San Felix <acs@bitergia.com>
 #
 
-import argparse
 import configparser
 import logging
 import os
@@ -40,13 +39,13 @@ from collections import OrderedDict
 
 from dateutil import parser, relativedelta
 
-import metrics.git as git
-import metrics.github as github
-import metrics.mls as mls
-import metrics.its as its
-import metrics.gerrit as gerrit
+from .metrics import git
+from .metrics import github
+from .metrics import mls
+from .metrics import its
+from .metrics import gerrit
 
-from metrics.metrics import Metrics
+from .metrics.metrics import Metrics
 
 class Report():
     GIT_INDEX = 'git_enrich'
@@ -570,75 +569,13 @@ class Report():
 
         logging.info("Done")
 
-
-def get_params():
-    """Parse command line arguments"""
-
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument('-c', '--config-file', default='report.cfg',
-                        help='config file')
-    parser.add_argument('-d', '--data-dir', default='data',
-                        help="Directory to store the data results")
-    parser.add_argument('-e', '--end-date', default='now',
-                        help="End date for the report (UTC) (<)")
-    parser.add_argument('-f', '--filters', nargs='*',
-                        help='Filters to be applied to all the report data: "field1:value1" "field2:value2". \
-                              Use *field for the inverse filter.')
-    parser.add_argument('-g', '--debug', dest='debug',
-                        action='store_true')
-    parser.add_argument('-i', '--interval', default='month', help="Analysis interval (month (default), quarter, year)")
-    parser.add_argument('-s', '--start-date', default='2015-01-01',
-                        help="Start date for the report (UTC) (>=)")
-    parser.add_argument('--offset', help="Offset to be used in date histogram aggregations (e.g.: +31d)")
-    parser.add_argument('-u', '--elastic-url', help="Elastic URL with the enriched indexes")
-
-    return parser.parse_args()
-
-def get_core_filters(filters):
-    core_filters = {}
-    if not filters:
+    @classmethod
+    def get_core_filters(cls, filters):
+        core_filters = {}
+        if not filters:
+            return core_filters
+        for f in filters:
+            name = f.split(":")[0]
+            value = f.split(":")[1]
+            core_filters[name] = value
         return core_filters
-    for f in filters:
-        name = f.split(":")[0]
-        value = f.split(":")[1]
-        core_filters[name] = value
-    return core_filters
-
-
-if __name__ == '__main__':
-
-    args = get_params()
-
-    if args.debug:
-        logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s')
-        logging.debug("Debug mode activated")
-    else:
-        logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
-    logging.getLogger("urllib3").setLevel(logging.WARNING)
-    logging.getLogger("requests").setLevel(logging.WARNING)
-
-    elastic = args.elastic_url
-    data_dir = args.data_dir
-
-    if not os.path.exists(data_dir):
-        os.makedirs(data_dir)
-
-    # All the dates must be UTC, including those from command line
-    if args.end_date == 'now':
-        end_date = parser.parse(date.today().strftime('%Y-%m-%d')).replace(tzinfo=timezone.utc)
-    else:
-        end_date = parser.parse(args.end_date).replace(tzinfo=timezone.utc)
-    # The end date is not included, the report must finish the day before
-    end_date += timedelta(microseconds=-1)
-    start_date = parser.parse(args.start_date).replace(tzinfo=timezone.utc)
-
-    offset = args.offset if args.offset else None
-
-    report = Report(elastic, start=start_date,
-                    end=end_date, data_dir=data_dir,
-                    filters=get_core_filters(args.filters),
-                    interval=args.interval,
-                    offset = offset,
-                    config_file=args.config_file)
-    report.create()

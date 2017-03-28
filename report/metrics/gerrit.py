@@ -23,7 +23,7 @@
 
 import logging
 
-from metrics.metrics import Metrics
+from .metrics import Metrics
 
 class Gerrit():
     name = "gerrit"

@@ -24,7 +24,7 @@
 ##   Alvaro del Castillo  <acs@bitergia.com>
 ##
 
-from metrics.metrics import Metrics
+from .metrics import Metrics
 
 class Git():
     name = "git"

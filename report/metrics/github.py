@@ -24,7 +24,7 @@
 
 import operator
 
-from metrics.metrics import Metrics
+from .metrics import Metrics
 
 class GitHub():
     name = "github"
@@ -169,7 +169,7 @@ class Submitters(GitHubMetrics):
 # GitHub issues
 #
 
-import metrics.its as its
+from . import its
 
 class Opened(its.Opened):
     filters = {"pull_request":"false"}

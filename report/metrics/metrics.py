@@ -31,7 +31,7 @@ import requests
 
 from datetime import datetime, timedelta
 
-from esquery import ElasticQuery
+from ..esquery import ElasticQuery
 
 class Metrics(object):
     """Root of hierarchy of Entities (Metrics)

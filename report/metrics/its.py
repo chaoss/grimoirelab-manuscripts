@@ -23,7 +23,7 @@
 
 """ Metrics for the issue tracking system """
 
-from metrics.metrics import Metrics
+from .metrics import Metrics
 
 class ITS():
     name = "its"
