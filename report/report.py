@@ -95,6 +95,9 @@ class Report():
     def __get_config(self, config_file):
         config = {}
         if config_file:
+            # Check that config file exists
+            if not os.path.isfile(config_file):
+                raise RuntimeError("Config file needed to create the report not found: " + config_file)
             parser = configparser.ConfigParser()
             parser.read(config_file)
             sec = parser.sections()
@@ -547,6 +550,8 @@ class Report():
             f.write(project_str)
 
         for project in projects:
+            # The name of the project is used to create files
+            project = project.replace("/", "_")
             self.sec_project_activity(project)
             self.sec_project_community(project)
             self.sec_project_process(project)
