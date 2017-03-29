@@ -1,0 +1,11 @@
+\begin{tabular}{p{7cm} p{5cm}}
+	\vspace{0pt} 
+	\includegraphics[scale=.35]{figs/gerrit_submitted_gerrit_closed_general.eps}
+	& 
+	\vspace{0pt}
+	\begin{tabular}{l|r|r|}%
+		\bfseries Period & \bfseries Opened & \bfseries Closed % specify table head
+		\csvreader[head to column names]{data/gerrit_submitted_gerrit_closed_general.csv}{}% use head of csv as column names
+		{\\\labels & \submitted & \closed}
+	\end{tabular}
+\end{tabular}

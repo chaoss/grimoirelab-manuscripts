@@ -1,0 +1,39 @@
+\begin{tabular}{p{7cm} p{5cm}}
+	\vspace{0pt} 
+	\includegraphics[scale=.35]{figs/git_authors_general.eps}
+	& 
+	\vspace{0pt}
+	\begin{tabular}{l|l}%
+		% specify table head
+		\bfseries Period & \bfseries Active Authors 
+		% use head of csv as column names
+		\csvreader[head to column names]{data/git_authors_general.csv}{}
+		{\\\labels & \authors}
+	\end{tabular}
+\end{tabular}
+
+
+\begin{tabular}{p{7cm} p{5cm}}
+	\vspace{0pt}
+	\begin{tabular}{l|l}%
+		 % specify table head
+		\bfseries Author & \bfseries Commit (s)
+		% use head of csv as column names
+		\csvreader[head to column names]{data/git_top_authors_general.csv}{}
+		% specify your coloumns here
+		{\\\hline\csvcoli&\csvcolii}
+	\end{tabular}
+\end{tabular}
+
+\begin{tabular}{p{7cm} p{5cm}}
+	\vspace{0pt}
+	\begin{tabular}{l|l}%
+		% specify table head
+		\bfseries Organization & \bfseries Commit (s) 
+		% use head of csv as column names
+		\csvreader[head to column
+		 names]{data/git_top_organizations_general.csv}{}
+		 % specify your coloumns here
+		{\\\hline\csvcoli&\csvcolii}
+	\end{tabular}
+	\end {tabular}
