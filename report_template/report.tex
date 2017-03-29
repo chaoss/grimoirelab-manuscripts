@@ -13,7 +13,7 @@
 \begin{document}
 
 \title{Standard Grimoire Report \\
-  TemplateProject Project \\
+  Opnfv Project \\
       2016-Q3 \\
         ~~\\~~\\  \includegraphics[scale=.35]{logo}       \\}
 
@@ -77,7 +77,7 @@ This report would not exist without the effort of the people involved in the dev
 \textbf{Executive Summary}
 \end{center}
 
-This report provides a quantitative analysis of the current and past situation of the TemplateProject project. All the data presented in it is based on information retrieved from the software development repositories of the project. The analysis includes a summary of the general situation of the project, and specific analysis of some of its development processes (Gerrit) and communication channels (mailing lists). For comparison with the past, most of the data is shown on a comparison with previous periods.
+This report provides a quantitative analysis of the current and past situation of the Opnfv project. All the data presented in it is based on information retrieved from the software development repositories of the project. The analysis includes a summary of the general situation of the project, and specific analysis of some of its development processes (Gerrit) and communication channels (mailing lists). For comparison with the past, most of the data is shown on a comparison with previous periods.
 
 \setcounter{tocdepth}{4}
 \setcounter{secnumdepth}{4}
@@ -86,173 +86,7 @@ This report provides a quantitative analysis of the current and past situation o
 
 \chapter{Project overview}
 
-The report looks at activities across the TemplateProject community during
-2016-Q3, comparing it to previous
-period of analysis.
-
-\begin{table}[H]
-    \centering
-    \begin{tabular}{c|c|c|}%
-    \bfseries Data source & \bfseries Activity last quarter & \bfseries Change (wrt to prev. quarter) % specify table head
-    \csvreader[head to column names]{data/data_source_evolution.csv}{}% use head of csv as column names
-    {\\\datasource & \netvalues ~ \metricsnames & \relativevalues\% }
-    \end{tabular}
-    \caption{Activity during the last period of analysis and its evolution}
-    \label{tab:_summary}
-\end{table}
-
-Table~\ref{tab:_summary} shows development activity for each of the analyzed
-data sources. The activity column displays information about the net
-activity numbers, while the Change column displays information
-about the relative difference with respect to the previous period of
-analysis.
-
-%TODO: add list of repositories analyzed per quarter
-
-%\section{Development and Conversations}
-
-%The mean number of developers per month
-
-%\begin{figure}[H]
-%    \centering
-%    \includegraphics[scale=.35]{figs/authors_month.eps}
-%\caption{Number of developers per month in mean for each quarter}
-%\end{figure}
-
-\begin{tabular}{p{7cm} p{5cm}}
-    \vspace{0pt} 
-    \includegraphics[scale=.35]{figs/git_authors.eps}
-    & 
-    \vspace{0pt}
-    \begin{tabular}{l|r|}%
-    \bfseries Period & \bfseries Authors per quarter% specify table head
-   \csvreader[head to column names]{data/git_authors.csv}{}% use head of csv as column names
-   {\\\labels & \authors}
-   \end{tabular}
-  
-\end{tabular}
-
-
-
-
-%The total number of contributors divided into three sets (core,
-%regular and casual\footnote{Contributing developers are characterized
-%as core, regular and casual depending on their activity in the git
-%repositories. The classification is built by sorting contributors by
-%their total number of commits; we sum the total commits per each
-%individual contributors: the individuals whose commits sum up to 80\%
-%of the total number of commits in the quarter are the core
-%contributors in that quarter. The regular contributors are those whose
-%commits sum up to 95\% of the total. The others are the casual
-%contributors.}) follow a similar pattern.
-
-%\begin{figure}[H]
-%    \centering
-%    \includegraphics[scale=.35]{figs/onion.eps}
-%    \caption{Evolution during the last quarters of core, regular and casual developers (based on git activity)}
-%\end{figure}
-
-%\begin{table}[H]
-%    \centering
-%    \begin{tabular}{l|r|r|r|}%
-%    \bfseries Period & \bfseries Core & \bfseries Regular & \bfseries Occasional% specify table head
-%    \csvreader[head to column names]{data/onion_model.csv}{}% use head of csv as column names
-%    {\\\labels & \core & \regular & \occasional}
-%    \end{tabular}
-%    \caption{Characterization of developers by their total contribution to the project}
-%\end{table}
-
-
-
-This report aims to provide some insight into the software
-development process of the TemplateProject community measuring efficiency
-and process of the community based on three metrics: the Review
-Efficiency Index (REI), the Time to Merge (TTM). 
-REI is measured as the number of closed
-changesets out of the new ones in a
-given period. TTM is measured as the time since a review is submitted
-until this is closed. 
-
-
-\begin{table}[H]
-    \centering
-    \begin{tabular}{c|c|}%
-    \bfseries  REI  & \bfseries TTM % specify table head
-    \csvreader[head to column names]{data/efficiency.csv}{}% use head of csv as column names
-    {\\\bmireviews  & \daystomergereviewmedian ~ days }
-    \end{tabular}
-    \caption{Closed changesets out of opened changesets (REI) and median time to merge (TTM)}
-\end{table}
-
-%\chapter{Communication and support-related activities}
-
-%Analysis of the communication channels used for communication and support-related activities.
-
-
-The following charts show activity in terms of emails sent and people sending emails. In addition, a table is presented with the hot topics in the several analyzed mailing lists. This shows hot topics ordered by number of total posts in such thread.
-
-\begin{tabular}{p{7cm} p{5cm}}
-    \vspace{0pt} 
-    \includegraphics[scale=.35]{figs/mls_emails_sent.eps}
-    & 
-    \vspace{0pt}
-    \begin{tabular}{l|l}%
-    \bfseries Period & \bfseries Emails % specify table head
-    \csvreader[head to column names]{data/mls_emails_sent.csv}{}% use head of csv as column names
-    {\\\labels & \emailssent}
-    \end{tabular}
-\end{tabular}
-
-\begin{tabular}{p{7cm} p{5cm}}
-    \vspace{0pt} 
-    \includegraphics[scale=.35]{figs/mls_emails_senders.eps}
-    & 
-    \vspace{0pt}
-    \begin{tabular}{l|l}%
-    \bfseries Period & \bfseries People % specify table head
-    \csvreader[head to column names]{data/mls_emails_senders.csv}{}% use head of csv as column names
-    {\\\labels & \emailssenders}
-    \end{tabular}
-\end{tabular}
-
-%\begin{tabular}{p{7cm} p{5cm}}
-%    \vspace{0pt} 
-%    \includegraphics[scale=.35]{figs/emails_senders_init.eps}
-%    & 
-%    \vspace{0pt}
-%    \begin{tabular}{l|l}%
-%    \bfseries Period & \bfseries People % specify table head
-%    \csvreader[head to column names]{data/emails_senders_init.csv}{}% use head of csv as column names
-%    {\\\labels & \senders}
-%    \end{tabular}
-%\end{tabular}
-
-%\noindent{\footnotesize
-%\begin{tabular}{p{2.5cm}p{7.5cm}p{1.5cm}}
-%    \bfseries Initial Author &  & \bfseries Number \\ 
-%    \bfseries and Date       & \bfseries Subject  & \bfseries Messages% specify table head
-%    \csvreader[head to column names]{data/mls_top_longest_threads.csv}{}% use head of csv as column names
-%    {\\\initiator \\\date & \subject & \len}
-%   % {\\\hline\csvcoli & \csvcolvii & \csvcolv & \csvcolii}% specify your coloumns here
-%\end{tabular}
-%}
-
-%% \noindent{\footnotesize
-%% \begin{tabular}{p{3cm}p{6cm}p{2cm}}
-%%     \bfseries Initial Author & & \bfseries Diff. \\
-%%     \bfseries and Date & \bfseries Subject  &  \bfseries People% specify table head
-%%     \csvreader[head to column names]{data/mls_top_crowded_threads.csv}{}% use head of csv as column names
-%%     {\\\initiator \\\date & \subject  & \people}
-%%    % {\\\hline\csvcoli & \csvcolvii & \csvcolv & \csvcolii}% specify your coloumns here
-%% \end{tabular}
-%% }
-
-%\begin{tabular}{p{5cm}p{3cm}p{2cm}}
-%    \bfseries Initial Author & \bfseries Subject  & \bfseries Date % specify table head
-%    \csvreader[head to column names]{data/mls_top_longest_threads.csv}{}% use head of csv as column names
-%    {\\\hline\csvcoli & \csvcolvi & \csvcoliv }% specify your coloumns here
-%\end{tabular}
-
+\input{overview.tex}
 
 The rest of the document is divided into three chapters with information from the last periods: 
 
@@ -262,10 +96,22 @@ The rest of the document is divided into three chapters with information from th
 \item process: efficiency closing changesets and Time to Merge (mean and median).
 \end{itemize}
 
-\input{general.tex}
+\chapter{Activity}
+Commits in Git, submitted and closed reviews.
+
+\input{activity.tex}
 
 
+\chapter{Community}
+Active authors in Git, top authors and organizations in the last period of analysis.
 
+\input{community.tex}
+
+
+\chapter{Process}
+Efficiency closing changesets and time to review (mean and median).
+	
+\input{process.tex}
 
 \appendix{}
 

@@ -1,0 +1,26 @@
+\begin{tabular}{p{7cm} p{5cm}}
+	\vspace{0pt} 
+	\includegraphics[scale=.35]{figs/gerrit_bmi_reviews_general.eps}
+	& 
+	\vspace{0pt}
+	\begin{tabular}{l|l}%
+		\bfseries Period & \bfseries Closed/Subm. % specify table head
+		\csvreader[head to column names]{data/gerrit_bmi_reviews_general.csv}{}% use head of csv as column names
+		{\\\labels & \bmireviews}
+	\end{tabular}
+\end{tabular}
+
+
+
+
+\begin{tabular}{p{7cm} p{5cm}}
+	\vspace{0pt} 
+	\includegraphics[scale=.35]{figs/gerrit_days_to_merge_review_avg_gerrit_days_to_merge_review_median_general.eps}
+	& 
+	\vspace{0pt}
+	\begin{tabular}{l|r|r|}%
+		\bfseries Period & \bfseries Median & \bfseries Mean % specify table head
+		\csvreader[head to column names]{data/gerrit_days_to_merge_review_avg_gerrit_days_to_merge_review_median_general.csv}{}% use head of csv as column names
+		{\\\labels & \daystomergereviewmedian & \daystomergereviewavg}
+	\end{tabular}
+\end{tabular}
