@@ -42,8 +42,6 @@ def get_params():
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('-c', '--config-file', default='report.cfg',
-                        help='config file')
     parser.add_argument('-d', '--data-dir', default='data',
                         help="Directory to store the data results")
     parser.add_argument('-e', '--end-date', default='now',
@@ -58,6 +56,8 @@ def get_params():
                         help="Start date for the report (UTC) (>=)")
     parser.add_argument('--offset', help="Offset to be used in date histogram aggregations (e.g.: +31d)")
     parser.add_argument('-u', '--elastic-url', help="Elastic URL with the enriched indexes")
+    parser.add_argument('--data-sources', nargs='*',
+                        help="Data source for the report (git, ...)")
 
     return parser.parse_args()
 
@@ -95,6 +95,6 @@ if __name__ == '__main__':
                     end=end_date, data_dir=data_dir,
                     filters=Report.get_core_filters(args.filters),
                     interval=args.interval,
-                    offset = offset,
-                    config_file=args.config_file)
+                    offset=offset,
+                    data_sources=args.data_sources)
     report.create()
