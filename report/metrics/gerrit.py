@@ -28,6 +28,37 @@ from .metrics import Metrics
 class Gerrit():
     name = "gerrit"
 
+    @classmethod
+    def get_section_metrics(cls):
+        return {
+            "overview" : {
+                "activity_metrics": [Closed, Submitted],
+                "author_metrics": None,
+                "bmi_metrics": [BMI],
+                "time_to_close_metrics": [DaysToMergeMedian],
+                "projects_metrics": [Projects],
+            },
+            "com_channels": {
+                "activity_metrics": [],
+                "author_metrics": []
+            },
+            "project_activity": {
+                "metrics": [Submitted, Closed]
+            },
+            "project_community": {
+                "author_metrics": [],
+                "people_top_metrics": [],
+                "orgs_top_metrics": [],
+            },
+            "project_process": {
+                "bmi_metrics": [BMI],
+                "time_to_close_metrics": [],
+                "time_to_close_title": "",
+                "time_to_close_review_metrics": [DaysToMergeAverage, DaysToMergeMedian],
+                "time_to_close_review_title": "Days to close review (median and average)"
+            }
+        }
+
 
 class GerritMetrics(Metrics):
     ds = Gerrit

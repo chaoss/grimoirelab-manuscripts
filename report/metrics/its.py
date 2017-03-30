@@ -28,6 +28,38 @@ from .metrics import Metrics
 class ITS():
     name = "its"
 
+    @classmethod
+    def get_section_metrics(cls):
+        return {
+            "overview" : {
+                "activity_metrics": [Closed, Opened],
+                "author_metrics": [],
+                "bmi_metrics": [BMI],
+                "time_to_close_metrics": [DaysToCloseMedian],
+                "projects_metrics": [Projects]
+            },
+            "com_channels": {
+                "activity_metrics": [],
+                "author_metrics": []
+            },
+            "project_activity": {
+                "metrics": [Opened, Closed]
+            },
+            "project_community": {
+                "author_metrics": [],
+                "people_top_metrics": [],
+                "orgs_top_metrics": [],
+            },
+            "project_process": {
+                "bmi_metrics": [BMI],
+                "time_to_close_metrics": [DaysToCloseAverage, DaysToCloseMedian],
+                "time_to_close_title": "Days to close (median and average)",
+                "time_to_close_review_metrics": [],
+                "time_to_close_review_title": ""
+            }
+        }
+
+
 
 class ITSMetrics(Metrics):
     ds = ITS

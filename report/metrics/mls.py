@@ -28,6 +28,38 @@ from .metrics import Metrics
 class MLS():
     name = "mls"
 
+    @classmethod
+    def get_section_metrics(cls):
+        return {
+            "overview" : {
+                "activity_metrics": [EmailsSent],
+                "author_metrics": [],
+                "bmi_metrics": [],
+                "time_to_close_metrics": [],
+                "projects_metrics": [Projects]
+            },
+            "com_channels": {
+                "activity_metrics": [EmailsSent],
+                "author_metrics": [EmailsSenders]
+            },
+            "project_activity": {
+                # TODO: EmailsSenders is not activity but we need two metrics here
+                "metrics": [EmailsSent, EmailsSenders]
+            },
+            "project_community": {
+                "author_metrics": [],
+                "people_top_metrics": [],
+                "orgs_top_metrics": [],
+            },
+            "project_process": {
+                "bmi_metrics": [],
+                "time_to_close_metrics": [],
+                "time_to_close_title": "",
+                "time_to_close_review_metrics": [],
+                "time_to_close_review_title": ""
+            }
+        }
+
 
 class MLSMetrics(Metrics):
     ds = MLS

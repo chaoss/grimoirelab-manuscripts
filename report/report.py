@@ -19,7 +19,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
-# git.Authors:
+# Author:
 #   Alvaro del Castillo San Felix <acs@bitergia.com>
 #
 
@@ -36,6 +36,7 @@ import numpy as np
 
 from datetime import date, timedelta, timezone
 from collections import OrderedDict
+from pprint import pprint
 
 from dateutil import parser, relativedelta
 
@@ -50,7 +51,8 @@ from .metrics.metrics import Metrics
 class Report():
     GIT_INDEX = 'git_enrich'
     GITHUB_INDEX = 'github_issues_enrich'
-    ITS_INDEX = 'github_issues_enrich'
+    # ITS_INDEX = 'github_issues_enrich'
+    ITS_INDEX = 'jira'
     EMAIL_INDEX = 'mbox_enrich'
     GERRIT_INDEX = 'gerrit'
     GLOBAL_PROJECT = 'general'
@@ -64,8 +66,16 @@ class Report():
         its.ITS: ITS_INDEX
     }
 
+    ds2class = {
+        "gerrit": gerrit.Gerrit,
+        "git": git.Git,
+        "github": github.GitHub,
+        "its": its.ITS,
+        "mls": mls.MLS
+    }
+
     def __init__(self, es_url, start, end, data_dir=None, filters=None,
-                 interval="month", offset=None, config_file=None):
+                 interval="month", offset=None, data_sources=None):
         self.es_url = es_url
         self.start = start
         self.end = end
@@ -90,32 +100,48 @@ class Report():
             self.end_prev_month = end - relativedelta.relativedelta(months=3)
         elif self.interval == 'year':
             self.end_prev_month = end - relativedelta.relativedelta(months=12)
-        self.config = self.__get_config(config_file)
+        self.config = self.__get_config(data_sources)
 
-    def __get_config(self, config_file):
-        config = {}
-        if config_file:
-            # Check that config file exists
-            if not os.path.isfile(config_file):
-                raise RuntimeError("Config file needed to create the report not found: " + config_file)
-            parser = configparser.ConfigParser()
-            parser.read(config_file)
-            sec = parser.sections()
-            for s in sec:
-                config[s] = {}
-                opti = parser.options(s)
-                for o in opti:
-                    if "_metrics" in o:
-                        metrics = parser.get(s,o).split(",")
-                        # We need to convert the metric class names to the classes
-                        metrics_class = [eval(klass) for klass in metrics]
-                        config[s][o] = metrics_class
-                    else:
-                        config[s][o] = parser.get(s,o)
-        else:
-            RuntimeError("Config file needed to create the report")
+    def __get_config(self, data_sources=None):
+        """ The config is get from each data source and then it is combined """
+        if not data_sources:
+            # For testing
+            data_sources = ["gerrit", "git", "its", "github", "mls"]
 
-        return config
+        # In new_config a dict with all the metrics for all data sources is created
+        new_config = {}
+        for ds in data_sources:
+            ds_config = self.ds2class[ds].get_section_metrics()
+            for section in ds_config:
+                if section not in new_config:
+                    # Just create the section with the data for the ds
+                    new_config[section] = ds_config[section]
+                else:
+                    for metric_section in ds_config[section]:
+                        if ds_config[section][metric_section] is not None:
+                            if metric_section not in new_config[section] or \
+                                new_config[section][metric_section] is None:
+                                new_config[section][metric_section] = ds_config[section][metric_section]
+                            else:
+                                new_config[section][metric_section] += ds_config[section][metric_section]
+
+        # fields that are not linked to a data source
+        new_config['overview']['activity_file_csv'] = "data_source_evolution.csv"
+        new_config['overview']['efficiency_file_csv'] = "efficiency.csv"
+        new_config['project_process']['time_to_close_title'] = "Days to close (median and average)"
+        new_config['project_process']['time_to_close_review_title'] = "Days to close review (median and average)"
+
+        # self.config['project_activity'] has three data sources
+        for i in range(0, 3):
+            ds = data_sources[i]
+            print(ds)
+            ds_config = self.ds2class[ds].get_section_metrics()
+            activity_metrics = ds_config['project_activity']['metrics']
+            new_config['project_activity']['ds' + str(i+1)+"_metrics"] = activity_metrics
+
+
+
+        return new_config
 
     def __convert_none_to_zero(self, ts):
         # Matplotlib and import prettyplotlib as ppl don't handle None.

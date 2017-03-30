@@ -29,6 +29,39 @@ from .metrics import Metrics
 class GitHub():
     name = "github"
 
+    @classmethod
+    def get_section_metrics(cls):
+
+        return {
+            "overview" : {
+                "activity_metrics": [Opened, ClosedPR, SubmittedPR],
+                "author_metrics": [],
+                "bmi_metrics": [BMIPR, BMITickets],
+                "time_to_close_metrics": [DaysToClosePRMedian, DaysToCloseMedian],
+                "projects_metrics": [Projects]
+            },
+            "com_channels": {
+                "activity_metrics": [],
+                "author_metrics": []
+            },
+            "project_activity": {
+                "metrics": [SubmittedPR, ClosedPR]
+            },
+            "project_community": {
+                "author_metrics": [],
+                "people_top_metrics": [],
+                "orgs_top_metrics": [],
+            },
+            "project_process": {
+                "bmi_metrics": [BMIPR, BMITickets],
+                "time_to_close_metrics": [DaysToCloseAverage, DaysToCloseMedian],
+                "time_to_close_title": "Days to close (median and average)",
+                "time_to_close_review_metrics": [DaysToClosePRAverage, DaysToClosePRMedian],
+                "time_to_close_review_title": "Days to close review (median and average)"
+            }
+        }
+
+
 
 class GitHubMetrics(Metrics):
     ds = GitHub
