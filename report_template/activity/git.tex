@@ -1,0 +1,13 @@
+\begin{tabular}{p{7cm} p{5cm}}
+	\vspace{0pt} 
+	\includegraphics[scale=.35]{figs/git_commits_git_authors_general.eps}
+	& 
+	\vspace{0pt}
+	\begin{tabular}{l|r|r|}
+		% specify table head
+		\bfseries Period & \bfseries Commits & \bfseries Authors
+		% use head of csv as column names
+		\csvreader[head to column names]{data/git_commits_git_authors_general.csv}{}
+		{\\\labels & \commits & \authors}
+	\end{tabular}
+\end{tabular}
