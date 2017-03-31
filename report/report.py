@@ -26,6 +26,7 @@
 import configparser
 import logging
 import os
+import subprocess
 
 import matplotlib as mpl
 # This avoids the use of the $DISPLAY value for the charts
@@ -34,9 +35,9 @@ import matplotlib.pyplot as plt
 import prettyplotlib as ppl
 import numpy as np
 
-from datetime import date, timedelta, timezone
 from collections import OrderedDict
-from pprint import pprint
+from datetime import date, timedelta, timezone
+from distutils.dir_util import copy_tree
 
 from dateutil import parser, relativedelta
 
@@ -83,7 +84,8 @@ class Report():
 
 
     def __init__(self, es_url, start, end, data_dir=None, filters=None,
-                 interval="month", offset=None, data_sources=None):
+                 interval="month", offset=None, data_sources=None,
+                 report_name=None):
         self.es_url = es_url
         self.start = start
         self.end = end
@@ -110,7 +112,9 @@ class Report():
             self.end_prev_month = end - relativedelta.relativedelta(months=12)
         if data_sources not in self.config_data_sources_supported:
             raise RuntimeError("Not suppored the combination of ds ", data_sources)
+        self.data_sources = data_sources
         self.config = self.__get_config(data_sources)
+        self.report_name = report_name
 
     def __get_config(self, data_sources=None):
         """ The config is get from each data source and then it is combined """
@@ -590,15 +594,100 @@ class Report():
 
         return secs
 
-    def create(self):
-        logging.info("Generating the report data from %s to %s",
+    def create_data_figs(self):
+        """ Generate the data and figs files for the report """
+        logging.info("Generating the report data and figs from %s to %s",
                      self.start, self.end)
 
         for section in self.sections():
             logging.info("Generating %s", section)
             self.sections()[section]()
 
-        logging.info("Done")
+        logging.info("Data and figs done")
+
+
+    def create_pdf(self):
+        logging.info("Generating PDF report")
+
+        # Files to be adaptaed to data sources configured
+        latex_template_dir = "report_template"
+
+        # First step is to create the report dir from the template
+        report_path = "report_" + self.data_dir
+        copy_tree("report_template", report_path)
+        # Copy the data generated to be used in LaTeX template
+        copy_tree(self.data_dir, os.path.join(report_path, "data"))
+        copy_tree(self.data_dir, os.path.join(report_path, "figs"))
+        # Change the project global name
+        cmd = ['sed -i s/TemplateProject/' + self.report_name + '/g *.tex']
+        subprocess.call(cmd, shell=True, cwd=report_path)
+        # Fix LaTeX special chars
+        cmd = [r'sed -i "s/\&/\\\&/g" data/git_top_organizations_*']
+        subprocess.call(cmd, shell=True, cwd=report_path)
+        cmd = [r'sed -i "s/^#//g" data/git_top_organizations_*']
+        subprocess.call(cmd, shell=True, cwd=report_path)
+
+
+        latex_files = ['activity.tex', 'community.tex', 'overview.tex', 'process.tex']
+        # Activity section
+        activity = ''
+        if "git" in self.data_sources:
+            if "gerrit" in self.data_sources:
+                activity = r"""
+                    \input{activity/git_gerrit.tex}
+                    \input{activity/gerrit.tex}
+                """
+            else:
+                activity = r"\input{activity/git.tex}"
+
+
+        with open(os.path.join(report_path, "activity.tex"), "w") as flatex:
+            flatex.write(activity)
+
+
+        community = r"""
+            \input{community/git.tex}
+        """
+
+        with open(os.path.join(report_path, "community.tex"), "w") as flatex:
+            flatex.write(community)
+
+
+        overview = r"""
+            \input{overview/summary.tex}
+            \input{overview/git.tex}
+            \input{overview/mailinglist.tex}
+        """
+
+        if "its" in self.data_sources:
+            overview += r"\n\input{overview/efficiency.tex}"
+
+        with open(os.path.join(report_path, "overview.tex"), "w") as flatex:
+            flatex.write(overview)
+
+        # process right now only active in gerrit.
+        # Must be also in github and its.
+        if "gerrit" in self.data_sources:
+            process = r"""
+                \input{process/gerrit.tex}
+            """
+        else:
+            process = ""
+        with open(os.path.join(report_path, "process.tex"), "w") as flatex:
+            flatex.write(process)
+
+        # Time to generate the pdf report
+        subprocess.call("pdflatex report.tex", shell=True, cwd=report_path)
+
+        logging.info("PDF report done %s", report_path + "/report.pdf")
+
+    def create(self):
+        logging.info("Generating the report from %s to %s", self.start, self.end)
+
+        self.create_data_figs()
+        self.create_pdf()
+
+        logging.info("Report completed")
 
     @classmethod
     def get_core_filters(cls, filters):
