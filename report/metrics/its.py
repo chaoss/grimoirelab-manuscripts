@@ -55,7 +55,8 @@ class ITS():
                 "time_to_close_metrics": [DaysToCloseAverage, DaysToCloseMedian],
                 "time_to_close_title": "Days to close (median and average)",
                 "time_to_close_review_metrics": [],
-                "time_to_close_review_title": ""
+                "time_to_close_review_title": "",
+                "patchsets_metrics": []
             }
         }
 

@@ -56,7 +56,8 @@ class MLS():
                 "time_to_close_metrics": [],
                 "time_to_close_title": "",
                 "time_to_close_review_metrics": [],
-                "time_to_close_review_title": ""
+                "time_to_close_review_title": "",
+                "patchsets_metrics": []
             }
         }
 

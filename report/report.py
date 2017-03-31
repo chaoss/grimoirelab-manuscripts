@@ -74,6 +74,14 @@ class Report():
         "mls": mls.MLS
     }
 
+    # Current data sources configurations supported in report
+    config_data_sources_supported = [
+        ["git", "mls"],
+        ["git", "github", "its", "mls"],
+        ["git", "gerrit", "its", "mls"]
+    ]
+
+
     def __init__(self, es_url, start, end, data_dir=None, filters=None,
                  interval="month", offset=None, data_sources=None):
         self.es_url = es_url
@@ -100,6 +108,8 @@ class Report():
             self.end_prev_month = end - relativedelta.relativedelta(months=3)
         elif self.interval == 'year':
             self.end_prev_month = end - relativedelta.relativedelta(months=12)
+        if data_sources not in self.config_data_sources_supported:
+            raise RuntimeError("Not suppored the combination of ds ", data_sources)
         self.config = self.__get_config(data_sources)
 
     def __get_config(self, data_sources=None):
@@ -131,10 +141,12 @@ class Report():
         new_config['project_process']['time_to_close_title'] = "Days to close (median and average)"
         new_config['project_process']['time_to_close_review_title'] = "Days to close review (median and average)"
 
-        # self.config['project_activity'] has three data sources
-        for i in range(0, 3):
+        # self.config['project_activity'] has three data sources max
+        num_activiy_sections = len(data_sources)
+        if num_activiy_sections > 3:
+            num_activiy_sections = 3
+        for i in range(0, num_activiy_sections):
             ds = data_sources[i]
-            print(ds)
             ds_config = self.ds2class[ds].get_section_metrics()
             activity_metrics = ds_config['project_activity']['metrics']
             new_config['project_activity']['ds' + str(i+1)+"_metrics"] = activity_metrics
@@ -472,24 +484,12 @@ class Report():
         logging.info("Process data for: %s", project)
 
         """
-        BMI Pull Requests
+        BMI Pull Requests, BMI Issues
 
-        description: closed PRs out of open PRs in a period of time
+        description: closed PRs/issues out of open PRs/issues in a period of time
         """
-        metric = self.config['project_process']['bmi_metrics'][0]
-        csv_labels = "labels"+","+metric.id
-        file_label = metric.ds.name + "_" + metric.id
-        title_label = metric.name
-        self.__create_csv_eps(metric, None, csv_labels, file_label, title_label,
-                              project)
-
-        """
-        BMI Issues
-
-        description: closed issues out of open issues in a period of time
-        """
-        if len(self.config['project_process']['bmi_metrics']) > 1:
-            metric = self.config['project_process']['bmi_metrics'][1]
+        for i in range(0, len(self.config['project_process']['bmi_metrics'])):
+            metric = self.config['project_process']['bmi_metrics'][i]
             csv_labels = "labels"+","+metric.id
             file_label = metric.ds.name + "_" + metric.id
             title_label = metric.name
@@ -502,7 +502,7 @@ class Report():
         description: median and mean time to close issues
         """
 
-        if 'time_to_close_metrics' in self.config['project_process']:
+        if len(self.config['project_process']['time_to_close_metrics']) > 0:
             metrics = self.config['project_process']['time_to_close_metrics']
             csv_labels = "labels" + ',' + metrics[0].id + ","+metrics[1].id
             file_label = metrics[0].ds.name + "_" + metrics[0].id + "_"
@@ -517,22 +517,22 @@ class Report():
 
         description: median and mean time to close prs
         """
-
-        metrics = self.config['project_process']['time_to_close_review_metrics']
-        csv_labels = "labels" + ',' + metrics[0].id + ","+metrics[1].id
-        file_label = metrics[0].ds.name + "_" + metrics[0].id + "_"
-        file_label += metrics[1].ds.name + "_" + metrics[1].id
-        # title_label = metrics[0].name+", "+ metrics[1].name + " per "+ self.interval
-        title_label = self.config['project_process']['time_to_close_review_title']
-        self.__create_csv_eps(metrics[0], metrics[1], csv_labels, file_label,
-                              title_label, project)
+        if len(self.config['project_process']['time_to_close_review_metrics']) > 0:
+            metrics = self.config['project_process']['time_to_close_review_metrics']
+            csv_labels = "labels" + ',' + metrics[0].id + ","+metrics[1].id
+            file_label = metrics[0].ds.name + "_" + metrics[0].id + "_"
+            file_label += metrics[1].ds.name + "_" + metrics[1].id
+            # title_label = metrics[0].name+", "+ metrics[1].name + " per "+ self.interval
+            title_label = self.config['project_process']['time_to_close_review_title']
+            self.__create_csv_eps(metrics[0], metrics[1], csv_labels, file_label,
+                                  title_label, project)
 
         """
         Patchsets per review
 
         description: median and average of the number of patchsets per review
         """
-        if 'patchsets_metrics' in self.config['project_process']:
+        if self.config['project_process']['patchsets_metrics']:
             metrics = self.config['project_process']['patchsets_metrics']
             csv_labels = "labels" + ',' + metrics[0].id + ","+metrics[1].id
             file_label = metrics[0].ds.name + "_" + metrics[0].id + "_"

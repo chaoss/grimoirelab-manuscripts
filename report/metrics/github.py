@@ -57,7 +57,8 @@ class GitHub():
                 "time_to_close_metrics": [DaysToCloseAverage, DaysToCloseMedian],
                 "time_to_close_title": "Days to close (median and average)",
                 "time_to_close_review_metrics": [DaysToClosePRAverage, DaysToClosePRMedian],
-                "time_to_close_review_title": "Days to close review (median and average)"
+                "time_to_close_review_title": "Days to close review (median and average)",
+                "patchsets_metrics": []
             }
         }
 

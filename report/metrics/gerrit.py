@@ -55,7 +55,9 @@ class Gerrit():
                 "time_to_close_metrics": [],
                 "time_to_close_title": "",
                 "time_to_close_review_metrics": [DaysToMergeAverage, DaysToMergeMedian],
-                "time_to_close_review_title": "Days to close review (median and average)"
+                "time_to_close_review_title": "Days to close review (median and average)",
+                "patchsets_metrics": [PatchsetsMedian, PatchsetsAverage],
+                "patchsets_title": "Number of patchsets per review (median and average)"
             }
         }
 
