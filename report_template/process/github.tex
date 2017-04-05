@@ -1,0 +1,26 @@
+\begin{tabular}{p{7cm} p{5cm}}
+	\vspace{0pt} 
+	\includegraphics[scale=.35]{figs/github_bmipr_general.eps}
+	& 
+	\vspace{0pt}
+	\begin{tabular}{l|l}%
+		\bfseries Period & \bfseries Closed/Subm. % specify table head
+		\csvreader[head to column names]{data/github_bmipr_general.csv}{}% use head of csv as column names
+		{\\\labels & \bmipr}
+	\end{tabular}
+\end{tabular}
+
+
+
+
+\begin{tabular}{p{7cm} p{5cm}}
+	\vspace{0pt} 
+	\includegraphics[scale=.35]{figs/github_days_to_close_pr_avg_github_days_to_close_pr_median_general.eps}
+	& 
+	\vspace{0pt}
+	\begin{tabular}{l|r|r|}%
+		\bfseries Period & \bfseries Median & \bfseries Mean % specify table head
+		\csvreader[head to column names]{data/github_days_to_close_pr_avg_github_days_to_close_pr_median_general.csv}{}% use head of csv as column names
+		{\\\labels & \daystocloseprmedian & \daystoclosepravg}
+	\end{tabular}
+\end{tabular}
