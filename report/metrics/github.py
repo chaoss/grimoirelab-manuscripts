@@ -31,13 +31,14 @@ class GitHub():
 
     @classmethod
     def get_section_metrics(cls):
-
+        # Those metrics are only for Pull Requests
+        # github issues is covered as ITS
         return {
             "overview" : {
                 "activity_metrics": [Opened, ClosedPR, SubmittedPR],
                 "author_metrics": [],
-                "bmi_metrics": [BMIPR, BMITickets],
-                "time_to_close_metrics": [DaysToClosePRMedian, DaysToCloseMedian],
+                "bmi_metrics": [BMIPR],
+                "time_to_close_metrics": [DaysToClosePRMedian],
                 "projects_metrics": [Projects]
             },
             "com_channels": {
@@ -53,8 +54,8 @@ class GitHub():
                 "orgs_top_metrics": [],
             },
             "project_process": {
-                "bmi_metrics": [BMIPR, BMITickets],
-                "time_to_close_metrics": [DaysToCloseAverage, DaysToCloseMedian],
+                "bmi_metrics": [BMIPR],
+                "time_to_close_metrics": [],
                 "time_to_close_title": "Days to close (median and average)",
                 "time_to_close_review_metrics": [DaysToClosePRAverage, DaysToClosePRMedian],
                 "time_to_close_review_title": "Days to close review (median and average)",

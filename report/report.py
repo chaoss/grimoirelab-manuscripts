@@ -51,9 +51,9 @@ from .metrics.metrics import Metrics
 
 class Report():
     GIT_INDEX = 'git_enrich'
-    GITHUB_INDEX = 'github_issues_enrich'
-    # ITS_INDEX = 'github_issues_enrich'
-    ITS_INDEX = 'jira'
+    GITHUB_INDEX = 'github_issues'
+    ITS_INDEX = 'github_issues'
+    # ITS_INDEX = 'jira'
     EMAIL_INDEX = 'mbox_enrich'
     GERRIT_INDEX = 'gerrit'
     GLOBAL_PROJECT = 'general'
@@ -154,8 +154,6 @@ class Report():
             ds_config = self.ds2class[ds].get_section_metrics()
             activity_metrics = ds_config['project_activity']['metrics']
             new_config['project_activity']['ds' + str(i+1)+"_metrics"] = activity_metrics
-
-
 
         return new_config
 
@@ -623,7 +621,7 @@ class Report():
         subprocess.call(cmd, shell=True, cwd=report_path)
         # Fix LaTeX special chars
         cmd = [r'sed -i "s/\&/\\\&/g" data/git_top_organizations_*']
-        subprocess.call(cmd, shell=True, cwd=report_path)
+        res = subprocess.call(cmd, shell=True, cwd=report_path)
         cmd = [r'sed -i "s/^#//g" data/git_top_organizations_*']
         subprocess.call(cmd, shell=True, cwd=report_path)
 
@@ -632,18 +630,12 @@ class Report():
         # Activity section
         activity = ''
         if "git" in self.data_sources:
-            if "gerrit" in self.data_sources:
-                activity = r"""
-                    \input{activity/git_gerrit.tex}
-                    \input{activity/gerrit.tex}
-                """
-            else:
-                activity = r"\input{activity/git.tex}"
-
+            activity += r"\input{activity/git.tex}"
+        if "gerrit" in self.data_sources:
+            activity += r"\input{activity/gerrit.tex}"
 
         with open(os.path.join(report_path, "activity.tex"), "w") as flatex:
             flatex.write(activity)
-
 
         community = r"""
             \input{community/git.tex}
@@ -652,15 +644,16 @@ class Report():
         with open(os.path.join(report_path, "community.tex"), "w") as flatex:
             flatex.write(community)
 
-
         overview = r"""
             \input{overview/summary.tex}
             \input{overview/git.tex}
             \input{overview/mailinglist.tex}
         """
 
-        if "its" in self.data_sources:
-            overview += r"\n\input{overview/efficiency.tex}"
+        if "its" in self.data_sources and "github" in self.data_sources:
+            overview += r"\input{overview/efficiency-github-its.tex}"
+        elif "its" in self.data_sources:
+            overview += r"\input{overview/efficiency.tex}"
 
         with open(os.path.join(report_path, "overview.tex"), "w") as flatex:
             flatex.write(overview)
@@ -671,12 +664,21 @@ class Report():
             process = r"""
                 \input{process/gerrit.tex}
             """
+        elif "github" in self.data_sources:
+            process = r"""
+                \input{process/github.tex}
+            """
         else:
             process = ""
         with open(os.path.join(report_path, "process.tex"), "w") as flatex:
             flatex.write(process)
 
         # Time to generate the pdf report
+        res = subprocess.call("pdflatex report.tex", shell=True, cwd=report_path)
+        if res > 0:
+            logging.error("Error generating PDF")
+            return
+        # A second time so the TOC is generated
         subprocess.call("pdflatex report.tex", shell=True, cwd=report_path)
 
         logging.info("PDF report done %s", report_path + "/report.pdf")
