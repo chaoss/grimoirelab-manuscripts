@@ -1,0 +1,16 @@
+Gerrit data offers an interesting view on how software development process of PROJECT-NAME community is working from the point of view of efficiency and process. To analyze this, some metrics based on Gerrit changesets and reviews are presented below. In terms of Gerrit terminology, these metrics are calculated as follows:
+\begin{itemize}
+	\item Review Efficiency Index (REI), measured as the number of closed changesets out of the new ones in a given period.
+	\item Time to Merge (TTM), measured as the time since a review is submitted until this is closed.
+\end{itemize} 
+
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{c|c|}%
+    \bfseries  REI  & \bfseries TTM % specify table head
+    \csvreader[head to column names]{data/efficiency.csv}{}% use head of csv as column names
+    {\\\bmireviews  & \daystomergereviewmedian ~ days }
+    \end{tabular}
+    \caption{Closed out of opened changesets (REI) and median time to merge (TTM)}
+\end{table}

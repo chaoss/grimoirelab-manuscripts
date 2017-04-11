@@ -1,4 +1,4 @@
-\documentclass[a4wide,11pt]{report}
+\documentclass[a4wide,11pt]{article}
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
 \usepackage{url}
@@ -13,8 +13,8 @@
 \begin{document}
 
 \title{Standard Grimoire Report \\
-  Opnfv Project \\
-      2016-Q3 \\
+  PROJECT-NAME Project \\
+      2016-QUARTER \\
         ~~\\~~\\  \includegraphics[scale=.35]{logo}       \\}
 
 
@@ -77,45 +77,48 @@ This report would not exist without the effort of the people involved in the dev
 \textbf{Executive Summary}
 \end{center}
 
-This report provides a quantitative analysis of the current and past situation of the Opnfv project. All the data presented in it is based on information retrieved from the software development repositories of the project. The analysis includes a summary of the general situation of the project, and specific analysis of some of its development processes (Gerrit) and communication channels (mailing lists). For comparison with the past, most of the data is shown on a comparison with previous periods.
+This report provides a quantitative analysis of the current and past situation of the PROJECT-NAME project. All the data presented in it is based on information retrieved from the software development repositories of the project. The analysis includes a summary of the general situation of the project, and specific analysis of some of its development processes and communication channels. Data from previous periods is also shown for comparison.
+
+\newpage
 
 \setcounter{tocdepth}{4}
 \setcounter{secnumdepth}{4}
 \tableofcontents
 
+\newpage
 
-\chapter{Project overview}
+\section{Project overview}
 
 \input{overview.tex}
 
-The rest of the document is divided into three chapters with information from the last periods: 
+The rest of the document is divided into three sections with information from the last periods: 
 
 \begin{itemize}
-\item activity: centered on the following metrics: commits from git activity, submitted and closed changests from the review system. 
-\item community: active authors in git and top ten developers and top ten organizations contributing to the development in the last period of analysis.
-\item process: efficiency closing changesets and Time to Merge (mean and median).
+\item Activity: focused on contributions. 
+\item Community: focused on contributors.
+\item Process: focused on efficiency and timing.
 \end{itemize}
 
-\chapter{Activity}
-Commits in Git, submitted and closed reviews.
+\section{Activity}
+This section covers contributions in the different data sources.
 
 \input{activity.tex}
 
 
-\chapter{Community}
-Active authors in Git, top authors and organizations in the last period of analysis.
+\section{Community}
+This section tries to help us to understand the evolution of PROJECT-NAME community by looking at active contributors and organizations in the last period of analysis, compared to previous ones.
 
 \input{community.tex}
 
 
-\chapter{Process}
-Efficiency closing changesets and time to review (mean and median).
+\section{Process}
+This sections intends to show the evolution of efficiency and timing when dealing with tasks related with code review processes.
 	
 \input{process.tex}
 
 \appendix{}
 
-\chapter{Metrics Definitions}
+\section{Metrics Definitions}
 \label{chap:metrics_definitions}
 
 \begin{itemize}
