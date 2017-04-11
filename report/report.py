@@ -23,7 +23,6 @@
 #   Alvaro del Castillo San Felix <acs@bitergia.com>
 #
 
-import configparser
 import logging
 import os
 import subprocess
@@ -48,6 +47,8 @@ from .metrics import its
 from .metrics import gerrit
 
 from .metrics.metrics import Metrics
+
+logger = logging.getLogger(__name__)
 
 class Report():
     GIT_INDEX = 'git_enrich'
@@ -393,7 +394,7 @@ class Report():
             self.__create_csv_eps(metrics[0], metrics[1], csv_labels,
                                   file_label, title_label, project)
 
-        logging.info("Activity data for: %s", project)
+        logger.info("Activity data for: %s", project)
 
         """
         Commits and Pull Requests:
@@ -446,7 +447,7 @@ class Report():
                 f.write(csv)
 
 
-        logging.info("Community data for: %s", project)
+        logger.info("Community data for: %s", project)
 
         """
         Developers
@@ -483,7 +484,7 @@ class Report():
 
     def sec_project_process(self, project=None):
 
-        logging.info("Process data for: %s", project)
+        logger.info("Process data for: %s", project)
 
         """
         BMI Pull Requests, BMI Issues
@@ -594,18 +595,18 @@ class Report():
 
     def create_data_figs(self):
         """ Generate the data and figs files for the report """
-        logging.info("Generating the report data and figs from %s to %s",
+        logger.info("Generating the report data and figs from %s to %s",
                      self.start, self.end)
 
         for section in self.sections():
-            logging.info("Generating %s", section)
+            logger.info("Generating %s", section)
             self.sections()[section]()
 
-        logging.info("Data and figs done")
+        logger.info("Data and figs done")
 
 
     def create_pdf(self):
-        logging.info("Generating PDF report")
+        logger.info("Generating PDF report")
 
         # Files to be adaptaed to data sources configured
         latex_template_dir = "report_template"
@@ -676,20 +677,20 @@ class Report():
         # Time to generate the pdf report
         res = subprocess.call("pdflatex report.tex", shell=True, cwd=report_path)
         if res > 0:
-            logging.error("Error generating PDF")
+            logger.error("Error generating PDF")
             return
         # A second time so the TOC is generated
         subprocess.call("pdflatex report.tex", shell=True, cwd=report_path)
 
-        logging.info("PDF report done %s", report_path + "/report.pdf")
+        logger.info("PDF report done %s", report_path + "/report.pdf")
 
     def create(self):
-        logging.info("Generating the report from %s to %s", self.start, self.end)
+        logger.info("Generating the report from %s to %s", self.start, self.end)
 
         self.create_data_figs()
         self.create_pdf()
 
-        logging.info("Report completed")
+        logger.info("Report completed")
 
     @classmethod
     def get_core_filters(cls, filters):
