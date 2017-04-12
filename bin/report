@@ -36,6 +36,8 @@ from dateutil import parser
 sys.path.insert(0, '.')
 from report.report import Report
 
+from mordred.config import Config
+
 def get_params():
     """Parse command line arguments"""
 
@@ -58,6 +60,8 @@ def get_params():
                         help="Data source for the report (git, ...)")
     parser.add_argument('-n', '--name', default='Report Name',
                         help="Report name")
+    parser.add_argument('-m', '--mordred-config', help="Mordred config file")
+
 
     return parser.parse_args()
 
@@ -76,6 +80,7 @@ if __name__ == '__main__':
 
     elastic = args.elastic_url
     data_dir = args.data_dir
+    data_sources = args.data_sources
 
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
@@ -91,11 +96,17 @@ if __name__ == '__main__':
 
     offset = args.offset if args.offset else None
 
+    if args.mordred_config:
+        # Read the mordred config file and configure the data sources according to it
+        config = Config(args.mordred_config)
+        data_sources = config.get_backend_sections()
+        elastic = config.conf['es_enrichment']['url']
+
     report = Report(elastic, start=start_date,
                     end=end_date, data_dir=data_dir,
                     filters=Report.get_core_filters(args.filters),
                     interval=args.interval,
                     offset=offset,
-                    data_sources=args.data_sources,
+                    data_sources=data_sources,
                     report_name=args.name)
     report.create()

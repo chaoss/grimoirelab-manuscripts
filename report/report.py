@@ -76,13 +76,7 @@ class Report():
         "mls": mls.MLS
     }
 
-    # Current data sources configurations supported in report
-    config_data_sources_supported = [
-        ["git", "mls"],
-        ["git", "github", "its", "mls"],
-        ["git", "gerrit", "its", "mls"]
-    ]
-
+    supported_data_sources = ['git', 'github', 'its', 'gerrit', 'mls']
 
     def __init__(self, es_url, start, end, data_dir=None, filters=None,
                  interval="month", offset=None, data_sources=None,
@@ -111,10 +105,18 @@ class Report():
             self.end_prev_month = end - relativedelta.relativedelta(months=3)
         elif self.interval == 'year':
             self.end_prev_month = end - relativedelta.relativedelta(months=12)
-        if data_sources not in self.config_data_sources_supported:
-            raise RuntimeError("Not suppored the combination of ds ", data_sources)
-        self.data_sources = data_sources
-        self.config = self.__get_config(data_sources)
+        # Just include the supported data sources
+        self.data_sources = list(set(data_sources) & set(self.supported_data_sources))
+        # Temporal hack
+        for mls_ds in  ['mbox', 'pipermal']:
+            if mls_ds in data_sources:
+                self.data_sources.append('mls')
+        for its_ds in  ['bugzilla', 'jira', 'github']:
+            if its_ds in data_sources:
+                self.data_sources.append('its')
+        self.data_sources = list(set(self.data_sources))
+        # End temporal hack
+        self.config = self.__get_config(self.data_sources)
         self.report_name = report_name
 
     def __get_config(self, data_sources=None):
@@ -162,9 +164,10 @@ class Report():
         # Matplotlib and import prettyplotlib as ppl don't handle None.
         # Convert None to 0 which is an ugly hack
 
-        if not ts: return ts
+        if not ts:
+            return ts
 
-        ts_clean = [val if val else 0 for val in ts ]
+        ts_clean = [val if val else 0 for val in ts]
 
         return ts_clean
 
@@ -224,19 +227,7 @@ class Report():
         return self.ds2index[metric_cls.ds]
 
     def sec_overview(self):
-        # Overview: Activity and git.Authors
-
-        """
-        Activity during the last 90 days and its evolution
-
-        description: for the specified data source, we need the main activity
-        metrics. This is the comparison of the last interval of
-        analysis with the previous one. Net values
-        are the total numbers, while the change is the percentage of such
-        number if compared to the previous interval of analysis.
-        commits, closed tickets, sent tickets, closed pull requests,
-        open pull requests, sent emails
-        """
+        """ Data sources overview: table with metric summaries"""
 
         metrics = self.config['overview']['activity_metrics']
         file_name = self.config['overview']['activity_file_csv']
