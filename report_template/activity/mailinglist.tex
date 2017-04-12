@@ -2,8 +2,7 @@
 
 %Analysis of the communication channels used for communication and support-related activities.
 
-
-The following charts show activity in terms of emails sent and people sending emails. In addition, a table is presented with the hot topics in the several analyzed mailing lists. This shows hot topics ordered by number of total posts in such thread.
+The following chart shows activity in terms of emails sent grouped by quarter.
 
 \begin{tabular}{p{7cm} p{5cm}}
     \vspace{0pt} 
@@ -17,17 +16,7 @@ The following charts show activity in terms of emails sent and people sending em
     \end{tabular}
 \end{tabular}
 
-\begin{tabular}{p{7cm} p{5cm}}
-    \vspace{0pt} 
-    \includegraphics[scale=.35]{figs/mls_emails_senders.eps}
-    & 
-    \vspace{0pt}
-    \begin{tabular}{l|l}%
-    \bfseries Period & \bfseries People % specify table head
-    \csvreader[head to column names]{data/mls_emails_senders.csv}{}% use head of csv as column names
-    {\\\labels & \emailssenders}
-    \end{tabular}
-\end{tabular}
+
 
 %\begin{tabular}{p{7cm} p{5cm}}
 %    \vspace{0pt} 

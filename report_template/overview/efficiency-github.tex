@@ -1,0 +1,18 @@
+In order to provide some insight into the software development process of PROJECT-NAME community, several metrics on GitHub Issues and Pull Requests are presented below. In terms of GitHub terminology, these metrics are calculated as follows:
+\begin{itemize}
+	\item Review Efficiency Index (REI), measured as the number of closed pull requests out of the new ones in a given period.
+	\item Time to Merge (TTM), measured as the time since a pull request is submitted until this is closed.
+	\item Backlog Management Index (BMI), measured as the number of closed tickets out of open tickets in a given period.
+	\item Time to Close issues (TTC), the time since an issue was opened till this is closed.
+\end{itemize}
+
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{c|c|c|l}%
+    \bfseries  REI  & \bfseries BMI & \bfseries TTM  & \bfseries TTC
+    \csvreader[head to column names]{data/efficiency.csv}{}% use head of csv as column names
+    {\\\bmipr & \bmitickets & \daystocloseprmedian ~ days & \daystocloseticketmedian ~ days}
+    \end{tabular}
+    \caption{Closed out of opened pull requests(REI), closed out of opened issues (BMI), median time to merge pull requests (TTM) and median time to close issues(TTC)}
+\end{table}

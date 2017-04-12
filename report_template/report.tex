@@ -1,4 +1,4 @@
-\documentclass[a4wide,11pt]{report}
+\documentclass[a4wide,11pt]{article}
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
 \usepackage{url}
@@ -13,8 +13,8 @@
 \begin{document}
 
 \title{Standard Grimoire Report \\
-  Opnfv Project \\
-      2016-Q3 \\
+  PROJECT-NAME Project \\
+      2016-QUARTER \\
         ~~\\~~\\  \includegraphics[scale=.35]{logo}       \\}
 
 
@@ -77,76 +77,63 @@ This report would not exist without the effort of the people involved in the dev
 \textbf{Executive Summary}
 \end{center}
 
-This report provides a quantitative analysis of the current and past situation of the Opnfv project. All the data presented in it is based on information retrieved from the software development repositories of the project. The analysis includes a summary of the general situation of the project, and specific analysis of some of its development processes (Gerrit) and communication channels (mailing lists). For comparison with the past, most of the data is shown on a comparison with previous periods.
+This report provides a quantitative analysis of the current and past situation of the PROJECT-NAME project. All the data presented in it is based on information retrieved from the software development repositories of the project. The analysis includes a summary of the general situation of the project, and specific analysis of some of its development processes and communication channels. Data from previous periods is also shown for comparison.
+
+\newpage
 
 \setcounter{tocdepth}{4}
 \setcounter{secnumdepth}{4}
 \tableofcontents
 
+\newpage
 
-\chapter{Project overview}
+\section{Project overview} \label{overview}
 
 \input{overview.tex}
 
-The rest of the document is divided into three chapters with information from the last periods: 
+The rest of the document is divided into three sections with information from the last periods: 
 
 \begin{itemize}
-\item activity: centered on the following metrics: commits from git activity, submitted and closed changests from the review system. 
-\item community: active authors in git and top ten developers and top ten organizations contributing to the development in the last period of analysis.
-\item process: efficiency closing changesets and Time to Merge (mean and median).
+\item Activity: focused on contributions. 
+\item Community: focused on contributors.
+\item Process: focused on efficiency and timing.
 \end{itemize}
 
-\chapter{Activity}
-Commits in Git, submitted and closed reviews.
+\section{Activity} \label{activity}
+This section covers contributions in the different data sources.\\
 
 \input{activity.tex}
 
 
-\chapter{Community}
-Active authors in Git, top authors and organizations in the last period of analysis.
+\section{Community} \label{community}
+This section tries to help us to understand the evolution of PROJECT-NAME community by looking at active contributors and organizations in the last period of analysis, compared to previous ones.\\
 
 \input{community.tex}
 
 
-\chapter{Process}
-Efficiency closing changesets and time to review (mean and median).
+\section{Process} \label{process}
+This section intends to show the evolution of efficiency and timing when dealing with tasks related with code review processes.\\
 	
 \input{process.tex}
 
 \appendix{}
 
-\chapter{Metrics Definitions}
+\section{Metrics Definitions} \label{metrics}
 \label{chap:metrics_definitions}
 
 \begin{itemize}
-\item Commit: this is defined as the action(s) that performes a change in the source code. 
-Bots, merges and other type of automatic activity is removed from the records. In addition,
-when aggregating several git repositories, this metric only counts unique revisions (unique hashes found in the git repositories).
-In addition, all branches are aggregated to the analysis.
+\item Commit: this is defined as the action(s) that performes a change in the source code. Bots, merges and other type of automatic activity is removed from the records. In addition, when aggregating several git repositories, this metric only counts unique revisions (unique hashes found in the git repositories). In addition, all branches are aggregated to the analysis.
 
-\item Submitted changesets: a code review is the process of peer reviewing source code changes. A submitted code
-is not merged to the master code of a given project till this is approved.
-A submitted code review is defined as any changeset submitted to the Gerrit
+\item Submitted changesets: a code review is the process of peer reviewing source code changes. A submitted code is not merged to the master code of a given project till this is approved. A submitted code review is defined as any changeset submitted to the Gerrit
 system. 
  
-\item Authors: a developer is defined as author if she is the owner of the patchset sent for reviewing and this is 
-merged into the source code. As previously indicated, automatic commits such bot's are removed from this analysis.
+\item Authors: a developer is defined as author if she is the owner of the patchset sent for reviewing and this is merged into the source code. As previously indicated, automatic commits such bot's are removed from this analysis.
 
-\item Efficiency closing changesets: this metric is a derivation of the Backlog Management Index as it is named as
-Review efficiency index (REI). As similarly used in the BMI index, this metrics measures the number of closed changesets
+\item Efficiency closing changesets: this metric is a derivation of the Backlog Management Index as it is named as Review efficiency index (REI). As similarly used in the BMI index, this metrics measures the number of closed changesets
  out of the total number of new changesets in a given period.
 
-\item Time to Merge: this time consists of the time between the first upload of the first changeset
-till the last iteration of the code review process is merged into the code.
-This metric is provided in number of days.
+\item Time to Merge: this time consists of the time between the first upload of the first changeset till the last iteration of the code review process is merged into the code. This metric is provided in number of days.
 
-
-\end{itemize}
-
-
-Metrics measured in the general overview:
-
-\begin{itemize}
 \item Developer per period: average of developers per period ignoring bots and merges.
 
 \item Emails sent: number of emails sent by people to the several mailing lists. Bots are not registered.
