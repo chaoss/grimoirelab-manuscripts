@@ -35,7 +35,7 @@ import prettyplotlib as ppl
 import numpy as np
 
 from collections import OrderedDict
-from datetime import date, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from distutils.dir_util import copy_tree
 
 from dateutil import parser, relativedelta
@@ -76,7 +76,7 @@ class Report():
         "mls": mls.MLS
     }
 
-    supported_data_sources = ['git', 'github', 'its', 'gerrit', 'mls']
+    supported_data_sources = ['git', 'github', 'gerrit', 'mls']
 
     def __init__(self, es_url, start, end, data_dir=None, filters=None,
                  interval="month", offset=None, data_sources=None,
@@ -111,9 +111,9 @@ class Report():
         for mls_ds in  ['mbox', 'pipermal']:
             if mls_ds in data_sources:
                 self.data_sources.append('mls')
-        for its_ds in  ['bugzilla', 'jira', 'github']:
-            if its_ds in data_sources:
-                self.data_sources.append('its')
+        # for its_ds in  ['bugzilla', 'jira', 'github']:
+        #     if its_ds in data_sources:
+        #         self.data_sources.append('its')
         self.data_sources = list(set(self.data_sources))
         # End temporal hack
         self.config = self.__get_config(self.data_sources)
@@ -123,7 +123,7 @@ class Report():
         """ The config is get from each data source and then it is combined """
         if not data_sources:
             # For testing
-            data_sources = ["gerrit", "git", "its", "github", "mls"]
+            data_sources = ["gerrit", "git", "github", "mls"]
 
         # In new_config a dict with all the metrics for all data sources is created
         new_config = {}
@@ -609,7 +609,14 @@ class Report():
         copy_tree(self.data_dir, os.path.join(report_path, "data"))
         copy_tree(self.data_dir, os.path.join(report_path, "figs"))
         # Change the project global name
-        cmd = ['sed -i s/TemplateProject/' + self.report_name + '/g *.tex']
+        cmd = ['sed -i s/PROJECT-NAME/' + self.report_name.replace(' ', r'\ ') + '/g *.tex']
+        subprocess.call(cmd, shell=True, cwd=report_path)
+        # Change the quarter subtitle
+        cmd = ['sed -i s/2016-QUARTER/' + self.end.strftime('%Y-%m-%d') + \
+               r'\ ' + self.interval + '/g *.tex']
+        subprocess.call(cmd, shell=True, cwd=report_path)
+        # Change the date Copyright
+        cmd = [r'sed -i s/\(cc\)\ 2016/\(cc\)\ ' + datetime.now().strftime('%Y') + '/g *.tex']
         subprocess.call(cmd, shell=True, cwd=report_path)
         # Fix LaTeX special chars
         cmd = [r'sed -i "s/\&/\\\&/g" data/git_top_organizations_*']
@@ -619,49 +626,40 @@ class Report():
 
 
         latex_files = ['activity.tex', 'community.tex', 'overview.tex', 'process.tex']
+
         # Activity section
         activity = ''
-        if "git" in self.data_sources:
-            activity += r"\input{activity/git.tex}"
-        if "gerrit" in self.data_sources:
-            activity += r"\input{activity/gerrit.tex}"
+        for activity_ds in ['git', 'github', 'gerrit', 'mls']:
+            if activity_ds in self.data_sources:
+                activity += r"\input{activity/" +  activity_ds + ".tex}"
 
         with open(os.path.join(report_path, "activity.tex"), "w") as flatex:
             flatex.write(activity)
 
-        community = r"""
-            \input{community/git.tex}
-        """
+        # Community section
+        community = ''
+        for community_ds in ['git', 'mls']:
+            if community_ds in self.data_sources:
+                community += r"\input{community/" +  community_ds + ".tex}"
 
         with open(os.path.join(report_path, "community.tex"), "w") as flatex:
-            flatex.write(community)
+            flatex.write(activity)
 
-        overview = r"""
-            \input{overview/summary.tex}
-            \input{overview/git.tex}
-            \input{overview/mailinglist.tex}
-        """
-
-        if "its" in self.data_sources and "github" in self.data_sources:
-            overview += r"\input{overview/efficiency-github-its.tex}"
-        elif "its" in self.data_sources:
-            overview += r"\input{overview/efficiency.tex}"
+        # Overview section
+        overview = r'\input{overview/summary.tex}'
+        for overview_ds in ['github', 'gerrit']:
+            if overview_ds in self.data_sources:
+                overview += r"\input{overview/efficiency-" +  overview_ds + ".tex}"
 
         with open(os.path.join(report_path, "overview.tex"), "w") as flatex:
             flatex.write(overview)
 
-        # process right now only active in gerrit.
-        # Must be also in github and its.
-        if "gerrit" in self.data_sources:
-            process = r"""
-                \input{process/gerrit.tex}
-            """
-        elif "github" in self.data_sources:
-            process = r"""
-                \input{process/github.tex}
-            """
-        else:
-            process = ""
+        # Process section
+        process = ''
+        for process_ds in ['github', 'gerrit']:
+            if process_ds in self.data_sources:
+                process += r"\input{process/" +  process_ds + ".tex}"
+
         with open(os.path.join(report_path, "process.tex"), "w") as flatex:
             flatex.write(process)
 
@@ -678,7 +676,7 @@ class Report():
     def create(self):
         logger.info("Generating the report from %s to %s", self.start, self.end)
 
-        self.create_data_figs()
+        # self.create_data_figs()
         self.create_pdf()
 
         logger.info("Report completed")
