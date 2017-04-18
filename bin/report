@@ -79,6 +79,7 @@ if __name__ == '__main__':
     logging.getLogger("requests").setLevel(logging.WARNING)
 
     elastic = args.elastic_url
+    report_name = args.name
     data_dir = args.data_dir
     data_sources = args.data_sources
 
@@ -101,6 +102,7 @@ if __name__ == '__main__':
         config = Config(args.mordred_config)
         data_sources = config.get_backend_sections()
         elastic = config.conf['es_enrichment']['url']
+        report_name = config.conf['general']['short_name']
 
     report = Report(elastic, start=start_date,
                     end=end_date, data_dir=data_dir,
@@ -108,5 +110,5 @@ if __name__ == '__main__':
                     interval=args.interval,
                     offset=offset,
                     data_sources=data_sources,
-                    report_name=args.name)
+                    report_name=report_name)
     report.create()
