@@ -54,7 +54,6 @@ class Report():
     GIT_INDEX = 'git_enrich'
     GITHUB_INDEX = 'github_issues'
     ITS_INDEX = 'github_issues'
-    # ITS_INDEX = 'jira'
     EMAIL_INDEX = 'mbox_enrich'
     GERRIT_INDEX = 'gerrit'
     GLOBAL_PROJECT = 'general'
@@ -111,16 +110,20 @@ class Report():
         for mls_ds in  ['mbox', 'pipermal']:
             if mls_ds in data_sources:
                 self.data_sources.append('mls')
-        # for its_ds in  ['bugzilla', 'jira', 'github']:
-        #     if its_ds in data_sources:
-        #         self.data_sources.append('its')
+        for its_ds in  ['github']:
+            if its_ds in data_sources:
+                self.data_sources.append('its')
         self.data_sources = list(set(self.data_sources))
         # End temporal hack
         self.config = self.__get_config(self.data_sources)
         self.report_name = report_name
 
     def __get_config(self, data_sources=None):
-        """ The config is get from each data source and then it is combined """
+        """
+            The config is get from each data source and then it is combined.
+
+            It defines the metrics to be included in each section of the report
+        """
         if not data_sources:
             # For testing
             data_sources = ["gerrit", "git", "github", "mls"]
@@ -148,16 +151,15 @@ class Report():
         new_config['project_process']['time_to_close_title'] = "Days to close (median and average)"
         new_config['project_process']['time_to_close_review_title'] = "Days to close review (median and average)"
 
-        # self.config['project_activity'] has three data sources max
-        num_activiy_sections = len(data_sources)
-        if num_activiy_sections > 3:
-            num_activiy_sections = 3
-        for i in range(0, num_activiy_sections):
+        for i in range(0, len(data_sources)):
             ds = data_sources[i]
             ds_config = self.ds2class[ds].get_section_metrics()
             activity_metrics = ds_config['project_activity']['metrics']
             new_config['project_activity']['ds' + str(i+1)+"_metrics"] = activity_metrics
 
+        # from pprint import pprint
+        # pprint(new_config)
+        # raise
         return new_config
 
     def __convert_none_to_zero(self, ts):
@@ -372,14 +374,10 @@ class Report():
 
         logger.info("Activity data for: %s", project)
 
-        metrics = self.config['project_activity']['ds1_metrics']
-        create_data(metrics, project)
-
-        metrics = self.config['project_activity']['ds2_metrics']
-        create_data(metrics, project)
-
-        if 'ds3_metrics' in self.config['project_activity']:
-            metrics = self.config['project_activity']['ds3_metrics']
+        for activity_ds in self.config['project_activity']:
+            if activity_ds == 'metrics':
+                continue  # all metrics included
+            metrics = self.config['project_activity'][activity_ds]
             create_data(metrics, project)
 
 
@@ -471,19 +469,24 @@ class Report():
                                   title_label, project)
 
         """
-        Time to close PRs
+        Time to close PRs and gerrit reviews
 
-        description: median and mean time to close prs
+        description: median and mean time to close prs and gerrit reviews
         """
         if len(self.config['project_process']['time_to_close_review_metrics']) > 0:
             metrics = self.config['project_process']['time_to_close_review_metrics']
-            csv_labels = "labels" + ',' + metrics[0].id + ","+metrics[1].id
-            file_label = metrics[0].ds.name + "_" + metrics[0].id + "_"
-            file_label += metrics[1].ds.name + "_" + metrics[1].id
-            # title_label = metrics[0].name+", "+ metrics[1].name + " per "+ self.interval
-            title_label = self.config['project_process']['time_to_close_review_title']
-            self.__create_csv_eps(metrics[0], metrics[1], csv_labels, file_label,
-                                  title_label, project)
+            i = 0
+            while i < len(metrics):
+                # Generate the metrics in data source pairs.
+                # TODO: convert to tuples metrics
+                csv_labels = "labels" + ',' + metrics[i].id + ","+metrics[i+1].id
+                file_label = metrics[i].ds.name + "_" + metrics[i].id + "_"
+                file_label += metrics[i+1].ds.name + "_" + metrics[i+1].id
+                # title_label = metrics[0].name+", "+ metrics[1].name + " per "+ self.interval
+                title_label = self.config['project_process']['time_to_close_review_title']
+                self.__create_csv_eps(metrics[i], metrics[i+1], csv_labels, file_label,
+                                      title_label, project)
+                i = i + 2
 
         """
         Patchsets per review
@@ -640,7 +643,7 @@ class Report():
     def create(self):
         logger.info("Generating the report from %s to %s", self.start, self.end)
 
-        # self.create_data_figs()
+        self.create_data_figs()
         self.create_pdf()
 
         logger.info("Report completed")
