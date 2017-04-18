@@ -261,15 +261,6 @@ class Report():
         title_label = author.name + " per "+ self.interval
         self.__create_csv_eps(author, None, csv_labels, file_label, title_label)
 
-        """
-        Process
-        github.Closed changesets out of opened changesets (REI), closed ticket out
-        of opened tickets (BMI) and median time to merge in Gerrit (TTM)
-        (Potential title: Project Efficiency)
-        description: github.Closed PRs / Open PRs, github.Closed Issues / Open Issues,
-        median time to close a PR, median time to close an Issue
-        """
-
         bmi = []
         ttc = [] # time to close
 
@@ -298,12 +289,6 @@ class Report():
             f.write(csv)
 
     def sec_com_channels(self):
-        """
-        Emails:
-            description: number of emails sent per period of analysis
-        Email Senders:
-            description: number of people sending emails per period of analysis
-        """
 
         for metric in self.config['com_channels']['activity_metrics'] + \
                       self.config['com_channels']['author_metrics']:
@@ -387,27 +372,11 @@ class Report():
 
         logger.info("Activity data for: %s", project)
 
-        """
-        Commits and Pull Requests:
-        description: number of commits and pull requests per project
-        """
-
         metrics = self.config['project_activity']['ds1_metrics']
         create_data(metrics, project)
 
-
-        """
-        github.Opened and github.Closed Pull Requests:
-        description: number of opened and closed pull requests per project
-        """
-
         metrics = self.config['project_activity']['ds2_metrics']
         create_data(metrics, project)
-
-        """
-        github.Opened and github.Closed Issues:
-        description: number of opened and closed issues per project
-        """
 
         if 'ds3_metrics' in self.config['project_activity']:
             metrics = self.config['project_activity']['ds3_metrics']
@@ -440,11 +409,6 @@ class Report():
 
         logger.info("Community data for: %s", project)
 
-        """
-        Developers
-
-        description: number of people that participate with a commit
-        """
         author = self.config['project_community']['author_metrics'][0]
         csv_labels = 'labels,'+author.id
         file_label = author.ds.name + "_" + author.id
