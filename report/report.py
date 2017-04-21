@@ -107,7 +107,7 @@ class Report():
         # Just include the supported data sources
         self.data_sources = list(set(data_sources) & set(self.supported_data_sources))
         # Temporal hack
-        for mls_ds in  ['mbox', 'pipermal']:
+        for mls_ds in  ['mbox', 'pipermail']:
             if mls_ds in data_sources:
                 self.data_sources.append('mls')
         for its_ds in  ['github']:
