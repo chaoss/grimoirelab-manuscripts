@@ -562,12 +562,22 @@ class Report():
 
         logger.info("Data and figs done")
 
+    @classmethod
+    def __period_name(cls, pdate, interval):
+        # Just supporting quarters right now
+        name = pdate.strftime('%Y-%m-%d') + ' ' + interval
+
+        if interval == 'quarter':
+            name = pdate.strftime('%Y')
+            # The month is the next month 2017-04-01 to the current quarter
+            month = int(pdate.strftime('%m')) - 1
+            quarter = int(round(int(month)/3, 0))
+            name += "-Q" + str(quarter)
+
+        return name
 
     def create_pdf(self):
         logger.info("Generating PDF report")
-
-        # Files to be adaptaed to data sources configured
-        latex_template_dir = "report_template"
 
         # First step is to create the report dir from the template
         report_path = "report_" + self.data_dir
@@ -576,11 +586,15 @@ class Report():
         copy_tree(self.data_dir, os.path.join(report_path, "data"))
         copy_tree(self.data_dir, os.path.join(report_path, "figs"))
         # Change the project global name
-        cmd = ['sed -i s/PROJECT-NAME/' + self.report_name.replace(' ', r'\ ') + '/g *.tex']
+        project_replace = self.report_name.replace(' ', r'\ ')
+        cmd = ['grep -rl PROJECT-NAME . | xargs sed -i s/PROJECT-NAME/' + project_replace + '/g']
         subprocess.call(cmd, shell=True, cwd=report_path)
         # Change the quarter subtitle
-        cmd = ['sed -i s/2016-QUARTER/' + self.end.strftime('%Y-%m-%d') + \
-               r'\ ' + self.interval + '/g *.tex']
+        period_name = self.__period_name(self.end, self.interval)
+        period_replace = period_name.replace(' ', r'\ ')
+        cmd = ['grep -rl 2016-QUARTER . | xargs sed -i s/2016-QUARTER/' + period_replace +  '/g']
+        # cmd = ['sed -i s/2016-QUARTER/' + self.end.strftime('%Y-%m-%d') + \
+        #       r'\ ' + self.interval + '/g *.tex']
         subprocess.call(cmd, shell=True, cwd=report_path)
         # Change the date Copyright
         cmd = [r'sed -i s/\(cc\)\ 2016/\(cc\)\ ' + datetime.now().strftime('%Y') + '/g *.tex']
@@ -591,8 +605,6 @@ class Report():
         cmd = [r'sed -i "s/^#//g" data/git_top_organizations_*']
         subprocess.call(cmd, shell=True, cwd=report_path)
 
-
-        latex_files = ['activity.tex', 'community.tex', 'overview.tex', 'process.tex']
 
         # Activity section
         activity = ''
@@ -610,7 +622,7 @@ class Report():
                 community += r"\input{community/" +  community_ds + ".tex}"
 
         with open(os.path.join(report_path, "community.tex"), "w") as flatex:
-            flatex.write(activity)
+            flatex.write(community)
 
         # Overview section
         overview = r'\input{overview/summary.tex}'

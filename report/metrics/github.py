@@ -35,7 +35,7 @@ class GitHub():
         # github issues is covered as ITS
         return {
             "overview" : {
-                "activity_metrics": [Opened, ClosedPR, SubmittedPR],
+                "activity_metrics": [ClosedPR, SubmittedPR],
                 "author_metrics": [],
                 "bmi_metrics": [BMIPR],
                 "time_to_close_metrics": [DaysToClosePRMedian],
