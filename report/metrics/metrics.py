@@ -33,6 +33,10 @@ from datetime import datetime, timedelta
 
 from ..esquery import ElasticQuery
 
+
+logger = logging.getLogger(__name__)
+
+
 class Metrics(object):
     """Root of hierarchy of Entities (Metrics)
 
@@ -111,7 +115,9 @@ class Metrics(object):
                                      agg_type=self.AGG_TYPE,
                                      interval=interval,
                                      offset=offset)
-        logging.debug(query)
+
+        logger.debug("Metric: '%s' (%s); Query: %s",
+                     self.name, self.id, query)
         return query
 
 
@@ -121,6 +127,8 @@ class Metrics(object):
                                      date_field=self.FIELD_DATE,
                                      start=self.start, end=self.end,
                                      filters=self.esfilters)
+        logger.debug("Metric: '%s' (%s); Query: %s",
+                     self.name, self.id, query)
         res = self.get_metrics_data(query)
         l = {field:[],"value":[]}
         for bucket in res['aggregations'][str(ElasticQuery.AGGREGATION_ID)]['buckets']:

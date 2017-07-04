@@ -71,7 +71,7 @@ if __name__ == '__main__':
     args = get_params()
 
     if args.debug:
-        logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s')
+        logging.basicConfig(level=logging.DEBUG, format='[%(asctime)s] %(message)s')
         logging.debug("Debug mode activated")
     else:
         logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')

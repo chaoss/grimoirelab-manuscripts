@@ -236,6 +236,8 @@ class Report():
 
         file_name = os.path.join(self.data_dir, file_name)
 
+        logger.debug("CSV file %s generation in progress", file_name)
+
         csv = 'metricsnames,netvalues,relativevalues,datasource\n'
         for metric in metrics:
             # comparing current metric month count with previous month
@@ -247,6 +249,8 @@ class Report():
             csv += "\n"
         with open(file_name, "w") as f:
             f.write(csv)
+
+        logger.debug("CSV file: %s was generated", file_name)
 
         """
         Git Authors:
@@ -262,6 +266,8 @@ class Report():
         file_label = author.ds.name + "_" + author.id
         title_label = author.name + " per "+ self.interval
         self.__create_csv_eps(author, None, csv_labels, file_label, title_label)
+
+        logger.debug("CSV file %s generation in progress", file_name)
 
         bmi = []
         ttc = [] # time to close
@@ -290,6 +296,8 @@ class Report():
         with open(file_name, "w") as f:
             f.write(csv)
 
+        logger.debug("CSV file: %s was generated", file_name)
+
     def sec_com_channels(self):
 
         for metric in self.config['com_channels']['activity_metrics'] + \
@@ -313,8 +321,12 @@ class Report():
 
     def __create_csv_eps(self, metric1, metric2, csv_labels, file_label,
                          title_label, project=None):
+
+        logger.debug("CSV file %s generation in progress", file_label)
+
         esfilters = None
-        csv_labels = csv_labels.replace("_","")  # LaTeX not supports _
+        csv_labels = csv_labels.replace("_","")  # LaTeX not supports
+
         if project and project != self.GLOBAL_PROJECT:
             esfilters={"project": project}
         m1 = metric1(self.es_url, self.get_metric_index(metric1),
@@ -343,6 +355,8 @@ class Report():
             file_name = os.path.join(self.data_dir, file_label+".csv")
         with open(file_name, "w") as f:
             f.write(csv)
+
+        logger.debug("CSV file %s was generated", file_label)
 
         if project:
             file_name = os.path.join(self.data_dir, file_label+"_"+project+".eps")
@@ -389,6 +403,10 @@ class Report():
             if project != self.GLOBAL_PROJECT:
                 esfilters={"project": project}
 
+            file_name = os.path.join(self.data_dir, file_label+"_"+project+".csv")
+
+            logger.debug("CSV file %s generation in progress", file_name)
+
             m1 = metric1(self.es_url, self.get_metric_index(metric1),
                          esfilters=esfilters, start=self.end_prev_month, end=self.end)
             top = m1.get_list()
@@ -399,10 +417,10 @@ class Report():
                 csv += top[metric1.FIELD_NAME][i] + "," + self.str_val(top['value'][i])
                 csv += "\n"
 
-            file_name = os.path.join(self.data_dir, file_label+"_"+project+".csv")
-
             with open(file_name, "w") as f:
                 f.write(csv)
+
+            logger.debug("CSV file %s was generated", file_name)
 
 
         logger.info("Community data for: %s", project)
@@ -418,7 +436,6 @@ class Report():
         Main developers
 
         """
-
         metric = self.config['project_community']['people_top_metrics'][0]
         # TODO: Commits must be extracted from metric
         csv_labels = author.id+",commits"
