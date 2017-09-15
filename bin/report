@@ -61,6 +61,7 @@ def get_params():
     parser.add_argument('-n', '--name', default='Report Name',
                         help="Report name")
     parser.add_argument('-m', '--mordred-config', help="Mordred config file")
+    parser.add_argument('-p', '--projects', action='store_true', help="Generate per project data")
 
     return parser.parse_args()
 
@@ -125,5 +126,6 @@ if __name__ == '__main__':
                     interval=args.interval,
                     offset=offset,
                     data_sources=data_sources,
-                    report_name=report_name)
+                    report_name=report_name,
+                    projects=args.projects)
     report.create()

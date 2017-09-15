@@ -79,7 +79,7 @@ class Report():
 
     def __init__(self, es_url, start, end, data_dir=None, filters=None,
                  interval="month", offset=None, data_sources=None,
-                 report_name=None):
+                 report_name=None, projects=False):
         self.es_url = es_url
         self.start = start
         self.end = end
@@ -117,6 +117,7 @@ class Report():
         # End temporal hack
         self.config = self.__get_config(self.data_sources)
         self.report_name = report_name
+        self.projects = projects
 
     def __get_config(self, data_sources=None):
         """
@@ -532,6 +533,10 @@ class Report():
         self.sec_project_activity(self.GLOBAL_PROJECT)
         self.sec_project_community(self.GLOBAL_PROJECT)
         self.sec_project_process(self.GLOBAL_PROJECT)
+
+        if not self.projects:
+            # Don't generate per project data
+            return
 
         # Just one level projects supported yet
 
