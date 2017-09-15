@@ -249,7 +249,7 @@ class ElasticQuery():
     @classmethod
     def __get_query_agg_ts(cls, field, time_field, interval=None,
                            time_zone=None, start=None, end=None,
-                           agg_type='count'):
+                           agg_type='count', offset=None):
         """ Time series for an aggregation metric """
         if not interval:
             interval = '1M'
@@ -269,11 +269,15 @@ class ElasticQuery():
                 raise RuntimeError("Aggregation of %s in ts not supported" % agg_type)
             field_agg = ", " + field_agg
 
-
+        bounds = None
         if start or end:
-            bounds_dict = cls.__get_bounds(start, end)
-            bounds = json.dumps(bounds_dict)[1:-1]  # Remove {} from json
-            bounds = "," + bounds # it is the last element
+            if not offset:
+                # With offset and quarter interval bogus buckets are added
+                # to the start and to the end if extended_bounds is used
+                # https://github.com/elastic/elasticsearch/issues/23776
+                bounds_dict = cls.__get_bounds(start, end)
+                bounds = json.dumps(bounds_dict)[1:-1]  # Remove {} from json
+                bounds = "," + bounds # it is the last element
 
         query_agg = """
              "aggs": {
@@ -359,7 +363,8 @@ class ElasticQuery():
             query_agg = ElasticQuery.__get_query_agg_ts(field, date_field,
                                                         start=start, end=end,
                                                         interval=interval,
-                                                        agg_type=agg_type)
+                                                        agg_type=agg_type,
+                                                        offset=offset)
 
         if agg_type not in ['percentiles', 'terms', 'avg']:
             field_agg = A(agg_type, field=field,
@@ -373,7 +378,10 @@ class ElasticQuery():
             # Two aggs, date histogram and the field+agg_type
             bounds = ElasticQuery.__get_bounds(start, end)
             if offset:
-                bounds.update({"offset": offset})
+                # With offset and quarter interval bogus buckets are added
+                # to the start and to the end if extended_bounds is used
+                # https://github.com/elastic/elasticsearch/issues/23776
+                bounds = {"offset": offset}
             ts_agg = A('date_histogram', field=date_field, interval=interval,
                        time_zone="UTC", min_doc_count=0, **bounds)
             s.aggs.bucket(agg_id, ts_agg).metric(agg_id+1, field_agg)

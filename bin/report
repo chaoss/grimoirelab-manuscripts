@@ -62,8 +62,13 @@ def get_params():
                         help="Report name")
     parser.add_argument('-m', '--mordred-config', help="Mordred config file")
 
-
     return parser.parse_args()
+
+
+def get_offset_days(offset):
+    """ offset format supported: '+31d' """
+    days = int(offset[1:-1])
+    return days
 
 
 if __name__ == '__main__':
@@ -96,6 +101,16 @@ if __name__ == '__main__':
     start_date = parser.parse(args.start_date).replace(tzinfo=timezone.utc)
 
     offset = args.offset if args.offset else None
+
+    # if offset, start and end must be adjusted to it
+
+    if offset:
+        logging.debug("Adjusting range %s-%s for offset %s", start_date, end_date, offset)
+        offset_days = get_offset_days(offset)
+        start_date = start_date + timedelta(days=offset_days)
+        end_date = end_date + timedelta(days=offset_days)
+        logging.debug("New range %s-%s with offset %s",
+                      start_date, end_date, offset)
 
     if args.mordred_config:
         # Read the mordred config file and configure the data sources according to it
