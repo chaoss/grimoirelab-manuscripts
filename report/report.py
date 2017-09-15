@@ -622,6 +622,12 @@ class Report():
         # cmd = ['sed -i s/2016-QUARTER/' + self.end.strftime('%Y-%m-%d') + \
         #       r'\ ' + self.interval + '/g *.tex']
         subprocess.call(cmd, shell=True, cwd=report_path)
+        # Report date frame
+        quarter_start = self.end - relativedelta.relativedelta(months=3)
+        quarter_start += relativedelta.relativedelta(days=1)
+        dateframe = (quarter_start.strftime('%Y-%m-%d')+" to "+self.end.strftime('%Y-%m-%d')).replace(' ', r'\ ')
+        cmd = ['grep -rl DATEFRAME . | xargs sed -i s/DATEFRAME/' + dateframe +  '/g']
+        subprocess.call(cmd, shell=True, cwd=report_path)
         # Change the date Copyright
         cmd = [r'sed -i s/\(cc\)\ 2016/\(cc\)\ ' + datetime.now().strftime('%Y') + '/g *.tex']
         subprocess.call(cmd, shell=True, cwd=report_path)
