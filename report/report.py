@@ -41,9 +41,10 @@ from distutils.dir_util import copy_tree
 from dateutil import parser, relativedelta
 
 from .metrics import git
-from .metrics import github
-from .metrics import mls
 from .metrics import its
+from .metrics import github_issues
+from .metrics import github_prs
+from .metrics import mls
 from .metrics import gerrit
 
 from .metrics.metrics import Metrics
@@ -52,8 +53,8 @@ logger = logging.getLogger(__name__)
 
 class Report():
     GIT_INDEX = 'git_enrich'
-    GITHUB_INDEX = 'github_issues'
-    ITS_INDEX = 'github_issues'
+    GITHUB_ISSUES_INDEX = 'github_issues'
+    GITHUB_PRS_INDEX = 'github_issues'
     EMAIL_INDEX = 'mbox_enrich'
     GERRIT_INDEX = 'gerrit'
     GLOBAL_PROJECT = 'general'
@@ -62,20 +63,21 @@ class Report():
     ds2index = {
         gerrit.Gerrit: GERRIT_INDEX,
         git.Git: GIT_INDEX,
-        github.GitHub: GITHUB_INDEX,
-        mls.MLS: EMAIL_INDEX,
-        its.ITS: ITS_INDEX
+        github_issues.GitHubIssues: GITHUB_ISSUES_INDEX,
+        github_prs.GitHubPRs: GITHUB_PRS_INDEX,
+        mls.MLS: EMAIL_INDEX
     }
 
     ds2class = {
         "gerrit": gerrit.Gerrit,
         "git": git.Git,
-        "github": github.GitHub,
-        "its": its.ITS,
-        "mls": mls.MLS
+        "github_issues": github_issues.GitHubIssues,
+        "github_prs": github_prs.GitHubPRs,
+        "mailinglist": mls.MLS
     }
 
     supported_data_sources = ['git', 'github', 'gerrit', 'mls']
+    supported_data_sources += ['github_issues', 'github_prs']
 
     def __init__(self, es_url, start, end, data_dir=None, filters=None,
                  interval="month", offset=None, data_sources=None,
@@ -107,12 +109,15 @@ class Report():
         # Just include the supported data sources
         self.data_sources = list(set(data_sources) & set(self.supported_data_sources))
         # Temporal hack
-        for mls_ds in  ['mbox', 'pipermail']:
+        for mls_ds in ['mbox', 'pipermail']:
             if mls_ds in data_sources:
-                self.data_sources.append('mls')
-        for its_ds in  ['github']:
-            if its_ds in data_sources:
-                self.data_sources.append('its')
+                self.data_sources.append('mailinglist')
+        if 'github' in data_sources:
+            # In mordred github issues and prs are managed together
+            self.data_sources.remove('github')
+            self.data_sources += ['github_issues', 'github_prs']
+            # Hack because a bad design to be rechecked
+            its.ITSMetrics.ds = github_issues.GitHubIssues
         self.data_sources = list(set(self.data_sources))
         # End temporal hack
         self.config = self.__get_config(self.data_sources)
@@ -127,7 +132,7 @@ class Report():
         """
         if not data_sources:
             # For testing
-            data_sources = ["gerrit", "git", "github", "mls"]
+            data_sources = ["gerrit", "git", "github_issues", "mls"]
 
         # In new_config a dict with all the metrics for all data sources is created
         new_config = {}
@@ -249,6 +254,8 @@ class Report():
             csv += "%s,%i,%i,%s" % (metric.name, last, percentage, ds)
             csv += "\n"
         with open(file_name, "w") as f:
+            # Hack, we need to fix LaTeX escaping in a central place
+            csv = csv.replace("_", r"\_")
             f.write(csv)
 
         logger.debug("CSV file: %s was generated", file_name)
@@ -667,7 +674,7 @@ class Report():
 
         # Process section
         process = ''
-        for process_ds in ['github', 'gerrit']:
+        for process_ds in ['github_prs', 'gerrit']:
             if process_ds in self.data_sources:
                 process += r"\input{process/" +  process_ds + ".tex}"
 

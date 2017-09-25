@@ -22,12 +22,10 @@
 ##   Alvaro del Castillo <acs@bitergia.com>
 ##   Daniel Izquierdo <dizquierdo@bitergia.com>
 
-import operator
-
 from .metrics import Metrics
 
-class GitHub():
-    name = "github"
+class GitHubPRs():
+    name = "github prs"
 
     @classmethod
     def get_section_metrics(cls):
@@ -65,11 +63,11 @@ class GitHub():
 
 
 
-class GitHubMetrics(Metrics):
-    ds = GitHub
+class GitHubPRsMetrics(Metrics):
+    ds = GitHubPRs
 
 
-class SubmittedPR(GitHubMetrics):
+class SubmittedPR(GitHubPRsMetrics):
     id = "submitted"
     name = "Submitted reviews"
     desc = "Number of submitted code review processes"
@@ -78,7 +76,7 @@ class SubmittedPR(GitHubMetrics):
     filters = {"pull_request":"true"}
 
 
-class ClosedPR(GitHubMetrics):
+class ClosedPR(GitHubPRsMetrics):
     id = "closed"
     name = "Closed reviews"
     desc = "Number of closed review processes (merged or abandoned)"
@@ -87,7 +85,7 @@ class ClosedPR(GitHubMetrics):
     filters = {"pull_request":"true", "state":"closed"}
 
 
-class DaysToClosePRMedian(GitHubMetrics):
+class DaysToClosePRMedian(GitHubPRsMetrics):
     id = "days_to_close_pr_median"
     name = "Days to close reviews (median)"
     desc = "Number of days needed to close a review (median)"
@@ -101,7 +99,7 @@ class DaysToClosePRMedian(GitHubMetrics):
             agg = 0  # None is because NaN in ES. Let's convert to 0
         return agg
 
-class DaysToClosePRAverage(GitHubMetrics):
+class DaysToClosePRAverage(GitHubPRsMetrics):
     id = "days_to_close_pr_avg"
     name = "Days to close reviews (avg)"
     desc = "Number of days needed to close a review (average)"
@@ -110,7 +108,7 @@ class DaysToClosePRAverage(GitHubMetrics):
     filters = {"pull_request":"true", "state":"closed"}
 
 
-class Projects(GitHubMetrics):
+class Projects(GitHubPRsMetrics):
     """ Projects in the review code management system """
 
     id = "projects"
@@ -119,7 +117,7 @@ class Projects(GitHubMetrics):
     FIELD_NAME = 'project' # field used to list projects
 
 
-class BMIPR(GitHubMetrics):
+class BMIPR(GitHubPRsMetrics):
     """This class calculates the efficiency closing reviews
 
     It is calculated as the number of closed issues out of the total number
@@ -181,48 +179,21 @@ class BMIPR(GitHubMetrics):
         return bmi
 
 
-class Reviewers(GitHubMetrics):
+class Reviewers(GitHubPRsMetrics):
     """ People assigned to pull requests """
     id = "reviewers"
     name = "Reviewers"
     desc = "Number of persons reviewing code review activities"
 
 
-class Closers(GitHubMetrics):
+class Closers(GitHubPRsMetrics):
     id = "closers"
     name = "Closers"
     desc = "Number of persons closing code review activities"
 
 
 # Pretty similar to ITS openers
-class Submitters(GitHubMetrics):
+class Submitters(GitHubPRsMetrics):
     id = "submitters"
     name = "Submitters"
     desc = "Number of persons submitting code review processes"
-
-#
-# GitHub issues
-#
-
-from . import its
-
-class Opened(its.Opened):
-    filters = {"pull_request":"false"}
-
-class Openers(its.Openers):
-    filters = {"pull_request":"false"}
-
-class Closed(its.Closed):
-    filters = {"state":"closed", "pull_request":"false"}
-
-class DaysToCloseMedian(its.DaysToCloseMedian):
-    filters = {"state":"closed", "pull_request":"false"}
-
-class DaysToCloseAverage(its.DaysToCloseAverage):
-    filters = {"state":"closed", "pull_request":"false"}
-
-class Closers(its.Closers):
-    filters = {"state":"closed", "pull_request":"false"}
-
-class BMITickets(its.BMI):
-    filters = {"pull_request":"false"}

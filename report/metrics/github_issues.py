@@ -19,32 +19,30 @@
 ##
 ##
 ## Authors:
-##   Daniel Izquierdo-Cortazar <dizquierdo@bitergia.com>
 ##   Alvaro del Castillo <acs@bitergia.com>
-##
+##   Daniel Izquierdo <dizquierdo@bitergia.com>
 
-from .metrics import Metrics
+from . import its
 
-class MLS():
-    name = "mailing lists"
+class GitHubIssues(its.ITS):
+    name = "github issues"
 
     @classmethod
     def get_section_metrics(cls):
         return {
             "overview" : {
-                "activity_metrics": [EmailsSent],
+                "activity_metrics": [Closed, Opened],
                 "author_metrics": [],
-                "bmi_metrics": [],
-                "time_to_close_metrics": [],
+                "bmi_metrics": [BMI],
+                "time_to_close_metrics": [DaysToCloseMedian],
                 "projects_metrics": [Projects]
             },
             "com_channels": {
-                "activity_metrics": [EmailsSent],
-                "author_metrics": [EmailsSenders]
+                "activity_metrics": [],
+                "author_metrics": []
             },
             "project_activity": {
-                # TODO: EmailsSenders is not activity but we need two metrics here
-                "metrics": [EmailsSent, EmailsSenders]
+                "metrics": [Opened, Closed]
             },
             "project_community": {
                 "author_metrics": [],
@@ -52,9 +50,9 @@ class MLS():
                 "orgs_top_metrics": [],
             },
             "project_process": {
-                "bmi_metrics": [],
-                "time_to_close_metrics": [],
-                "time_to_close_title": "",
+                "bmi_metrics": [BMI],
+                "time_to_close_metrics": [DaysToCloseAverage, DaysToCloseMedian],
+                "time_to_close_title": "Days to close (median and average)",
                 "time_to_close_review_metrics": [],
                 "time_to_close_review_title": "",
                 "patchsets_metrics": []
@@ -62,35 +60,29 @@ class MLS():
         }
 
 
-class MLSMetrics(Metrics):
-    ds = MLS
+class GitHubIssuesMetrics(its.ITS):
+    ds = GitHubIssues
 
+class Opened(its.Opened):
+    filters = {"pull_request":"false"}
 
-class EmailsSent(MLSMetrics):
-    """ Emails metric class for mailing lists analysis """
+class Openers(its.Openers):
+    filters = {"pull_request":"false"}
 
-    id = "emails_sent"
-    name = "Sent Emails"
-    desc = "Emails sent to mailing lists"
-    FIELD_COUNT= "Message-ID"
-    FIELD_NAME = "Message-ID"
+class Closed(its.Closed):
+    filters = {"state":"closed", "pull_request":"false"}
 
+class DaysToCloseMedian(its.DaysToCloseMedian):
+    filters = {"state":"closed", "pull_request":"false"}
 
-class EmailsSenders(MLSMetrics):
-    """ Emails Senders class for mailing list analysis """
+class DaysToCloseAverage(its.DaysToCloseAverage):
+    filters = {"state":"closed", "pull_request":"false"}
 
-    id = "emails_senders"
-    name = "Email Senders"
-    desc = "People sending emails"
+class Closers(its.Closers):
+    filters = {"state":"closed", "pull_request":"false"}
 
-    FIELD_COUNT = 'author_uuid' # field used to count Authors
-    FIELD_NAME = 'author_name' # field used to count Authors
+class BMI(its.BMI):
+    filters = {"pull_request":"false"}
 
-
-class Projects(MLSMetrics):
-    """ Projects in the mailing lists """
-
-    id = "projects"
-    name = "Projects"
-    desc = "Projects in the mailing lists"
-    FIELD_NAME = 'project' # field used to list projects
+class Projects(its.Projects):
+    filters = {"pull_request":"false"}
