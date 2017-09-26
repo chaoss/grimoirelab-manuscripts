@@ -116,8 +116,6 @@ class Report():
             # In mordred github issues and prs are managed together
             self.data_sources.remove('github')
             self.data_sources += ['github_issues', 'github_prs']
-            # Hack because a bad design to be rechecked
-            its.ITSMetrics.ds = github_issues.GitHubIssues
         self.data_sources = list(set(self.data_sources))
         # End temporal hack
         self.config = self.__get_config(self.data_sources)

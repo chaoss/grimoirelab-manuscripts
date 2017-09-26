@@ -61,28 +61,38 @@ class GitHubIssues(its.ITS):
 
 
 class GitHubIssuesMetrics(its.ITS):
+    # TODO: All GitHubIssuesMetrics metrics should inherit from this class
+    # but they are doing it from ITSMetrics directly. Change the design.
     ds = GitHubIssues
 
 class Opened(its.Opened):
+    ds = GitHubIssues
     filters = {"pull_request":"false"}
 
 class Openers(its.Openers):
+    ds = GitHubIssues
     filters = {"pull_request":"false"}
 
 class Closed(its.Closed):
+    ds = GitHubIssues
     filters = {"state":"closed", "pull_request":"false"}
 
 class DaysToCloseMedian(its.DaysToCloseMedian):
+    ds = GitHubIssues
     filters = {"state":"closed", "pull_request":"false"}
 
 class DaysToCloseAverage(its.DaysToCloseAverage):
+    ds = GitHubIssues
     filters = {"state":"closed", "pull_request":"false"}
 
 class Closers(its.Closers):
+    ds = GitHubIssues
     filters = {"state":"closed", "pull_request":"false"}
 
 class BMI(its.BMI):
+    ds = GitHubIssues
     filters = {"pull_request":"false"}
 
 class Projects(its.Projects):
+    ds = GitHubIssues
     filters = {"pull_request":"false"}
