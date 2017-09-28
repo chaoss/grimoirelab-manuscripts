@@ -12,3 +12,15 @@ bin/report -g --data-sources git gerrit its mls -u <elastic_url> -s 2015-04-01 -
 ```
 
 and the PDF is generated in project_data/report.pdf_
+
+# Usage
+
+Use `-h` flag to show usage as follows:
+```
+$ > bin/report -h
+-d DATA_DIR, --data-dir DATA_DIR
+                        Directory to store the data results
+```
+**Params**:
+
+`-d, --data-dir`: directory to store data files that will be used to create the report PDF file (csv and eps files containing metrics results).
