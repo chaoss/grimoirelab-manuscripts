@@ -611,8 +611,10 @@ class Report():
         logger.info("Generating PDF report")
 
         # First step is to create the report dir from the template
-        report_path = "report_" + self.data_dir
-        copy_tree("report_template", report_path)
+        report_path = self.data_dir
+        templates_path = os.path.join(os.path.dirname(__file__),
+                                        "latex_template")
+        copy_tree(templates_path, report_path)
         # Copy the data generated to be used in LaTeX template
         copy_tree(self.data_dir, os.path.join(report_path, "data"))
         copy_tree(self.data_dir, os.path.join(report_path, "figs"))
