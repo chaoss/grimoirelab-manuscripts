@@ -23,14 +23,14 @@
 #
 
 import codecs
-import os.path
+import os
 import re
 
 from setuptools import setup
 
 here = os.path.abspath(os.path.dirname(__file__))
 readme_md = os.path.join(here, 'README.md')
-version = '0.1.0'
+version_py = os.path.join(here, 'report', '_version.py')
 
 # Pypi wants the description to be in reStrcuturedText, but
 # we have it in Markdown. So, let's convert formats.
@@ -44,6 +44,21 @@ except (IOError, ImportError):
           "Using md instead of rst")
     with codecs.open(readme_md, encoding='utf-8') as f:
         long_description = f.read()
+
+def files_in_subdir(dir, subdir):
+    """Find all files in a directory."""
+    paths = []
+    for (path, dirs, files) in os.walk(os.path.join(dir, subdir)):
+        for file in files:
+            paths.append(os.path.relpath(os.path.join(path, file),dir))
+    return paths
+
+template_files = files_in_subdir('report', 'latex_template')
+print("Template files: " + str(template_files))
+
+with codecs.open(version_py, 'r', encoding='utf-8') as fd:
+    version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',
+                        fd.read(), re.MULTILINE).group(1)
 
 setup(name="grimoire-reports",
       description="Produce reports based on GrimoireLab data",
@@ -65,6 +80,8 @@ setup(name="grimoire-reports",
           'report',
           'report.metrics'
       ],
+      package_data={'': template_files},
+#      package_data={'': ['latex_template/report.tex']},
       install_requires=[
         'matplotlib',
         'prettyplotlib',
