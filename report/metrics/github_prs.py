@@ -25,7 +25,7 @@
 from .metrics import Metrics
 
 class GitHubPRs():
-    name = "github prs"
+    name = "github_prs"
 
     @classmethod
     def get_section_metrics(cls):

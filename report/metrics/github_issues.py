@@ -25,7 +25,7 @@
 from . import its
 
 class GitHubIssues(its.ITS):
-    name = "github issues"
+    name = "github_issues"
 
     @classmethod
     def get_section_metrics(cls):
