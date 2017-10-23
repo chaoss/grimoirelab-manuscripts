@@ -36,7 +36,7 @@ from dateutil import parser
 sys.path.insert(0, '.')
 from report.report import Report
 
-from report.config import Config
+from mordred.config import Config
 
 def get_params():
     """Parse command line arguments"""
