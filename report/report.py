@@ -590,7 +590,7 @@ class Report():
         logger.info("Data and figs done")
 
     @classmethod
-    def __period_name(cls, pdate, interval, offset=None):
+    def period_name(cls, pdate, interval='quarter', offset=None):
         # Just supporting quarters right now
         name = pdate.strftime('%Y-%m-%d') + ' ' + interval
 
@@ -623,7 +623,7 @@ class Report():
         cmd = ['grep -rl PROJECT-NAME . | xargs sed -i s/PROJECT-NAME/' + project_replace + '/g']
         subprocess.call(cmd, shell=True, cwd=report_path)
         # Change the quarter subtitle
-        period_name = self.__period_name(self.end, self.interval, self.offset)
+        period_name = self.period_name(self.end, self.interval, self.offset)
         period_replace = period_name.replace(' ', r'\ ')
         cmd = ['grep -rl 2016-QUARTER . | xargs sed -i s/2016-QUARTER/' + period_replace +  '/g']
         # cmd = ['sed -i s/2016-QUARTER/' + self.end.strftime('%Y-%m-%d') + \
