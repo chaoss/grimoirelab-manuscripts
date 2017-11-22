@@ -88,7 +88,7 @@ class Closed(JiraMetrics):
     name = "Closed tickets"
     desc = "Number of closed tickets"
     # filters = {"status":["Closed", "Resolved", "Done"]}
-    filters = {"status":"Closed"}
+    filters = {"*status": "Open"}
     FIELD_COUNT="key"
     FIELD_NAME="url"
 
