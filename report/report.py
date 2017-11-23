@@ -70,7 +70,6 @@ class Report():
         github_issues.GitHubIssues: GITHUB_ISSUES_INDEX,
         github_prs.GitHubPRs: GITHUB_PRS_INDEX,
         jira.Jira: JIRA_INDEX,
-        mls.MLS: EMAIL_INDEX
         mls.MLS: EMAIL_INDEX,
         stackexchange.Stackexchange: STACHEXCHANGE_INDEX
     }
@@ -81,7 +80,6 @@ class Report():
         "github_issues": github_issues.GitHubIssues,
         "github_prs": github_prs.GitHubPRs,
         "jira": jira.Jira,
-        "mailinglist": mls.MLS
         "mailinglist": mls.MLS,
         "stackexchange": stackexchange.Stackexchange
     }
