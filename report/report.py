@@ -42,6 +42,7 @@ from dateutil import parser, relativedelta
 
 from .metrics import git
 from .metrics import its
+from .metrics import jira
 from .metrics import github_issues
 from .metrics import github_prs
 from .metrics import mls
@@ -55,6 +56,7 @@ class Report():
     GIT_INDEX = 'git_enrich'
     GITHUB_ISSUES_INDEX = 'github_issues'
     GITHUB_PRS_INDEX = 'github_issues'
+    JIRA_INDEX = 'jira'
     EMAIL_INDEX = 'mbox_enrich'
     GERRIT_INDEX = 'gerrit'
     GLOBAL_PROJECT = 'general'
@@ -65,6 +67,7 @@ class Report():
         git.Git: GIT_INDEX,
         github_issues.GitHubIssues: GITHUB_ISSUES_INDEX,
         github_prs.GitHubPRs: GITHUB_PRS_INDEX,
+        jira.Jira: JIRA_INDEX,
         mls.MLS: EMAIL_INDEX
     }
 
@@ -73,11 +76,13 @@ class Report():
         "git": git.Git,
         "github_issues": github_issues.GitHubIssues,
         "github_prs": github_prs.GitHubPRs,
+        "jira": jira.Jira,
         "mailinglist": mls.MLS
     }
 
     supported_data_sources = ['git', 'github', 'gerrit', 'mls']
     supported_data_sources += ['github_issues', 'github_prs']
+    supported_data_sources += ['jira']
 
     def __init__(self, es_url, start, end, data_dir=None, filters=None,
                  interval="month", offset=None, data_sources=None,
