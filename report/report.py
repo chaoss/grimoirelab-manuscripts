@@ -47,6 +47,7 @@ from .metrics import github_issues
 from .metrics import github_prs
 from .metrics import mls
 from .metrics import gerrit
+from .metrics import stackexchange
 
 from .metrics.metrics import Metrics
 
@@ -59,6 +60,7 @@ class Report():
     JIRA_INDEX = 'jira'
     EMAIL_INDEX = 'mbox_enrich'
     GERRIT_INDEX = 'gerrit'
+    STACHEXCHANGE_INDEX = 'stackoverflow'
     GLOBAL_PROJECT = 'general'
     TOP_MAX = 20
 
@@ -69,6 +71,8 @@ class Report():
         github_prs.GitHubPRs: GITHUB_PRS_INDEX,
         jira.Jira: JIRA_INDEX,
         mls.MLS: EMAIL_INDEX
+        mls.MLS: EMAIL_INDEX,
+        stackexchange.Stackexchange: STACHEXCHANGE_INDEX
     }
 
     ds2class = {
@@ -78,11 +82,14 @@ class Report():
         "github_prs": github_prs.GitHubPRs,
         "jira": jira.Jira,
         "mailinglist": mls.MLS
+        "mailinglist": mls.MLS,
+        "stackexchange": stackexchange.Stackexchange
     }
 
     supported_data_sources = ['git', 'github', 'gerrit', 'mls']
     supported_data_sources += ['github_issues', 'github_prs']
     supported_data_sources += ['jira']
+    supported_data_sources += ['stackexchange']
 
     def __init__(self, es_url, start, end, data_dir=None, filters=None,
                  interval="month", offset=None, data_sources=None,
