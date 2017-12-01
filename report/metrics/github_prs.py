@@ -1,28 +1,29 @@
-## Copyright (C) 2014 Bitergia
-##
-## This program is free software; you can redistribute it and/or modify
-## it under the terms of the GNU General Public License as published by
-## the Free Software Foundation; either version 3 of the License, or
-## (at your option) any later version.
-##
-## This program is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-## GNU General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with this program; if not, write to the Free Software
-## Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-##
-## This file is a part of GrimoireLib
-##  (an Python library for the MetricsGrimoire and vizGrimoire systems)
-##
-##
-## Authors:
-##   Alvaro del Castillo <acs@bitergia.com>
-##   Daniel Izquierdo <dizquierdo@bitergia.com>
+# Copyright (C) 2014 Bitergia
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is a part of GrimoireLib
+#  (an Python library for the MetricsGrimoire and vizGrimoire systems)
+#
+#
+# Authors:
+#   Alvaro del Castillo <acs@bitergia.com>
+#   Daniel Izquierdo <dizquierdo@bitergia.com>
 
 from .metrics import Metrics
+
 
 class GitHubPRs():
     name = "github_prs"
@@ -32,7 +33,7 @@ class GitHubPRs():
         # Those metrics are only for Pull Requests
         # github issues is covered as ITS
         return {
-            "overview" : {
+            "overview": {
                 "activity_metrics": [ClosedPR, SubmittedPR],
                 "author_metrics": [],
                 "bmi_metrics": [BMIPR],
@@ -62,7 +63,6 @@ class GitHubPRs():
         }
 
 
-
 class GitHubPRsMetrics(Metrics):
     ds = GitHubPRs
 
@@ -73,7 +73,7 @@ class SubmittedPR(GitHubPRsMetrics):
     desc = "Number of submitted code review processes"
     FIELD_NAME = 'id'
     FIELD_COUNT = 'id'
-    filters = {"pull_request":"true"}
+    filters = {"pull_request": "true"}
 
 
 class ClosedPR(GitHubPRsMetrics):
@@ -82,7 +82,7 @@ class ClosedPR(GitHubPRsMetrics):
     desc = "Number of closed review processes (merged or abandoned)"
     FIELD_NAME = 'id'
     FIELD_COUNT = 'id'
-    filters = {"pull_request":"true", "state":"closed"}
+    filters = {"pull_request": "true", "state": "closed"}
 
 
 class DaysToClosePRMedian(GitHubPRsMetrics):
@@ -91,13 +91,14 @@ class DaysToClosePRMedian(GitHubPRsMetrics):
     desc = "Number of days needed to close a review (median)"
     FIELD_COUNT = 'time_to_close_days'
     AGG_TYPE = 'median'
-    filters = {"pull_request":"true", "state":"closed"}
+    filters = {"pull_request": "true", "state": "closed"}
 
     def get_agg(self):
         agg = super(type(self), self).get_agg()
-        if agg == None:
+        if agg is None:
             agg = 0  # None is because NaN in ES. Let's convert to 0
         return agg
+
 
 class DaysToClosePRAverage(GitHubPRsMetrics):
     id = "days_to_close_pr_avg"
@@ -105,7 +106,7 @@ class DaysToClosePRAverage(GitHubPRsMetrics):
     desc = "Number of days needed to close a review (average)"
     FIELD_COUNT = 'time_to_close_days'
     AGG_TYPE = 'average'
-    filters = {"pull_request":"true", "state":"closed"}
+    filters = {"pull_request": "true", "state": "closed"}
 
 
 class Projects(GitHubPRsMetrics):
@@ -114,7 +115,7 @@ class Projects(GitHubPRsMetrics):
     id = "projects"
     name = "Projects"
     desc = "Projects in the review code management system"
-    FIELD_NAME = 'project' # field used to list projects
+    FIELD_NAME = 'project'  # field used to list projects
 
 
 class BMIPR(GitHubPRsMetrics):
@@ -156,10 +157,9 @@ class BMIPR(GitHubPRsMetrics):
         if submitted_agg == 0:
             bmi = 1  # if no submitted prs, bmi is at 100%
         else:
-            bmi = closed_agg/submitted_agg
+            bmi = closed_agg / submitted_agg
 
         return bmi
-
 
     def get_ts(self):
         bmi = {}

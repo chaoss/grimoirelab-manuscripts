@@ -31,6 +31,7 @@ from elasticsearch_dsl import A, Search, Q
 
 USE_ELASTIC_DSL = True
 
+
 class ElasticQuery():
     """ Helper class for building Elastic queries """
 
@@ -104,11 +105,11 @@ class ElasticQuery():
         else:
             query_range = cls.__get_query_range(date_field, start, end)
             if query_range:
-                query_range = ", " +  query_range
+                query_range = ", " + query_range
 
         query_filters = cls.__get_query_filters(filters)
         if query_filters:
-            query_filters = ", " +  query_filters
+            query_filters = ", " + query_filters
 
         query_filters_inverse = cls.__get_query_filters(filters, inverse=True)
 
@@ -167,7 +168,7 @@ class ElasticQuery():
     @classmethod
     def __get_query_agg_percentiles(cls, field, agg_id=None):
         if not agg_id:
-            agg_id=cls.AGGREGATION_ID
+            agg_id = cls.AGGREGATION_ID
         query_agg = """
           "aggs": {
             "%i": {
@@ -183,7 +184,7 @@ class ElasticQuery():
     @classmethod
     def __get_query_agg_avg(cls, field, agg_id=None):
         if not agg_id:
-            agg_id=cls.AGGREGATION_ID
+            agg_id = cls.AGGREGATION_ID
         query_agg = """
           "aggs": {
             "%i": {
@@ -196,11 +197,10 @@ class ElasticQuery():
 
         return query_agg
 
-
     @classmethod
     def __get_query_agg_cardinality(cls, field, agg_id=None):
         if not agg_id:
-            agg_id=cls.AGGREGATION_ID
+            agg_id = cls.AGGREGATION_ID
         query_agg = """
           "aggs": {
             "%i": {
@@ -235,7 +235,7 @@ class ElasticQuery():
             if end:
                 bounds_data += '"max": %i,' % end_ts_ms
 
-            bounds_data = bounds_data[:-1] # remove last comma
+            bounds_data = bounds_data[:-1]  # remove last comma
 
             bounds = """{
                 "extended_bounds": {
@@ -260,11 +260,11 @@ class ElasticQuery():
             field_agg = ''
         else:
             if agg_type == "cardinality":
-                field_agg = cls.__get_query_agg_cardinality(field, agg_id=cls.AGGREGATION_ID+1)
+                field_agg = cls.__get_query_agg_cardinality(field, agg_id=cls.AGGREGATION_ID + 1)
             elif agg_type == "avg":
-                field_agg = cls.__get_query_agg_avg(field, agg_id=cls.AGGREGATION_ID+1)
+                field_agg = cls.__get_query_agg_avg(field, agg_id=cls.AGGREGATION_ID + 1)
             elif agg_type == "percentiles":
-                field_agg = cls.__get_query_agg_percentiles(field, agg_id=cls.AGGREGATION_ID+1)
+                field_agg = cls.__get_query_agg_percentiles(field, agg_id=cls.AGGREGATION_ID + 1)
             else:
                 raise RuntimeError("Aggregation of %s in ts not supported" % agg_type)
             field_agg = ", " + field_agg
@@ -277,7 +277,7 @@ class ElasticQuery():
                 # https://github.com/elastic/elasticsearch/issues/23776
                 bounds_dict = cls.__get_bounds(start, end)
                 bounds = json.dumps(bounds_dict)[1:-1]  # Remove {} from json
-                bounds = "," + bounds # it is the last element
+                bounds = "," + bounds  # it is the last element
 
         query_agg = """
              "aggs": {
@@ -297,7 +297,6 @@ class ElasticQuery():
 
         return query_agg
 
-
     @classmethod
     def get_count(cls, date_field=None, start=None, end=None, filters=None):
         """ Total number of items """
@@ -311,9 +310,7 @@ class ElasticQuery():
               }
         """ % (query_basic)
 
-
         return query
-
 
     @classmethod
     def get_agg(cls, field=None, date_field=None, start=None, end=None,
@@ -384,10 +381,9 @@ class ElasticQuery():
                 bounds = {"offset": offset}
             ts_agg = A('date_histogram', field=date_field, interval=interval,
                        time_zone="UTC", min_doc_count=0, **bounds)
-            s.aggs.bucket(agg_id, ts_agg).metric(agg_id+1, field_agg)
+            s.aggs.bucket(agg_id, ts_agg).metric(agg_id + 1, field_agg)
         else:
             s.aggs.bucket(agg_id, field_agg)
-
 
         query = """
             {

@@ -45,13 +45,15 @@ except (IOError, ImportError):
     with codecs.open(readme_md, encoding='utf-8') as f:
         long_description = f.read()
 
+
 def files_in_subdir(dir, subdir):
     """Find all files in a directory."""
     paths = []
     for (path, dirs, files) in os.walk(os.path.join(dir, subdir)):
         for file in files:
-            paths.append(os.path.relpath(os.path.join(path, file),dir))
+            paths.append(os.path.relpath(os.path.join(path, file), dir))
     return paths
+
 
 template_files = files_in_subdir('report', 'latex_template')
 print("Template files: " + str(template_files))
@@ -81,12 +83,12 @@ setup(name="grimoire-reports",
           'report.metrics'
       ],
       package_data={'': template_files},
-#      package_data={'': ['latex_template/report.tex']},
+      # package_data={'': ['latex_template/report.tex']},
       install_requires=[
-        'matplotlib',
-        'prettyplotlib',
-        'elasticsearch-dsl',
-        'grimoire-elk>=0.30.4'
+          'matplotlib',
+          'prettyplotlib',
+          'elasticsearch-dsl',
+          'grimoire-elk>=0.30.4'
       ],
       scripts=[
           'bin/report'
