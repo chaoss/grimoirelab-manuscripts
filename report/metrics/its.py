@@ -1,29 +1,30 @@
-## Copyright (C) 2014 Bitergia
-##
-## This program is free software; you can redistribute it and/or modify
-## it under the terms of the GNU General Public License as published by
-## the Free Software Foundation; either version 3 of the License, or
-## (at your option) any later version.
-##
-## This program is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-## GNU General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with this program; if not, write to the Free Software
-## Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-##
-## This file is a part of GrimoireLib
-##  (an Python library for the MetricsGrimoire and vizGrimoire systems)
-##
-##
-## Authors:
-##   Alvaro del Castillo <acs@bitergia.com>
+# Copyright (C) 2014 Bitergia
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is a part of GrimoireLib
+#  (an Python library for the MetricsGrimoire and vizGrimoire systems)
+#
+#
+# Authors:
+#   Alvaro del Castillo <acs@bitergia.com>
 
 """ Metrics for the issue tracking system """
 
 from .metrics import Metrics
+
 
 class ITS():
     name = "its"
@@ -31,7 +32,7 @@ class ITS():
     @classmethod
     def get_section_metrics(cls):
         return {
-            "overview" : {
+            "overview": {
                 "activity_metrics": [Closed, Opened],
                 "author_metrics": [],
                 "bmi_metrics": [BMI],
@@ -61,7 +62,6 @@ class ITS():
         }
 
 
-
 class ITSMetrics(Metrics):
     ds = ITS
 
@@ -72,8 +72,8 @@ class Opened(ITSMetrics):
     id = "opened"
     name = "Opened tickets"
     desc = "Number of opened tickets"
-    FIELD_COUNT="id"
-    FIELD_NAME="url"
+    FIELD_COUNT = "id"
+    FIELD_NAME = "url"
 
 
 class Openers(ITSMetrics):
@@ -91,9 +91,9 @@ class Closed(ITSMetrics):
     id = "closed"
     name = "Closed tickets"
     desc = "Number of closed tickets"
-    filters = {"state":"closed"}
-    FIELD_COUNT="id"
-    FIELD_NAME="url"
+    filters = {"state": "closed"}
+    FIELD_COUNT = "id"
+    FIELD_NAME = "url"
 
 
 class DaysToCloseMedian(ITSMetrics):
@@ -102,11 +102,11 @@ class DaysToCloseMedian(ITSMetrics):
     desc = "Number of days needed to close a ticket (median)"
     FIELD_COUNT = 'time_to_close_days'
     AGG_TYPE = 'median'
-    filters = {"state":"closed"}
+    filters = {"state": "closed"}
 
     def get_agg(self):
         agg = super(DaysToCloseMedian, self).get_agg()
-        if agg == None:
+        if agg is None:
             agg = 0  # None is because NaN in ES. Let's convert to 0
         return agg
 
@@ -117,7 +117,7 @@ class DaysToCloseAverage(ITSMetrics):
     desc = "Number of days needed to close a ticket (average)"
     FIELD_COUNT = 'time_to_close_days'
     AGG_TYPE = 'average'
-    filters = {"state":"closed"}
+    filters = {"state": "closed"}
 
 
 class Closers(ITSMetrics):
@@ -173,7 +173,7 @@ class BMI(ITSMetrics):
         if opened_agg == 0:
             bmi = 1  # if no submitted prs, bmi is at 100%
         else:
-            bmi = closed_agg/opened_agg
+            bmi = closed_agg / opened_agg
 
         return bmi
 
@@ -200,4 +200,4 @@ class Projects(ITSMetrics):
     id = "projects"
     name = "Projects"
     desc = "Number of distinct projects active in the ticketing system"
-    FIELD_NAME = 'project' # field used to list projects
+    FIELD_NAME = 'project'  # field used to list projects

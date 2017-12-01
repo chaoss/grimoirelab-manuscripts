@@ -1,26 +1,26 @@
-## Copyright (C) 2014 Bitergia
-##
-## This program is free software; you can redistribute it and/or modify
-## it under the terms of the GNU General Public License as published by
-## the Free Software Foundation; either version 3 of the License, or
-## (at your option) any later version.
-##
-## This program is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-## GNU General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with this program; if not, write to the Free Software
-## Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-##
-## This file is a part of GrimoireLib
-##  (an Python library for the MetricsGrimoire and vizGrimoire systems)
-##
-##
-## Authors:
-##   Alvaro del Castillo <acs@bitergia.com>
-##   Daniel Izquierdo <dizquierdo@bitergia.com>
+# Copyright (C) 2014 Bitergia
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file is a part of GrimoireLib
+#  (an Python library for the MetricsGrimoire and vizGrimoire systems)
+#
+#
+# Authors:
+#   Alvaro del Castillo <acs@bitergia.com>
+#   Daniel Izquierdo <dizquierdo@bitergia.com>
 
 from . import its
 from .metrics import Metrics
@@ -32,7 +32,7 @@ class Jira(its.ITS):
     @classmethod
     def get_section_metrics(cls):
         return {
-            "overview" : {
+            "overview": {
                 "activity_metrics": [Closed, Opened],
                 "author_metrics": [],
                 "bmi_metrics": [BMI],
@@ -67,18 +67,20 @@ class JiraMetrics(Metrics):
     # but they are doing it from ITSMetrics directly. Change the design.
     ds = Jira
 
+
 class Opened(JiraMetrics):
     """ Tickets Opened metric class for issue tracking systems """
 
     id = "opened"
     name = "Opened tickets"
     desc = "Number of opened tickets"
-    FIELD_COUNT="key"
-    FIELD_NAME="url"
+    FIELD_COUNT = "key"
+    FIELD_NAME = "url"
 
 
 class Openers(its.Openers):
     ds = Jira
+
 
 class Closed(JiraMetrics):
     """ Tickets Closed metric class for issue tracking systems
@@ -89,21 +91,25 @@ class Closed(JiraMetrics):
     desc = "Number of closed tickets"
     # filters = {"status":["Closed", "Resolved", "Done"]}
     filters = {"*status": "Open"}
-    FIELD_COUNT="key"
-    FIELD_NAME="url"
+    FIELD_COUNT = "key"
+    FIELD_NAME = "url"
 
 
 class DaysToCloseMedian(its.DaysToCloseMedian):
     ds = Jira
 
+
 class DaysToCloseAverage(its.DaysToCloseAverage):
     ds = Jira
+
 
 class Closers(its.Closers):
     ds = Jira
 
+
 class BMI(its.BMI):
     ds = Jira
+
 
 class Projects(its.Projects):
     ds = Jira
