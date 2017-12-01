@@ -1,4 +1,4 @@
-# GrimoireLab Reports
+# GrimoireLab Reports [![Build Status](https://travis-ci.org/grimoirelab/reports.svg?branch=master)](https://travis-ci.org/grimoirelab/reports)
 
 The aim of this project is the automatic generation of reports from the enriched indexes with items from perceval data sources (git commits, github pull requests, bugzilla bugs ...) enriched using GrimoireELK.
 
