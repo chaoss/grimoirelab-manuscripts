@@ -1,29 +1,28 @@
-## Copyright (C) 2016 Bitergia
-##
-## This program is free software; you can redistribute it and/or modify
-## it under the terms of the GNU General Public License as published by
-## the Free Software Foundation; either version 3 of the License, or
-## (at your option) any later version.
-##
-## This program is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-## GNU General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with this program; if not, write to the Free Software
-## Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-##
-##
-## Authors:
-##   Alvaro del Castillo <acs@bitergia.com>
-##   Daniel Izquierdo <dizquierdo@bitergia.com>
+# Copyright (C) 2016 Bitergia
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+#
+#
+# Authors:
+#   Alvaro del Castillo <acs@bitergia.com>
+#   Daniel Izquierdo <dizquierdo@bitergia.com>
 
 """ Metrics for Gerrit review system """
 
-import logging
-
 from .metrics import Metrics
+
 
 class Gerrit():
     name = "gerrit"
@@ -31,7 +30,7 @@ class Gerrit():
     @classmethod
     def get_section_metrics(cls):
         return {
-            "overview" : {
+            "overview": {
                 "activity_metrics": [Closed, Submitted],
                 "author_metrics": None,
                 "bmi_metrics": [BMI],
@@ -82,6 +81,7 @@ class Merged(GerritMetrics):
     FIELD_COUNT = 'url'
     filters = {"status": "MERGED"}
 
+
 class Abandoned(GerritMetrics):
     id = "abandoned"
     name = "Abandoned reviews"
@@ -89,6 +89,7 @@ class Abandoned(GerritMetrics):
     FIELD_NAME = 'url'
     FIELD_COUNT = 'url'
     filters = {"status": "ABANDONED"}
+
 
 class Closed(GerritMetrics):
     id = "closed"
@@ -104,12 +105,12 @@ class Closed(GerritMetrics):
             esfilters_abandon = self.esfilters.copy()
 
         merged = Merged(self.es_url, self.es_index,
-                              start=self.start, end=self.end,
-                              esfilters=esfilters_merge, interval=self.interval)
+                        start=self.start, end=self.end,
+                        esfilters=esfilters_merge, interval=self.interval)
 
         abandoned = Abandoned(self.es_url, self.es_index,
-                                    start=self.start, end=self.end,
-                                    esfilters=esfilters_abandon, interval=self.interval)
+                              start=self.start, end=self.end,
+                              esfilters=esfilters_abandon, interval=self.interval)
         return (merged, abandoned)
 
     def get_agg(self):
@@ -159,21 +160,21 @@ class BMI(GerritMetrics):
             esfilters_submit = self.esfilters.copy()
 
         merged = Merged(self.es_url, self.es_index,
-                              start=self.start, end=self.end,
-                              esfilters=esfilters_merge, interval=self.interval)
+                        start=self.start, end=self.end,
+                        esfilters=esfilters_merge, interval=self.interval)
         # For BMI we need when the ticket was closed
         merged.DATE_FIELD = 'closed'
 
         abandoned = Abandoned(self.es_url, self.es_index,
-                                    start=self.start, end=self.end,
-                                    esfilters=esfilters_abandon, interval=self.interval)
+                              start=self.start, end=self.end,
+                              esfilters=esfilters_abandon, interval=self.interval)
         # For BMI we need when the ticket was closed
         abandoned.DATE_FIELD = 'closed'
 
         submitted = Submitted(self.es_url, self.es_index,
-                                    start=self.start, end=self.end,
-                                    esfilters=esfilters_submit,
-                                    interval=self.interval)
+                              start=self.start, end=self.end,
+                              esfilters=esfilters_submit,
+                              interval=self.interval)
 
         return (merged, abandoned, submitted)
 
@@ -187,10 +188,9 @@ class BMI(GerritMetrics):
         if submitted_agg == 0:
             bmi = 1  # if no submitted reviews, bmi is at 100%
         else:
-            bmi = closed_agg/submitted_agg
+            bmi = closed_agg / submitted_agg
 
         return bmi
-
 
     def get_ts(self):
         bmi = {}
@@ -222,15 +222,15 @@ class Projects(GerritMetrics):
     id = "projects"
     name = "Projects"
     desc = "Number of projects in code review"
-    FIELD_NAME = 'project' # field used to list projects
+    FIELD_NAME = 'project'  # field used to list projects
 
 
 class Submitters(GerritMetrics):
     id = "submitters"
     name = "Submitters"
     desc = "Number of persons submitting code review processes"
-    FIELD_COUNT = 'author_uuid' # field used to count Authors
-    FIELD_NAME = 'author_name' # field used to list Authors
+    FIELD_COUNT = 'author_uuid'  # field used to count Authors
+    FIELD_NAME = 'author_name'  # field used to list Authors
 
 
 class DaysToMergeMedian(GerritMetrics):
@@ -243,9 +243,10 @@ class DaysToMergeMedian(GerritMetrics):
 
     def get_agg(self):
         agg = super(type(self), self).get_agg()
-        if agg == None:
+        if agg is None:
             agg = 0  # None is because NaN in ES. Let's convert to 0
         return agg
+
 
 class DaysToMergeAverage(GerritMetrics):
     id = "days_to_merge_review_avg"
@@ -254,6 +255,7 @@ class DaysToMergeAverage(GerritMetrics):
     FIELD_COUNT = 'timeopen'
     AGG_TYPE = 'average'
     filters = {"status": "MERGED"}
+
 
 class PatchsetsMedian(GerritMetrics):
     id = "review_patchsets_median"
@@ -264,9 +266,10 @@ class PatchsetsMedian(GerritMetrics):
 
     def get_agg(self):
         agg = super(type(self), self).get_agg()
-        if agg == None:
+        if agg is None:
             agg = 0  # None is because NaN in ES. Let's convert to 0
         return agg
+
 
 class PatchsetsAverage(GerritMetrics):
     id = "review_patchsets_avg"
