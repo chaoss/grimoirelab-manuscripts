@@ -8,10 +8,10 @@ sudo: false
 before_install:
   - pip install flake8
   - pip install coveralls
-  - pip matplotlib
-  - pip prettyplotlib
-  - pip elasticsearch-dsl
-  - pip grimoire-elk
+  - pip install matplotlib
+  - pip install prettyplotlib
+  - pip install elasticsearch-dsl
+  - pip install grimoire-elk
 
 # install:
 #   - ./setup.py install
