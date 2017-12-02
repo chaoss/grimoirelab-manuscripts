@@ -26,6 +26,7 @@
 import logging
 import os
 import subprocess
+import sys
 
 import matplotlib as mpl
 # This avoids the use of the $DISPLAY value for the charts
@@ -92,6 +93,12 @@ class Report():
     def __init__(self, es_url, start, end, data_dir=None, filters=None,
                  interval="month", offset=None, data_sources=None,
                  report_name=None, projects=False):
+
+        if not (es_url and start and end and data_sources):
+            logger.error('Missing needed params for Report %s, %s, %s, %s',
+                         es_url, start, end, data_sources)
+            sys.exit(1)
+
         self.es_url = es_url
         self.start = start
         self.end = end
