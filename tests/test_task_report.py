@@ -34,6 +34,7 @@ from report.report import Report
 
 CONF_FILE = 'test.cfg'
 
+
 class TestReport(unittest.TestCase):
     """Basic tests for the Report class """
 
@@ -46,7 +47,6 @@ class TestReport(unittest.TestCase):
         es_url = None
         start = None
         end = None
-
 
         with self.assertRaises(TypeError):
             report = Report()
