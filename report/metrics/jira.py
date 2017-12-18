@@ -89,26 +89,26 @@ class Closed(JiraMetrics):
     id = "closed"
     name = "Closed tickets"
     desc = "Number of closed tickets"
-    # filters = {"status":["Closed", "Resolved", "Done"]}
-    filters = {"*status": "Open"}
     FIELD_COUNT = "key"
     FIELD_NAME = "url"
+    filters = {"*status": "Open"}
 
 
 class DaysToCloseMedian(its.DaysToCloseMedian):
     ds = Jira
+    filters = {"*status": "Open"}
 
 
 class DaysToCloseAverage(its.DaysToCloseAverage):
     ds = Jira
-
-
-class Closers(its.Closers):
-    ds = Jira
+    filters = {"*status": "Open"}
 
 
 class BMI(its.BMI):
     ds = Jira
+    # To use JIRA implementation inside BMI general implementation
+    closed_class = Closed
+    opened_class = Opened
 
 
 class Projects(its.Projects):

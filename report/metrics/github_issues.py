@@ -92,11 +92,6 @@ class DaysToCloseAverage(its.DaysToCloseAverage):
     filters = {"state": "closed", "pull_request": "false"}
 
 
-class Closers(its.Closers):
-    ds = GitHubIssues
-    filters = {"state": "closed", "pull_request": "false"}
-
-
 class BMI(its.BMI):
     ds = GitHubIssues
     filters = {"pull_request": "false"}

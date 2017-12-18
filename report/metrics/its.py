@@ -82,6 +82,8 @@ class Openers(ITSMetrics):
     id = "openers"
     name = "Ticket submitters"
     desc = "Number of persons submitting new tickets"
+    FIELD_COUNT = 'author_uuid'  # field used to count Authors
+    FIELD_NAME = 'author_name'  # field used to list Authors
 
 
 class Closed(ITSMetrics):
@@ -120,11 +122,12 @@ class DaysToCloseAverage(ITSMetrics):
     filters = {"state": "closed"}
 
 
-class Closers(ITSMetrics):
-    """ Tickets Closers metric class for issue tracking systems """
-    id = "closers"
-    name = "Tickets closers"
-    desc = "Number of persons closing tickets"
+# NOT IMPLEMENTED YET
+# class Closers(ITSMetrics):
+#     """ Tickets Closers metric class for issue tracking systems """
+#     id = "closers"
+#     name = "Tickets closers"
+#     desc = "Number of persons closing tickets"
 
 
 class BMI(ITSMetrics):
@@ -145,6 +148,8 @@ class BMI(ITSMetrics):
     id = "bmi_tickets"
     name = "Backlog Management Index"
     desc = "Number of tickets closed out of the opened ones in a given interval"
+    closed_class = Closed
+    opened_class = Opened
 
     def __get_metrics(self):
         """ Each metric must have its own filters copy to modify it freely"""
@@ -154,15 +159,14 @@ class BMI(ITSMetrics):
             esfilters_closed = self.esfilters.copy()
             esfilters_opened = self.esfilters.copy()
 
-        closed = Closed(self.es_url, self.es_index,
-                        start=self.start, end=self.end,
-                        esfilters=esfilters_closed, interval=self.interval)
+        closed = self.closed_class(self.es_url, self.es_index,
+                                   start=self.start, end=self.end,
+                                   esfilters=esfilters_closed, interval=self.interval)
         # For BMI we need when the ticket was closed
-        closed.FIELD_DATE = "closed_at"
-        opened = Opened(self.es_url, self.es_index,
-                        start=self.start, end=self.end,
-                        esfilters=esfilters_opened, interval=self.interval)
-
+        # closed.FIELD_DATE = "closed_at"
+        opened = self.opened_class(self.es_url, self.es_index,
+                                   start=self.start, end=self.end,
+                                   esfilters=esfilters_opened, interval=self.interval)
         return (closed, opened)
 
     def get_agg(self):
@@ -171,7 +175,7 @@ class BMI(ITSMetrics):
         opened_agg = opened.get_agg()
 
         if opened_agg == 0:
-            bmi = 1  # if no submitted prs, bmi is at 100%
+            bmi = 1  # if no submitted issues/prs, bmi is at 100%
         else:
             bmi = closed_agg / opened_agg
 
