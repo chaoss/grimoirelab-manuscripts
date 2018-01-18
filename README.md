@@ -1,4 +1,4 @@
-# GrimoireLab Reports [![Build Status](https://travis-ci.org/grimoirelab/reports.svg?branch=master)](https://travis-ci.org/grimoirelab/reports)
+# GrimoireLab Manuscripts [![Build Status](https://travis-ci.org/grimoirelab/reports.svg?branch=master)](https://travis-ci.org/grimoirelab/reports)
 
 The aim of this project is the automatic generation of reports from the enriched indexes with items from perceval data sources (git commits, github pull requests, bugzilla bugs ...) enriched using GrimoireELK.
 
@@ -8,7 +8,7 @@ The basic steps creating a report for git, gerrit, its and mls data sources from
 
 ```bash
 
-bin/report -g --data-sources git gerrit its mls -u <elastic_url> -s 2015-04-01 -e 2017-04-01 -d project_data -i quarter
+bin/manuscripts -g --data-sources git gerrit its mls -u <elastic_url> -s 2015-04-01 -e 2017-04-01 -d project_data -i quarter
 ```
 
 and the PDF is generated in project_data/report.pdf_
@@ -17,7 +17,7 @@ and the PDF is generated in project_data/report.pdf_
 
 Use `-h` flag to show usage as follows:
 ```
-$ > bin/report -h
+$ > bin/manuscripts -h
 -d DATA_DIR, --data-dir DATA_DIR
                         Directory to store the data results
 ```

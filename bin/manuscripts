@@ -34,9 +34,8 @@ from dateutil import parser
 
 # To execute it without installing it
 sys.path.insert(0, '.')
-from report.report import Report
-
-from mordred.config import Config
+from manuscripts.report import Report
+from manuscripts.config import Config
 
 def get_params():
     """Parse command line arguments"""

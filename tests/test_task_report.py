@@ -30,7 +30,7 @@ from dateutil import parser
 # due to setuptools behaviour
 sys.path.insert(0, '..')
 
-from report.report import Report
+from manuscripts.report import Report
 
 CONF_FILE = 'test.cfg'
 

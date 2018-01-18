@@ -30,7 +30,7 @@ from setuptools import setup
 
 here = os.path.abspath(os.path.dirname(__file__))
 readme_md = os.path.join(here, 'README.md')
-version_py = os.path.join(here, 'report', '_version.py')
+version_py = os.path.join(here, 'manuscripts', '_version.py')
 
 # Pypi wants the description to be in reStrcuturedText, but
 # we have it in Markdown. So, let's convert formats.
@@ -55,32 +55,33 @@ def files_in_subdir(dir, subdir):
     return paths
 
 
-template_files = files_in_subdir('report', 'latex_template')
+template_files = files_in_subdir('manuscripts', 'latex_template')
 print("Template files: " + str(template_files))
 
 with codecs.open(version_py, 'r', encoding='utf-8') as fd:
     version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',
                         fd.read(), re.MULTILINE).group(1)
 
-setup(name="grimoire-reports",
+setup(name="manuscripts",
       description="Produce reports based on GrimoireLab data",
       long_description=long_description,
-      url="https://github.com/grimoirelab/reports",
+      url="https://github.com/chaoss/grimoirelab-manuscripts",
       version=version,
       author="Bitergia",
-      author_email="acs@bitergia.com",
+      author_email="grimoirelab-discussions@lists.linuxfoundation.org",
       license="GPLv3",
       classifiers=[
           'Development Status :: 5 - Production/Stable',
           'Intended Audience :: Developers',
           'Topic :: Software Development',
-          'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
+          'License :: OSI Approved :: '
+          + 'GNU General Public License v3 or later (GPLv3+)',
           'Programming Language :: Python :: 3'
       ],
-      keywords="development repositories analytics git github bugzilla jira jenkins",
+      keywords="development repositories analytics",
       packages=[
-          'report',
-          'report.metrics'
+          'manuscripts',
+          'manuscripts.metrics'
       ],
       package_data={'': template_files},
       # package_data={'': ['latex_template/report.tex']},
@@ -91,6 +92,6 @@ setup(name="grimoire-reports",
           'grimoire-elk>=0.30.4'
       ],
       scripts=[
-          'bin/report'
+          'bin/manuscripts'
       ],
       zip_safe=False)
