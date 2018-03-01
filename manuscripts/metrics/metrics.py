@@ -57,6 +57,7 @@ class Metrics(object):
     filters_core = None  # Core filters to be used in all metrics
     interval = '1M'  # interval to be used in all metrics
     offset = None  # offset to be used in date histogram in all metrics
+    es_headers = {'Content-Type': 'application/json'}
 
     def __init__(self, es_url, es_index, start=None, end=None, esfilters={},
                  interval=None, offset=None):
@@ -133,8 +134,11 @@ class Metrics(object):
 
     def get_metrics_data(self, query):
         """ Get the metrics data from ES """
-        url = self.es_url + '/' + self.es_index + '/_search'
-        r = requests.post(url, query)
+        if self.es_url.startswith("http"):
+            url = self.es_url + '/' + self.es_index + '/_search'
+        else:
+            url = 'http://' + self.es_url + '/' + self.es_index + '/_search'
+        r = requests.post(url, data=query, headers=self.es_headers)
         r.raise_for_status()
         return r.json()
 
