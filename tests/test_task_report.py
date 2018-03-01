@@ -114,6 +114,26 @@ class TestReport(unittest.TestCase):
         # -----Cleaning up-----
         shutil.rmtree(temp_path)
 
+    def test_period_name(self):
+        """
+        Test whether the period name for a date is build correctly
+        :return:
+        """
+
+        period_name = "18-Q1"
+
+        # The data is the next period date
+        period_date = parser.parse('2018-04-01')
+        self.assertEqual(Report.build_period_name(period_date), period_name)
+
+        # The data is the start of a period
+        period_date = parser.parse('2018-01-01')
+        self.assertEqual(Report.build_period_name(period_date, start_date=True), period_name)
+
+        # The period is not a quarter
+        with self.assertRaises(RuntimeError):
+            Report.build_period_name(period_date, interval="day")
+
     def tearDown(self):
         pass
 

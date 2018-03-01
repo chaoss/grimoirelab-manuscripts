@@ -411,7 +411,10 @@ class Report():
 
         csv = csv_labels + '\n'
         for i in range(0, len(m1_ts['date'])):
-            date_str = parser.parse(m1_ts['date'][i]).strftime("%y-%m")
+            if self.interval == 'quarter':
+                date_str = self.build_period_name(parser.parse(m1_ts['date'][i]), start_date=True)
+            else:
+                date_str = parser.parse(m1_ts['date'][i]).strftime("%y-%m")
             csv += date_str
             csv += "," + self.str_val(m1_ts['value'][i])
             if metric2:
@@ -439,7 +442,14 @@ class Report():
         else:
             file_name = os.path.join(fig_path, file_label + ".eps")
             title = title_label
-        x_val = [parser.parse(val).strftime("%y-%m") for val in m1_ts['date']]
+
+        if self.interval != 'quarter':
+            x_val = [parser.parse(val).strftime("%y-%m") for val in m1_ts['date']]
+        else:
+            x_val = []
+            for val in m1_ts['date']:
+                period = self.build_period_name(parser.parse(val), start_date=True)
+                x_val.append(period)
         if metric2:
             self.bar_chart(title, x_val, m1_ts['value'],
                            file_name, m2_ts['value'],
@@ -659,20 +669,44 @@ class Report():
         logger.info("Data and figs done")
 
     @classmethod
-    def period_name(cls, pdate, interval='quarter', offset=None):
-        # Just supporting quarters right now
+    def build_period_name(cls, pdate, interval='quarter', offset=None, start_date=False):
+        """
+        Build the period name for humans (eg, 18-Q2) to be used in the reports.
+        Just supporting quarters right now.
+        The name is built using the last month for the quarter.
+
+        :param pdate: the date (datetime) which defines the period
+        :param interval: the time interval (string)  used in the report
+        :param start_date: if False, pdate is the end of the period date
+        :return: the period name for humans (eg, 18-Q2)
+        """
+
+        if interval not in ['quarter']:
+            raise RuntimeError("Interval not support in build_period_name", interval)
+
         name = pdate.strftime('%Y-%m-%d') + ' ' + interval
+        months_in_quarter = 3
+        end_quarter_month = None
 
         if interval == 'quarter':
             if offset:
                 # +31d offset format
                 offset_days = int(offset[1:-1])
                 pdate = pdate - timedelta(days=offset_days)
-            name = pdate.strftime('%Y')
-            # The month is the next month 2017-04-01 to the current quarter
-            month = int(pdate.strftime('%m')) - 1
-            quarter = int(round(int(month) / 3, 0))
-            name += "-Q" + str(quarter)
+            if not start_date:
+                # pdate param is the first day of the next quarter
+                # Remove one day to have a date in the end_quarter_month
+                pdate = pdate.replace(day=1) - timedelta(days=1)
+                year = pdate.strftime('%y')
+                end_quarter_month = int(pdate.strftime('%m'))
+            else:
+                # pdate param is the first day of the period
+                # add months_in_quarter to have the last month of the quarter
+                year = pdate.strftime('%y')
+                end_quarter_month = int(pdate.strftime('%m')) + months_in_quarter - 1
+
+            quarter = int(round(int(end_quarter_month) / months_in_quarter, 0))
+            name = year + "-Q" + str(quarter)
 
         return name
 
@@ -728,13 +762,13 @@ class Report():
         self.replace_text_dir(os.path.join(report_path, 'overview'), 'PROJECT-NAME', project_replace)
 
         # Change the quarter subtitle
-        period_name = self.period_name(self.end, self.interval, self.offset)
-        period_replace = period_name.replace(' ', r'\ ')
+        if self.interval == "quarter":
+            build_period_name = self.build_period_name(self.end, self.interval, self.offset)
+        else:
+            build_period_name = self.start.strftime("%y-%m") + "-" + self.end.strftime("%y-%m")
+        period_replace = build_period_name.replace(' ', r'\ ')
         self.replace_text_dir(report_path, '2016-QUARTER', period_replace)
         self.replace_text_dir(os.path.join(report_path, 'overview'), '2016-QUARTER', period_replace)
-
-        # cmd = ['sed -i s/2016-QUARTER/' + self.end.strftime('%Y-%m-%d') + \
-        #       r'\ ' + self.interval + '/g *.tex']
 
         # Report date frame
         quarter_start = self.end - relativedelta.relativedelta(months=3)
