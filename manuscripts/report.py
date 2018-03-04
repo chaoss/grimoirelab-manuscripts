@@ -55,7 +55,7 @@ logger = logging.getLogger(__name__)
 
 
 class Report():
-    GIT_INDEX = 'git_enrich'
+    GIT_INDEX = 'git'
     GITHUB_ISSUES_INDEX = 'github_issues'
     GITHUB_PRS_INDEX = 'github_issues'
     JIRA_INDEX = 'jira'
