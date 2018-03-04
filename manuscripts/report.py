@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-####
+# 
 #  Script for producing Reports from data in ElasticSearch
 #
 # Copyright (C) 2016 Bitergia
@@ -632,11 +632,13 @@ class Report():
         templates_path = os.path.join(os.path.dirname(__file__),
                                       "latex_template")
         copy_tree(templates_path, report_path)
+        #if user specified a logo then replace it with default logo
+        if self.logo:
+                os.remove(os.path.join(report_path, "logo.eps"))
+                print(copy_file(self.logo, os.path.join(report_path, "logo."+self.logo.split('/')[-1].split('.')[-1])))
         # Copy the data generated to be used in LaTeX template
         copy_tree(self.data_dir, os.path.join(report_path, "data"))
         copy_tree(self.data_dir, os.path.join(report_path, "figs"))
-        if self.logo:
-                print(copy_file(self.logo, os.path.join(report_path, "logo.eps")))
         # Change the project global name
         project_replace = self.report_name.replace(' ', r'\ ')
         cmd = ['grep -rl PROJECT-NAME . | xargs sed -i s/PROJECT-NAME/' + project_replace + '/g']
