@@ -60,6 +60,8 @@ def get_params():
     parser.add_argument('-n', '--name', help="Report name")
     parser.add_argument('-m', '--mordred-config', help="Mordred config file")
     parser.add_argument('-p', '--projects', action='store_true', help="Generate per project data")
+    parser.add_argument('--indices', default=[], nargs='*',
+                        help="Indices to be used to generate the report (git_index, github_index ...)")
 
     return parser.parse_args()
 
@@ -126,5 +128,6 @@ if __name__ == '__main__':
                     offset=offset,
                     data_sources=data_sources,
                     report_name=report_name,
-                    projects=args.projects)
+                    projects=args.projects,
+                    indices=args.indices)
     report.create()

@@ -35,7 +35,7 @@ import matplotlib.pyplot as plt
 import prettyplotlib as ppl
 import numpy as np
 
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from datetime import datetime, timedelta
 from distutils.dir_util import copy_tree
 
@@ -85,6 +85,9 @@ class Report():
         "stackexchange": stackexchange.Stackexchange
     }
 
+    # A reverse dictionary to get the data sources for the corresponding classes
+    class2ds = {val: key for key, val in ds2class.items()}
+
     supported_data_sources = ['git', 'github', 'gerrit', 'mls']
     supported_data_sources += ['github_issues', 'github_prs']
     supported_data_sources += ['jira']
@@ -92,7 +95,7 @@ class Report():
 
     def __init__(self, es_url, start, end, data_dir=None, filters=None,
                  interval="month", offset=None, data_sources=None,
-                 report_name=None, projects=False):
+                 report_name=None, projects=False, indices=[]):
 
         if not (es_url and start and end and data_sources):
             logger.error('Missing needed params for Report %s, %s, %s, %s',
@@ -123,16 +126,44 @@ class Report():
             self.end_prev_month = end - relativedelta.relativedelta(months=3)
         elif self.interval == 'year':
             self.end_prev_month = end - relativedelta.relativedelta(months=12)
+
+        # Check if each data source has a corresponding index, if available
+        if len(data_sources) < len(indices):
+            logger.error('Insufficient data sources provided')
+            sys.exit(1)
+        # Create an dict of indices which, for each data_source, will give the
+        # name of the elasticsearch index that has to be used.
+        self.index_dict = defaultdict(lambda: None)
+        for pos, index in enumerate(indices):
+            self.index_dict[data_sources[pos]] = index
+
         # Just include the supported data sources
         self.data_sources = list(set(data_sources) & set(self.supported_data_sources))
+
         # Temporal hack
+        mls_index = None
         for mls_ds in ['mbox', 'pipermail']:
             if mls_ds in data_sources:
+                # Get the custom index name for mailing lists if provided
+                mls_index = mls_index or self.index_dict[mls_ds]
                 self.data_sources.append('mailinglist')
+                if mls_ds in self.index_dict.keys():
+                    del self.index_dict[mls_ds]
+        # Set custom index for mailing lists if exists
+        if mls_index:
+            self.index_dict['mailinglist'] = mls_index
+
         if 'github' in data_sources:
+            # Get the custom index name for github
+            github_index = self.index_dict['github']
             # In mordred github issues and prs are managed together
             self.data_sources.remove('github')
             self.data_sources += ['github_issues', 'github_prs']
+            # Set the indices of issues and prs as the same custom index provided
+            self.index_dict['github_issues'] = github_index
+            self.index_dict['github_prs'] = github_index
+            del self.index_dict['github']
+
         self.data_sources = list(set(self.data_sources))
         # End temporal hack
         self.config = self.__get_config(self.data_sources)
@@ -141,7 +172,7 @@ class Report():
 
     def __get_config(self, data_sources=None):
         """
-            The config is get from each data source and then it is combined.
+            The config is fetched from each data source and then it is combined.
 
             It defines the metrics to be included in each section of the report
         """
@@ -246,7 +277,12 @@ class Report():
         plt.close()
 
     def get_metric_index(self, metric_cls):
-        return self.ds2index[metric_cls.ds]
+        ds = self.class2ds[metric_cls.ds]
+        if self.index_dict[ds]:
+            index_name = self.index_dict[ds]
+        else:
+            index_name = self.ds2index[metric_cls.ds]
+        return index_name
 
     def sec_overview(self):
         """ Data sources overview: table with metric summaries"""
