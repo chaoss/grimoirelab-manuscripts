@@ -38,6 +38,7 @@ import numpy as np
 from collections import OrderedDict
 from datetime import datetime, timedelta
 from distutils.dir_util import copy_tree
+from distutils.dir_util import mkpath
 from distutils.file_util import copy_file
 
 from dateutil import parser, relativedelta
@@ -637,8 +638,16 @@ class Report():
                 os.remove(os.path.join(report_path, "logo.eps"))
                 print(copy_file(self.logo, os.path.join(report_path, "logo." + self.logo.split('/')[-1].split('.')[-1])))
         # Copy the data generated to be used in LaTeX template
-        copy_tree(self.data_dir, os.path.join(report_path, "data"))
-        copy_tree(self.data_dir, os.path.join(report_path, "figs"))
+        current_dir=os.getcwd()
+        os.chdir(report_path)
+        mkpath("data")
+        mkpath("figs")
+        dir_list=os.listdir()
+        for i in dir_list:
+                if not os.path.isdir(i):
+                        copy_file(i, "data/")
+                        copy_file(i, "figs/")
+        os.chdir(current_dir)
         # Change the project global name
         project_replace = self.report_name.replace(' ', r'\ ')
         cmd = ['grep -rl PROJECT-NAME . | xargs sed -i s/PROJECT-NAME/' + project_replace + '/g']
