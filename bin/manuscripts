@@ -62,7 +62,8 @@ def get_params():
     parser.add_argument('-p', '--projects', action='store_true', help="Generate per project data")
     parser.add_argument('--indices', default=[], nargs='*',
                         help="Indices to be used to generate the report (git_index, github_index ...)")
-
+    parser.add_argument('-l', '--logo', help="Provide a logo for the report, Formats allowed .png,.pdf,.jpg,.mps,.jpeg,.jbig2,.jb2,.PNG,.PDF,.JPG,.JPEG,.JBIG2,.JB2,.eps")
+    
     return parser.parse_args()
 
 
@@ -88,6 +89,7 @@ if __name__ == '__main__':
     report_name = args.name
     data_dir = args.data_dir
     data_sources = args.data_sources
+    logo=args.logo
 
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
@@ -129,5 +131,6 @@ if __name__ == '__main__':
                     data_sources=data_sources,
                     report_name=report_name,
                     projects=args.projects,
-                    indices=args.indices)
+                    indices=args.indices,
+                    logo=logo)
     report.create()
