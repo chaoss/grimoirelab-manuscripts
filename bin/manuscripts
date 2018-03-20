@@ -36,12 +36,14 @@ from dateutil import parser
 sys.path.insert(0, '.')
 from manuscripts.report import Report
 from manuscripts.config import Config
+from manuscripts._version import __version__
 
 def get_params():
     """Parse command line arguments"""
 
     parser = argparse.ArgumentParser()
-
+    parser.add_argument('-v', '--version', action='version', version=__version__,
+                        help="Show version")
     parser.add_argument('-d', '--data-dir', default='data',
                         help="Directory to store the data results")
     parser.add_argument('-e', '--end-date', default='now',
@@ -62,7 +64,7 @@ def get_params():
     parser.add_argument('-p', '--projects', action='store_true', help="Generate per project data")
     parser.add_argument('--indices', default=[], nargs='*',
                         help="Indices to be used to generate the report (git_index, github_index ...)")
-
+    
     return parser.parse_args()
 
 
