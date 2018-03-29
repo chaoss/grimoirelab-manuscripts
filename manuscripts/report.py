@@ -38,6 +38,7 @@ import numpy as np
 from collections import OrderedDict, defaultdict
 from datetime import datetime, timedelta
 from distutils.dir_util import copy_tree
+from distutils.file_util import copy_file
 
 from dateutil import parser, relativedelta
 
@@ -95,7 +96,7 @@ class Report():
 
     def __init__(self, es_url, start, end, data_dir=None, filters=None,
                  interval="month", offset=None, data_sources=None,
-                 report_name=None, projects=False, indices=[]):
+                 report_name=None, projects=False, indices=[], logo='logo.eps'):
 
         if not (es_url and start and end and data_sources):
             logger.error('Missing needed params for Report %s, %s, %s, %s',
@@ -669,6 +670,10 @@ class Report():
         # Copy the data generated to be used in LaTeX template
         copy_tree(self.data_dir, os.path.join(report_path, "data"))
         copy_tree(self.data_dir, os.path.join(report_path, "figs"))
+        # Change the logo
+        if not os.path.isabs(self.logo):
+            self.logo = os.path.join(templates_path, self.logo)
+        copy_file(self.logo, os.path.join(report_path, "logo.eps"))
         # Change the project global name
         project_replace = self.report_name.replace(' ', r'\ ')
         cmd = ['grep -rl PROJECT-NAME . | xargs sed -i s/PROJECT-NAME/' + project_replace + '/g']
