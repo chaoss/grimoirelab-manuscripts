@@ -38,6 +38,7 @@ import numpy as np
 from collections import OrderedDict, defaultdict
 from datetime import datetime, timedelta
 from distutils.dir_util import copy_tree
+from distutils.file_util import copy_file
 
 from dateutil import parser, relativedelta
 
@@ -95,7 +96,7 @@ class Report():
 
     def __init__(self, es_url, start, end, data_dir=None, filters=None,
                  interval="month", offset=None, data_sources=None,
-                 report_name=None, projects=False, indices=[]):
+                 report_name=None, projects=False, indices=[], logo=None):
 
         if not (es_url and start and end and data_sources):
             logger.error('Missing needed params for Report %s, %s, %s, %s',
@@ -106,6 +107,7 @@ class Report():
         self.start = start
         self.end = end
         self.data_dir = data_dir
+        self.logo = logo
         self.filters = filters  # Report filters for all metrics in the report
         if self.filters:
             # Use the filters as core filters for all the metrics in the report
@@ -666,6 +668,12 @@ class Report():
         templates_path = os.path.join(os.path.dirname(__file__),
                                       "latex_template")
         copy_tree(templates_path, report_path)
+        # if user specified a logo then replace it with default logo
+        if self.logo:
+                os.remove(os.path.join(report_path, "logo.eps"))
+                os.remove(os.path.join(report_path, "logo-eps-converted-to.pdf"))
+                print(copy_file(self.logo, os.path.join(report_path, "logo." + self.logo.split('/')[-1].split('.')[-1])))
+
         # Copy the data generated to be used in LaTeX template
         copy_tree(self.data_dir, os.path.join(report_path, "data"))
         copy_tree(self.data_dir, os.path.join(report_path, "figs"))
