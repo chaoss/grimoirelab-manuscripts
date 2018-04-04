@@ -38,6 +38,7 @@ import numpy as np
 from collections import OrderedDict, defaultdict
 from datetime import datetime, timedelta
 from distutils.dir_util import copy_tree
+from distutils.file_util import copy_file
 
 from dateutil import parser, relativedelta
 
@@ -95,7 +96,7 @@ class Report():
 
     def __init__(self, es_url, start, end, data_dir=None, filters=None,
                  interval="month", offset=None, data_sources=None,
-                 report_name=None, projects=False, indices=[]):
+                 report_name=None, projects=False, indices=[], logo=None):
 
         if not (es_url and start and end and data_sources):
             logger.error('Missing needed params for Report %s, %s, %s, %s',
@@ -106,6 +107,7 @@ class Report():
         self.start = start
         self.end = end
         self.data_dir = data_dir
+        self.logo = logo
         self.filters = filters  # Report filters for all metrics in the report
         if self.filters:
             # Use the filters as core filters for all the metrics in the report
@@ -246,6 +248,7 @@ class Report():
         plt.xticks(xpos + width, labels)
         plt.legend(legend, loc=2)
 
+        os.makedirs(os.path.dirname(file_name), exist_ok=True)
         plt.savefig(file_name)
         plt.close()
 
@@ -273,6 +276,7 @@ class Report():
             ppl.bar(xpos, data1, grid='y', annotate=True)
             plt.xticks(xpos + width, labels)
 
+        os.makedirs(os.path.dirname(file_name), exist_ok=True)
         plt.savefig(file_name)
         plt.close()
 
@@ -290,7 +294,8 @@ class Report():
         metrics = self.config['overview']['activity_metrics']
         file_name = self.config['overview']['activity_file_csv']
 
-        file_name = os.path.join(self.data_dir, file_name)
+        data_path = os.path.join(self.data_dir, "data")
+        file_name = os.path.join(data_path, file_name)
 
         logger.debug("CSV file %s generation in progress", file_name)
 
@@ -303,6 +308,7 @@ class Report():
             (last, percentage) = m.get_trend()
             csv += "%s,%i,%i,%s" % (metric.name, last, percentage, ds)
             csv += "\n"
+        os.makedirs(os.path.dirname(file_name), exist_ok=True)
         with open(file_name, "w") as f:
             # Hack, we need to fix LaTeX escaping in a central place
             csv = csv.replace("_", r"\_")
@@ -351,7 +357,10 @@ class Report():
             csv += "%s," % (self.str_val(val))
         if csv[-1] == ',':
             csv = csv[:-1]
-        file_name = os.path.join(self.data_dir, 'efficiency.csv')
+
+        data_path = os.path.join(self.data_dir, "data")
+        file_name = os.path.join(data_path, 'efficiency.csv')
+        os.makedirs(os.path.dirname(file_name), exist_ok=True)
         with open(file_name, "w") as f:
             f.write(csv)
 
@@ -408,20 +417,26 @@ class Report():
                 csv += "," + self.str_val(m2_ts['value'][i])
             csv += "\n"
 
+        data_path = os.path.join(self.data_dir, "data")
+
         if project:
-            file_name = os.path.join(self.data_dir, file_label + "_" + project + ".csv")
+            file_name = os.path.join(data_path, file_label + "_" + project + ".csv")
         else:
-            file_name = os.path.join(self.data_dir, file_label + ".csv")
+            file_name = os.path.join(data_path, file_label + ".csv")
+
+        os.makedirs(os.path.dirname(file_name), exist_ok=True)
         with open(file_name, "w") as f:
             f.write(csv)
 
         logger.debug("CSV file %s was generated", file_label)
 
+        fig_path = os.path.join(self.data_dir, "figs")
+
         if project:
-            file_name = os.path.join(self.data_dir, file_label + "_" + project + ".eps")
+            file_name = os.path.join(fig_path, file_label + "_" + project + ".eps")
             title = title_label + ": " + project
         else:
-            file_name = os.path.join(self.data_dir, file_label + ".eps")
+            file_name = os.path.join(fig_path, file_label + ".eps")
             title = title_label
         x_val = [parser.parse(val).strftime("%y-%m") for val in m1_ts['date']]
         if metric2:
@@ -461,7 +476,9 @@ class Report():
             if project != self.GLOBAL_PROJECT:
                 esfilters = {"project": project}
 
-            file_name = os.path.join(self.data_dir, file_label + "_" + project + ".csv")
+            data_path = os.path.join(self.data_dir, "data")
+
+            file_name = os.path.join(data_path, file_label + "_" + project + ".csv")
 
             logger.debug("CSV file %s generation in progress", file_name)
 
@@ -665,10 +682,16 @@ class Report():
         report_path = self.data_dir
         templates_path = os.path.join(os.path.dirname(__file__),
                                       "latex_template")
-        copy_tree(templates_path, report_path)
+
         # Copy the data generated to be used in LaTeX template
-        copy_tree(self.data_dir, os.path.join(report_path, "data"))
-        copy_tree(self.data_dir, os.path.join(report_path, "figs"))
+        copy_tree(templates_path, report_path)
+
+        # if user specified a logo then replace it with default logo
+        if self.logo:
+                os.remove(os.path.join(report_path, "logo.eps"))
+                os.remove(os.path.join(report_path, "logo-eps-converted-to.pdf"))
+                print(copy_file(self.logo, os.path.join(report_path, "logo." + self.logo.split('/')[-1].split('.')[-1])))
+
         # Change the project global name
         project_replace = self.report_name.replace(' ', r'\ ')
         cmd = ['grep -rl PROJECT-NAME . | xargs sed -i s/PROJECT-NAME/' + project_replace + '/g']
