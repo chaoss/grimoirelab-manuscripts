@@ -62,6 +62,7 @@ def get_params():
     parser.add_argument('-p', '--projects', action='store_true', help="Generate per project data")
     parser.add_argument('--indices', default=[], nargs='*',
                         help="Indices to be used to generate the report (git_index, github_index ...)")
+    parser.add_argument('-l', '--list-data-sources', action='store_true', help="List available data-sources")
 
     return parser.parse_args()
 
@@ -102,6 +103,9 @@ if __name__ == '__main__':
     start_date = parser.parse(args.start_date).replace(tzinfo=timezone.utc)
 
     offset = args.offset if args.offset else None
+
+    if args.list_data_sources:
+        print('Available data sources: ', ' '.join(Report.get_supported_data_sources()))
 
     # if offset, start and end must be adjusted to it
 
