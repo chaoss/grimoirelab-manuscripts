@@ -89,7 +89,8 @@ setup(name="manuscripts",
           'matplotlib',
           'prettyplotlib',
           'elasticsearch-dsl',
-          'grimoire-elk>=0.30.4'
+          'grimoire-elk>=0.30.4',
+          'sortinghat'
       ],
       scripts=[
           'bin/manuscripts'
