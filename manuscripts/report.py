@@ -27,6 +27,7 @@ import logging
 import os
 import subprocess
 import sys
+import glob
 
 import matplotlib as mpl
 # This avoids the use of the $DISPLAY value for the charts
@@ -675,6 +676,35 @@ class Report():
 
         return name
 
+    @staticmethod
+    def replace_text(filepath, to_replace, replacement):
+        """
+        Replaces a string in a given file with another string
+
+        :param file: the file in which the string has to be replaced
+        :param to_replace: the string to be replaced in the file
+        :param replacement: the string which replaces 'to_replace' in the file
+        """
+        with open(filepath) as file:
+            s = file.read()
+        s = s.replace(to_replace, replacement)
+        with open(filepath, 'w') as file:
+            file.write(s)
+
+    def replace_text_dir(self, directory, to_replace, replacement, file_type=None):
+        """
+        Replaces a string with its replacement in all the files in the directory
+
+        :param directory: the directory in which the files have to be modified
+        :param to_replace: the string to be replaced in the files
+        :param replacement: the string which replaces 'to_replace' in the files
+        :param file_type: file pattern to match the files in which the string has to be replaced
+        """
+        if not file_type:
+            file_type = "*.tex"
+        for file in glob.iglob(os.path.join(directory, file_type)):
+            self.replace_text(file, to_replace, replacement)
+
     def create_pdf(self):
         logger.info("Generating PDF report")
 
@@ -694,29 +724,30 @@ class Report():
 
         # Change the project global name
         project_replace = self.report_name.replace(' ', r'\ ')
-        cmd = ['grep -rl PROJECT-NAME . | xargs sed -i s/PROJECT-NAME/' + project_replace + '/g']
-        subprocess.call(cmd, shell=True, cwd=report_path)
+        self.replace_text_dir(report_path, 'PROJECT-NAME', project_replace)
+        self.replace_text_dir(os.path.join(report_path, 'overview'), 'PROJECT-NAME', project_replace)
+
         # Change the quarter subtitle
         period_name = self.period_name(self.end, self.interval, self.offset)
         period_replace = period_name.replace(' ', r'\ ')
-        cmd = ['grep -rl 2016-QUARTER . | xargs sed -i s/2016-QUARTER/' + period_replace + '/g']
+        self.replace_text_dir(report_path, '2016-QUARTER', period_replace)
+        self.replace_text_dir(os.path.join(report_path, 'overview'), '2016-QUARTER', period_replace)
+
         # cmd = ['sed -i s/2016-QUARTER/' + self.end.strftime('%Y-%m-%d') + \
         #       r'\ ' + self.interval + '/g *.tex']
-        subprocess.call(cmd, shell=True, cwd=report_path)
+
         # Report date frame
         quarter_start = self.end - relativedelta.relativedelta(months=3)
         quarter_start += relativedelta.relativedelta(days=1)
         dateframe = (quarter_start.strftime('%Y-%m-%d') + " to " + self.end.strftime('%Y-%m-%d')).replace(' ', r'\ ')
-        cmd = ['grep -rl DATEFRAME . | xargs sed -i s/DATEFRAME/' + dateframe + '/g']
-        subprocess.call(cmd, shell=True, cwd=report_path)
+        self.replace_text_dir(os.path.join(report_path, 'overview'), 'DATEFRAME', dateframe)
+
         # Change the date Copyright
-        cmd = [r'sed -i s/\(cc\)\ 2016/\(cc\)\ ' + datetime.now().strftime('%Y') + '/g *.tex']
-        subprocess.call(cmd, shell=True, cwd=report_path)
+        self.replace_text_dir(report_path, '(cc) 2016', '(cc) ' + datetime.now().strftime('%Y'))
+
         # Fix LaTeX special chars
-        cmd = [r'sed -i "s/\&/\\\&/g" data/git_top_organizations_*']
-        res = subprocess.call(cmd, shell=True, cwd=report_path)
-        cmd = [r'sed -i "s/^#//g" data/git_top_organizations_*']
-        subprocess.call(cmd, shell=True, cwd=report_path)
+        self.replace_text_dir(report_path, '&', '\&', 'data/git_top_organizations_*')
+        self.replace_text_dir(report_path, '^#', '', 'data/git_top_organizations_*')
 
         # Activity section
         activity = ''
