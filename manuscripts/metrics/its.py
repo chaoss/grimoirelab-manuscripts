@@ -96,6 +96,7 @@ class Closed(ITSMetrics):
     filters = {"state": "closed"}
     FIELD_COUNT = "id"
     FIELD_NAME = "url"
+    FIELD_DATE = "closed_at"
 
 
 class DaysToCloseMedian(ITSMetrics):
@@ -162,8 +163,6 @@ class BMI(ITSMetrics):
         closed = self.closed_class(self.es_url, self.es_index,
                                    start=self.start, end=self.end,
                                    esfilters=esfilters_closed, interval=self.interval)
-        # For BMI we need when the ticket was closed
-        # closed.FIELD_DATE = "closed_at"
         opened = self.opened_class(self.es_url, self.es_index,
                                    start=self.start, end=self.end,
                                    esfilters=esfilters_opened, interval=self.interval)
