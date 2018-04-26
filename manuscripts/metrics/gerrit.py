@@ -79,6 +79,7 @@ class Merged(GerritMetrics):
     desc = "Number of merged review processes"
     FIELD_NAME = 'url'
     FIELD_COUNT = 'url'
+    FIELD_DATE = "closed"
     filters = {"status": "MERGED"}
 
 
@@ -88,6 +89,7 @@ class Abandoned(GerritMetrics):
     desc = "Number of abandoned review processes"
     FIELD_NAME = 'url'
     FIELD_COUNT = 'url'
+    FIELD_DATE = "closed"
     filters = {"status": "ABANDONED"}
 
 
