@@ -847,3 +847,7 @@ class Report():
             value = f.split(":")[1]
             core_filters[name] = value
         return core_filters
+
+    @classmethod
+    def get_supported_data_sources(cls):
+        return cls.supported_data_sources

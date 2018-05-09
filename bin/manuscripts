@@ -65,7 +65,8 @@ def get_params():
     parser.add_argument('--indices', default=[], nargs='*',
                         help="Indices to be used to generate the report (git_index, github_index ...)")
     parser.add_argument('-l', '--logo', help="Provide a logo for the report, Formats allowed .png,.pdf,.jpg,.mps,.jpeg,.jbig2,.jb2,.PNG,.PDF,.JPG,.JPEG,.JBIG2,.JB2,.eps")
-    
+    parser.add_argument('-ld', '--list-data-sources', action='store_true', help="List available data-sources")    
+
     return parser.parse_args()
 
 
@@ -116,6 +117,11 @@ if __name__ == '__main__':
         end_date = end_date + timedelta(days=offset_days)
         logging.debug("New range %s-%s with offset %s",
                       start_date, end_date, offset)
+
+    # if list-data-sources, print the data sources available
+
+    if args.list_data_sources:
+        print('Available data sources: ', ' '.join(Report.get_supported_data_sources()))
 
     if args.mordred_config:
         # Read the mordred config file and configure the data sources according to it
