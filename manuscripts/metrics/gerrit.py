@@ -245,6 +245,7 @@ class DaysToMergeMedian(GerritMetrics):
     name = "Days to merge reviews (median)"
     desc = "Number of days needed to merge a review (median)"
     FIELD_COUNT = 'timeopen'
+    FIELD_DATE = "closed"
     AGG_TYPE = 'median'
     filters = {"status": "MERGED"}
 
@@ -260,6 +261,7 @@ class DaysToMergeAverage(GerritMetrics):
     name = "Days to merge reviews (average)"
     desc = "Number of days needed to merge a review (average)"
     FIELD_COUNT = 'timeopen'
+    FIELD_DATE = "closed"
     AGG_TYPE = 'average'
     filters = {"status": "MERGED"}
 
