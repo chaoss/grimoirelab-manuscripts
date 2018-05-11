@@ -57,6 +57,9 @@ logger = logging.getLogger(__name__)
 
 
 class Report():
+    """ Class which represents a Manuscripts report """
+
+    # Elasticsearch index names in which metrics data is stored
     GIT_INDEX = 'git'
     GITHUB_ISSUES_INDEX = 'github_issues'
     GITHUB_PRS_INDEX = 'github_issues'
@@ -67,6 +70,7 @@ class Report():
     GLOBAL_PROJECT = 'general'
     TOP_MAX = 20
 
+    # Helper dict to map a data source class with its Elasticsearch index
     ds2index = {
         gerrit.Gerrit: GERRIT_INDEX,
         git.Git: GIT_INDEX,
@@ -77,6 +81,7 @@ class Report():
         stackexchange.Stackexchange: STACHEXCHANGE_INDEX
     }
 
+    # Helper dict to map a data source name with its python class
     ds2class = {
         "gerrit": gerrit.Gerrit,
         "git": git.Git,
@@ -90,6 +95,7 @@ class Report():
     # A reverse dictionary to get the data sources for the corresponding classes
     class2ds = {val: key for key, val in ds2class.items()}
 
+    # GrimoireLab data sources supported by Manuscripts
     supported_data_sources = ['git', 'github', 'gerrit', 'mls']
     supported_data_sources += ['github_issues', 'github_prs']
     supported_data_sources += ['jira']
@@ -98,6 +104,22 @@ class Report():
     def __init__(self, es_url, start, end, data_dir=None, filters=None,
                  interval="month", offset=None, data_sources=None,
                  report_name=None, projects=False, indices=[], logo=None):
+        """
+        Report init method called when creating a new Report object
+
+        :param es_url: Elasticsearch URL in which metrics data is stored
+        :param start: start (from) date from which to compute the metrics
+        :param end: end (to) date form which to compute the metrics
+        :param data_dir: directory in which to store the data results for the report
+        :param filters: additional filters to be added to all metrics queries
+        :param interval: time interval used in Elasticsearch to aggregate the metrics data
+        :param offset: time offset in days to be added to the intervals
+        :param data_sources: list of data sources to be included in the report
+        :param report_name: name of the report (used in the title for example)
+        :param projects: generate a specific report for each project
+        :param indices: list of data source indices in Elasticsearch to be used to get the metrics values
+        :param logo: logo to be used in the report (in the title and headers of the pages)
+        """
 
         if not (es_url and start and end and data_sources):
             logger.error('''Missing needed params for Report:
@@ -175,10 +197,12 @@ class Report():
 
     def __get_config(self, data_sources=None):
         """
-            The config is fetched from each data source and then it is combined.
-
-            It defines the metrics to be included in each section of the report
+        Build a dictionary with the Report configuration with the data sources and metrics to be included
+        in each section of the report
+        :param data_sources: list of data sources to be included in the report
+        :return: a dict with the data sources and metrics to be included in the report
         """
+
         if not data_sources:
             # For testing
             data_sources = ["gerrit", "git", "github_issues", "mls"]
@@ -200,7 +224,7 @@ class Report():
                             else:
                                 new_config[section][metric_section] += ds_config[section][metric_section]
 
-        # fields that are not linked to a data source
+        # Fields that are not linked to a data source
         new_config['overview']['activity_file_csv'] = "data_source_evolution.csv"
         new_config['overview']['efficiency_file_csv'] = "efficiency.csv"
         new_config['project_process']['time_to_close_title'] = "Days to close (median and average)"
@@ -212,14 +236,14 @@ class Report():
             activity_metrics = ds_config['project_activity']['metrics']
             new_config['project_activity']['ds' + str(i + 1) + "_metrics"] = activity_metrics
 
-        # from pprint import pprint
-        # pprint(new_config)
-        # raise
         return new_config
 
     def __convert_none_to_zero(self, ts):
-        # Matplotlib and import prettyplotlib as ppl don't handle None.
-        # Convert None to 0 which is an ugly hack
+        """
+        Convert None values to 0 so the data works with Matplotlib
+        :param ts:
+        :return: a list with 0s where Nones existed
+        """
 
         if not ts:
             return ts
@@ -229,6 +253,18 @@ class Report():
         return ts_clean
 
     def bar3_chart(self, title, labels, data1, file_name, data2, data3, legend=["", ""]):
+        """
+        Generate a bar plot with three columns in each x position and save it to file_name
+
+        :param title: title to be used in the chart
+        :param labels: list of labels for the x axis
+        :param data1: values for the first columns
+        :param file_name: name of the file in which to save the chart
+        :param data2: values for the second columns
+        :param data3: values for the third columns
+        :param legend: legend to be shown in the chart
+        :return:
+        """
 
         colors = ["orange", "grey"]
 
@@ -254,6 +290,17 @@ class Report():
         plt.close()
 
     def bar_chart(self, title, labels, data1, file_name, data2=None, legend=["", ""]):
+        """
+        Generate a bar plot with one or two columns in each x position and save it to file_name
+
+        :param title: title to be used in the chart
+        :param labels: list of labels for the x axis
+        :param data1: values for the first columns
+        :param file_name: name of the file in which to save the chart
+        :param data2: values for the second columns. If None only one column per x position is shown.
+        :param legend: legend to be shown in the chart
+        :return:
+        """
 
         colors = ["orange", "grey"]
 
@@ -282,6 +329,11 @@ class Report():
         plt.close()
 
     def get_metric_index(self, metric_cls):
+        """
+        Get the index name with the data for a metric class
+        :param metric_cls: a metric class
+        :return: the name of the index with the data for the metric
+        """
         ds = self.class2ds[metric_cls.ds]
         if self.index_dict[ds]:
             index_name = self.index_dict[ds]
@@ -290,8 +342,12 @@ class Report():
         return index_name
 
     def sec_overview(self):
-        """ Data sources overview: table with metric summaries"""
+        """
+        Generate the data for the Overview section in the report
+        :return:
+        """
 
+        """ Data sources overview: table with metric summaries"""
         metrics = self.config['overview']['activity_metrics']
         file_name = self.config['overview']['activity_file_csv']
 
@@ -368,6 +424,11 @@ class Report():
         logger.debug("CSV file: %s was generated", file_name)
 
     def sec_com_channels(self):
+        """
+        Generate the data for the Communication Channels section in the report
+        :return:
+        """
+
         metrics = self.config['com_channels']['activity_metrics']
         metrics += self.config['com_channels']['author_metrics']
         for metric in metrics:
@@ -378,7 +439,13 @@ class Report():
 
     @classmethod
     def str_val(cls, val):
-        """ Format the value of a metric value to a string """
+        """
+        Format the value of a metric value to a string
+
+        :param val: number to be formatted
+        :return: a string with the formatted value
+        """
+
         str_val = val
         if val is None:
             str_val = "NA"
@@ -390,6 +457,16 @@ class Report():
 
     def __create_csv_eps(self, metric1, metric2, csv_labels, file_label,
                          title_label, project=None):
+        """
+        Generate the CSV data and EPS figs files for two metrics
+        :param metric1: first metric class
+        :param metric2: second metric class
+        :param csv_labels: labels to be used in the CSV file
+        :param file_label: shared filename token to be included in csv and eps files
+        :param title_label: title for the EPS figures
+        :param project: name of the project for which to generate the data
+        :return:
+        """
 
         logger.debug("CSV file %s generation in progress", file_label)
 
@@ -460,7 +537,8 @@ class Report():
 
     def sec_project_activity(self, project=None):
         """
-        Activity
+        Generate the data for the Activity section in the report
+        :return:
         """
 
         def create_data(metrics, project):
@@ -480,6 +558,10 @@ class Report():
             create_data(metrics, project)
 
     def sec_project_community(self, project=None):
+        """
+        Generate the data for the Communication section in a Project report
+        :return:
+        """
 
         def create_csv(metric1, csv_labels, file_label):
             esfilters = None
@@ -538,6 +620,10 @@ class Report():
         create_csv(orgs, csv_labels, file_label)
 
     def sec_project_process(self, project=None):
+        """
+        Generate the data for the Process section in a Project report
+        :return:
+        """
 
         logger.info("Process data for: %s", project)
 
@@ -607,10 +693,16 @@ class Report():
 
     def sec_projects(self):
         """
+        Generate the report projects related sections: the general project is included always and add
+        to the global report, and an specific report for each project is generated if configured.
+        :return:
+        """
+
+        """
         This activity is displayed at the general level, aggregating all
         of the projects, with the name 'general' and per project using
         the name of each project. This activity is divided into three main
-        layers: activity, community and process.
+        sections: activity, community and process.
         """
 
         # First the 'general' project
@@ -650,6 +742,11 @@ class Report():
             self.sec_project_process(project)
 
     def sections(self):
+        """
+        Get the sections of the report and howto build them.
+
+        :return: a dict with the method to be called to fill each section of the report
+        """
         secs = OrderedDict()
         secs['Overview'] = self.sec_overview
         secs['Communication Channels'] = self.sec_com_channels
@@ -658,7 +755,12 @@ class Report():
         return secs
 
     def create_data_figs(self):
-        """ Generate the data and figs files for the report """
+        """
+        Generate the data and figs files for the report
+
+        :return:
+        """
+
         logger.info("Generating the report data and figs from %s to %s",
                     self.start, self.end)
 
@@ -740,6 +842,12 @@ class Report():
             self.replace_text(file, to_replace, replacement)
 
     def create_pdf(self):
+        """
+        Create the report pdf file filling the LaTeX templates with the figs and data for the report
+
+        :return:
+        """
+
         logger.info("Generating PDF report")
 
         # First step is to create the report dir from the template
@@ -752,9 +860,9 @@ class Report():
 
         # if user specified a logo then replace it with default logo
         if self.logo:
-                os.remove(os.path.join(report_path, "logo.eps"))
-                os.remove(os.path.join(report_path, "logo-eps-converted-to.pdf"))
-                print(copy_file(self.logo, os.path.join(report_path, "logo." + self.logo.split('/')[-1].split('.')[-1])))
+            os.remove(os.path.join(report_path, "logo.eps"))
+            os.remove(os.path.join(report_path, "logo-eps-converted-to.pdf"))
+            print(copy_file(self.logo, os.path.join(report_path, "logo." + self.logo.split('/')[-1].split('.')[-1])))
 
         # Change the project global name
         project_replace = self.report_name.replace(' ', r'\ ')
@@ -830,6 +938,12 @@ class Report():
         logger.info("PDF report done %s", report_path + "/report.pdf")
 
     def create(self):
+        """
+        Generate the data and figs for the report and fill the LaTeX templates with them
+        to generate a PDF file with the report.
+
+        :return:
+        """
         logger.info("Generating the report from %s to %s", self.start, self.end)
 
         self.create_data_figs()

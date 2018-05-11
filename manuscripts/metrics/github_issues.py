@@ -67,6 +67,7 @@ class GitHubIssues(its.ITS):
 
 
 class GitHubIssuesMetrics(its.ITS):
+    """ This class will be the root one for all GitHubIssues metrics """
     # TODO: All GitHubIssuesMetrics metrics should inherit from this class
     # but they are doing it from ITSMetrics directly. Change the design.
     ds = GitHubIssues

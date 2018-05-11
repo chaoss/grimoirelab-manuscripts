@@ -68,6 +68,7 @@ class Jira(its.ITS):
 
 
 class JiraMetrics(Metrics):
+    """ This class will be the root one for all Jira metrics """
     # TODO: All JiraMetrics metrics should inherit from this class
     # but they are doing it from ITSMetrics directly. Change the design.
     ds = Jira

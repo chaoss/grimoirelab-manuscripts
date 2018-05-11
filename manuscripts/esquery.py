@@ -41,7 +41,15 @@ class ElasticQuery():
 
     @classmethod
     def __get_query_filters(cls, filters=None, inverse=False):
-        """ {"name1":"value1", "name2":"value2"} """
+        """
+        Convert a dict with the filters to be applied ({"name1":"value1", "name2":"value2"})
+        to a DSL string representing these filters.
+
+        :param filters: dict with the filters to be applied
+        :param inverse: if True include all the inverse filters (the one starting with *)
+        :return: a string with the DSL value for these filters
+        """
+        """  """
 
         query_filters = ''
 
@@ -74,6 +82,14 @@ class ElasticQuery():
 
     @classmethod
     def __get_query_range(cls, date_field, start=None, end=None):
+        """
+        Create a string with range DSL query for the date in date_field from start to end dates.
+
+        :param date_field: field with the date value
+        :param start: date with the from value
+        :param end: date with the to value
+        :return: a string including the range date DSL query
+        """
 
         if not start and not end:
             return ''
@@ -100,6 +116,15 @@ class ElasticQuery():
     @classmethod
     def __get_query_basic(cls, date_field=None, start=None, end=None,
                           filters=None):
+        """
+        Create a string with the date range and filters DSL query.
+
+        :param date_field: field with the date value
+        :param start: date with the from value
+        :param end: date with the to value
+        :param filters: dict with the filters to be applied
+        :return: a string including the DSL query
+        """
         if not date_field:
             query_range = ''
         else:
@@ -136,6 +161,13 @@ class ElasticQuery():
 
     @classmethod
     def __get_query_agg_terms(cls, field):
+        """
+        Create a string with an aggregated DSL query based on a term.
+
+        :param field: field to be used to aggregate
+        :return: a string including the DSL query
+        """
+
         query_agg = """
           "aggs": {
             "%i": {
@@ -153,6 +185,13 @@ class ElasticQuery():
 
     @classmethod
     def __get_query_agg_max(cls, field):
+        """
+        Create a string with an aggregated DSL query for getting the max value of a field.
+
+        :param field: field from which the get the max value
+        :return: a string including the DSL query
+        """
+
         query_agg = """
           "aggs": {
             "%i": {
@@ -167,6 +206,14 @@ class ElasticQuery():
 
     @classmethod
     def __get_query_agg_percentiles(cls, field, agg_id=None):
+        """
+        Create a string with an aggregated DSL query for getting the percentiles value of a field.
+        In general this is used to get the median (0.5) percentil.
+
+        :param field: field from which the get the percentiles values
+        :return: a string including the DSL query
+        """
+
         if not agg_id:
             agg_id = cls.AGGREGATION_ID
         query_agg = """
@@ -183,6 +230,13 @@ class ElasticQuery():
 
     @classmethod
     def __get_query_agg_avg(cls, field, agg_id=None):
+        """
+        Create a string with an aggregated DSL query for getting the average value of a field.
+
+        :param field: field from which the get the average value
+        :return: a string including the DSL query
+        """
+
         if not agg_id:
             agg_id = cls.AGGREGATION_ID
         query_agg = """
@@ -199,6 +253,13 @@ class ElasticQuery():
 
     @classmethod
     def __get_query_agg_cardinality(cls, field, agg_id=None):
+        """
+        Create a string with an aggregated DSL query for getting the approximate count of distinct values of a field.
+
+        :param field: field from which the get count of distinct values
+        :return: a string including the DSL query
+        """
+
         if not agg_id:
             agg_id = cls.AGGREGATION_ID
         query_agg = """
@@ -216,7 +277,13 @@ class ElasticQuery():
 
     @classmethod
     def __get_bounds(cls, start=None, end=None):
-        """ Return a dict with the bounds for a date_historgram agg """
+        """
+        Return a dict with the DSL bounds for a date_histogram agg.
+
+        :param start: date from for the date_histogram agg
+        :param end: date to for the date_histogram agg
+        :return: a dict with the DSL bounds for a date_histogram agg
+        """
 
         bounds = ''
         if start or end:
@@ -250,6 +317,20 @@ class ElasticQuery():
     def __get_query_agg_ts(cls, field, time_field, interval=None,
                            time_zone=None, start=None, end=None,
                            agg_type='count', offset=None):
+        """
+        Create a string with an aggregation DSL query for getting the time series
+        values for field.
+
+        :param field: field to get the time series values
+        :param time_field: field with the date
+        :param interval: interval to be used to generate the time series values
+        :param time_zone: time zone for the time_field
+        :param start: date from for the time series
+        :param end: date to for the time series
+        :param agg_type: kind of aggregation for the field (cardinality, avg, percentiles)
+        :param offset: offset to be added to the time_field in days
+        :return: a string with the DSL query
+        """
         """ Time series for an aggregation metric """
         if not interval:
             interval = '1M'
@@ -299,6 +380,15 @@ class ElasticQuery():
 
     @classmethod
     def get_count(cls, date_field=None, start=None, end=None, filters=None):
+        """
+        Build the DSL query for counting the number of items.
+
+        :param date_field: field with the date
+        :param start: date from which to start counting
+        :param end: date until which to count items
+        :param filters: dict with the filters to be applied
+        :return: a string with the DSL query
+        """
         """ Total number of items """
         query_basic = cls.__get_query_basic(date_field=date_field,
                                             start=start, end=end,
@@ -315,7 +405,20 @@ class ElasticQuery():
     @classmethod
     def get_agg(cls, field=None, date_field=None, start=None, end=None,
                 filters=None, agg_type="terms", offset=None, interval=None):
-        """ if field and date_field the date_histogram of the agg is collected """
+        """
+        Compute the aggregated value for a field.
+        If USE_ELASTIC_DSL is True it uses the elastic_dsl library. If not, esquery (this) module is
+        used to build the query.
+
+        :param field: field to get the time series values
+        :param date_field: field with the date
+        :param interval: interval to be used to generate the time series values
+        :param start: date from for the time series
+        :param end: date to for the time series
+        :param agg_type: kind of aggregation for the field (cardinality, avg, percentiles)
+        :param offset: offset to be added to the time_field in days
+        :return: a string with the DSL query
+        """
 
         query_basic = cls.__get_query_basic(date_field=date_field,
                                             start=start, end=end,

@@ -69,6 +69,7 @@ class GitHubPRs():
 
 
 class GitHubPRsMetrics(Metrics):
+    """ This class is the root one for all GitHubPRs (pull requests) metrics """
     ds = GitHubPRs
 
 

@@ -65,6 +65,8 @@ class Stackexchange():
 
 
 class StackexchangeMetrics(Metrics):
+    """ This class is the root one for all Stackexchange metrics """
+
     ds = Stackexchange
 
 

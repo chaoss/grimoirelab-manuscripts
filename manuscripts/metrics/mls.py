@@ -69,6 +69,8 @@ class MLS():
 
 
 class MLSMetrics(Metrics):
+    """ This class is the root one for all GitHubIssues metrics """
+
     ds = MLS
 
 

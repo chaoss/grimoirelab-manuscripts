@@ -68,6 +68,8 @@ class ITS():
 
 
 class ITSMetrics(Metrics):
+    """ This class is the root one for all ITS metrics """
+
     ds = ITS
 
 
