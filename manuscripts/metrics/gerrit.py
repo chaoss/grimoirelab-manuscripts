@@ -19,8 +19,6 @@
 #   Alvaro del Castillo <acs@bitergia.com>
 #   Daniel Izquierdo <dizquierdo@bitergia.com>
 
-""" Metrics for Gerrit review system """
-
 from .metrics import Metrics
 
 
@@ -29,6 +27,11 @@ class Gerrit():
 
     @classmethod
     def get_section_metrics(cls):
+        """
+        Get the mapping between metrics and sections in Manuscripts report
+        :return: a dict with the mapping between metrics and sections in Manuscripts report
+        """
+
         return {
             "overview": {
                 "activity_metrics": [Closed, Submitted],
@@ -62,6 +65,8 @@ class Gerrit():
 
 
 class GerritMetrics(Metrics):
+    """ This class is the root one for all Gerrit metrics """
+
     ds = Gerrit
 
 

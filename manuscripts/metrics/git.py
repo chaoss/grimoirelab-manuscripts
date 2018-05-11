@@ -32,6 +32,11 @@ class Git():
 
     @classmethod
     def get_section_metrics(cls):
+        """
+        Get the mapping between metrics and sections in Manuscripts report
+        :return: a dict with the mapping between metrics and sections in Manuscripts report
+        """
+
         return {
             "overview": {
                 "activity_metrics": [Commits],
@@ -65,6 +70,7 @@ class Git():
 
 
 class GitMetrics(Metrics):
+    """ This class is the root one for all Git metrics """
     ds = Git
 
 

@@ -30,6 +30,11 @@ class GitHubPRs():
 
     @classmethod
     def get_section_metrics(cls):
+        """
+        Get the mapping between metrics and sections in Manuscripts report
+        :return: a dict with the mapping between metrics and sections in Manuscripts report
+        """
+
         # Those metrics are only for Pull Requests
         # github issues is covered as ITS
         return {

@@ -61,7 +61,17 @@ class Metrics(object):
 
     def __init__(self, es_url, es_index, start=None, end=None, esfilters={},
                  interval=None, offset=None):
-        """es connection and filter to be used"""
+        """
+        Metrics init method called when creating a new Metrics object
+
+        :param es_url: Elasticsearch URL with metrics indexes
+        :param es_index: index in which the metrics data is stored
+        :param start: start (from) date from which to compute the metric
+        :param end: end (to) date form which to compute the metric
+        :param esfilters: additional filters to be added to find the data to compute the metric
+        :param interval: time interval used in Elasticsearch to aggregate the metrics data
+        :param offset: time offset in days to be added to the intervals
+        """
         self.es_url = es_url
         self.es_index = es_index
         self.start = start
@@ -79,6 +89,10 @@ class Metrics(object):
             self.offset = offset
 
     def get_definition(self):
+        """
+        Get the dict with the basic fields used to describe a metrics: id, name and desc
+        :return: a dict with the definition
+        """
         def_ = {
             "id": self.id,
             "name": self.name,
@@ -88,12 +102,10 @@ class Metrics(object):
 
     def get_query(self, evolutionary=False):
         """
-        Private method that returns a valid ElasticSearch query for
-        computing the metric.
+        Basic query to get the metric values
 
-        :evolutionary: boolean
-            If True, an evolutionary analysis is provided
-            If False, an aggregated analysis is provided
+        :param evolutionary: if True the metric values time series is returned. If False the aggregated metric value.
+        :return: the DSL query to be sent to Elasticsearch
         """
 
         if not evolutionary:
@@ -118,6 +130,11 @@ class Metrics(object):
         return query
 
     def get_list(self):
+        """
+        Extract from a DSL aggregated response the values for each bucket
+
+        :return: a list with the values in a DSL aggregated response
+        """
         field = self.FIELD_NAME
         query = ElasticQuery.get_agg(field=field,
                                      date_field=self.FIELD_DATE,
@@ -133,7 +150,12 @@ class Metrics(object):
         return list_
 
     def get_metrics_data(self, query):
-        """ Get the metrics data from ES """
+        """
+        Get the metrics data from Elasticsearch given a DSL query
+
+        :param query: query to be sent to Elasticsearch
+        :return: a dict with the results of executing the query
+        """
         if self.es_url.startswith("http"):
             url = self.es_url + '/' + self.es_index + '/_search'
         else:
@@ -143,13 +165,16 @@ class Metrics(object):
         return r.json()
 
     def get_ts(self):
-        """Returns a time series of a specific class
+        """
+        Returns a time series of a specific class
 
         A timeseries consists of a unixtime date, labels, some other
-        fields and the data of the specific instantiated class per
+        fields and the data of the specific instantiated class metric per
         interval. This is built on a hash table.
 
+        :return: a list with a time series with the values of the metric
         """
+
         query = self.get_query(True)
         res = self.get_metrics_data(query)
         # Time to convert it to our grimoire timeseries format
@@ -177,6 +202,11 @@ class Metrics(object):
         return ts
 
     def get_agg(self):
+        """
+        Returns the aggregated value for the metric
+
+        :return: the value of the metric
+        """
         """ Returns an aggregated value """
         query = self.get_query(False)
         res = self.get_metrics_data(query)
@@ -199,7 +229,13 @@ class Metrics(object):
         return agg
 
     def get_trend(self):
-        """ Get the trends for the interval defined in the metric """
+        """
+        Get the trend for the last two metric values using the interval defined in the metric
+
+        :return: a tuple with the metric value for the last interval and the
+                 trend percentage between the last two intervals
+        """
+        """  """
 
         # TODO: We just need the last two periods, not the full ts
         ts = self.get_ts()
