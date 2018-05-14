@@ -100,8 +100,8 @@ class Report():
                  report_name=None, projects=False, indices=[], logo=None):
 
         if not (es_url and start and end and data_sources):
-            logger.error('Missing needed params for Report %s, %s, %s, %s',
-                         es_url, start, end, data_sources)
+            logger.error('''Missing needed params for Report:
+                            elastic_url, end_date, start_date and data_sources''')
             sys.exit(1)
 
         self.es_url = es_url
@@ -134,7 +134,7 @@ class Report():
         if len(data_sources) < len(indices):
             logger.error('Insufficient data sources provided')
             sys.exit(1)
-        # Create an dict of indices which, for each data_source, will give the
+        # Create a dict of indices which, for each data_source, will give the
         # name of the elasticsearch index that has to be used.
         self.index_dict = defaultdict(lambda: None)
         for pos, index in enumerate(indices):
