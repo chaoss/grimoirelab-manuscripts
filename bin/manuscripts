@@ -45,27 +45,31 @@ def get_params():
     parser.add_argument('-v', '--version', action='version', version=__version__,
                         help="Show version")
     parser.add_argument('-d', '--data-dir', default='data',
-                        help="Directory to store the data results")
+                        help="Directory to store the data results (default: data)")
     parser.add_argument('-e', '--end-date', default='now',
-                        help="End date for the report (UTC) (<)")
+                        help="End date for the report (UTC) (<) (default: now)")
     parser.add_argument('-f', '--filters', nargs='*',
                         help='Filters to be applied to all the report data: "field1:value1" "field2:value2". \
                               Use *field for the inverse filter.')
     parser.add_argument('-g', '--debug', dest='debug', action='store_true')
     parser.add_argument('-i', '--interval', default='month', help="Analysis interval (month (default), quarter, year)")
     parser.add_argument('-s', '--start-date', default='2015-01-01',
-                        help="Start date for the report (UTC) (>=)")
+                        help="Start date for the report (UTC) (>=) (default: 2015-01-01)")
     parser.add_argument('--offset', help="Offset to be used in date histogram aggregations (e.g.: +31d)")
     parser.add_argument('-u', '--elastic-url', help="Elastic URL with the enriched indexes")
     parser.add_argument('--data-sources', nargs='*',
                         help="Data source for the report (git, ...)")
-    parser.add_argument('-n', '--name', nargs='?', const="Unnamed", default="Unnamed", help="Report name")
+    parser.add_argument('-n', '--name', nargs='?', const="Unnamed", default="Unnamed", help="Report name (default: Unnamed)")
     parser.add_argument('-m', '--mordred-config', help="Mordred config file")
     parser.add_argument('-p', '--projects', action='store_true', help="Generate per project data")
     parser.add_argument('--indices', default=[], nargs='*',
                         help="Indices to be used to generate the report (git_index, github_index ...)")
     parser.add_argument('-l', '--logo', help="Provide a logo for the report, Formats allowed .png,.pdf,.jpg,.mps,.jpeg,.jbig2,.jb2,.PNG,.PDF,.JPG,.JPEG,.JBIG2,.JB2,.eps")
     
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit(1)
+
     return parser.parse_args()
 
 
@@ -86,6 +90,10 @@ if __name__ == '__main__':
         logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
     logging.getLogger("urllib3").setLevel(logging.WARNING)
     logging.getLogger("requests").setLevel(logging.WARNING)
+
+    if not (args.elastic_url and args.data_sources):
+        logging.error('Missing needed params for Report: elastic_url and data_sources')
+        sys.exit(1)
 
     elastic = args.elastic_url
     report_name = args.name
