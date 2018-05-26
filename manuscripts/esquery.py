@@ -28,6 +28,7 @@ import json
 from datetime import timezone
 
 from elasticsearch_dsl import A, Search, Q
+# elasticsearch_dsl is referred to as es_dsl in the comments, henceforth
 
 
 class ElasticQuery():
@@ -38,20 +39,19 @@ class ElasticQuery():
     ES_PRECISION = 3000  # This is the default value for percision_threshold
 
     @classmethod
-    def __get_query_filters(cls, filters=None, inverse=False):
+    def __get_query_filters(cls, filters={}, inverse=False):
         """
         Convert a dict with the filters to be applied ({"name1":"value1", "name2":"value2"})
-        to a list of match filters which can be used together in a query using boolean combination
-        logic.
+        to a list of query objects which can be used together in a query using boolean
+        combination logic.
 
         :param filters: dict with the filters to be applied
         :param inverse: if True include all the inverse filters (the one starting with *)
-        :return: a list of match object(dict)(s)
+        :return: a list of es_dsl 'MatchPhrase' Query objects
+                 Ex: [MatchPhrase(name1="value1"), MatchPhrase(name2="value2"), ..]
+                 Dict representation of the object: {'match_phrase': {'field': 'home'}}
         """
         query_filters = []
-
-        if not filters:
-            return query_filters
 
         for name in filters:
             if name[0] == '*' and not inverse:
@@ -63,7 +63,7 @@ class ElasticQuery():
             field_name = name[1:] if name[0] == '*' else name
 
             params = {field_name: filters[name]}
-            # trying to use elasticsearch_dsl only and not creating hard coded queries
+            # trying to use es_dsl only and not creating hard coded queries
             query_filters.append(Q('match_phrase', **params))
 
         return query_filters
@@ -74,9 +74,12 @@ class ElasticQuery():
         Create a filter dict with date_field from start to end dates.
 
         :param date_field: field with the date value
-        :param start: date with the from value
-        :param end: date with the to value
-        :return: a dict containing a range filter
+        :param start: date with the from value. Should be a datetime.datetime object
+                      of the form: datetime.datetime(2018, 5, 25, 15, 17, 39, 916272)
+        :param end: date with the to value. Should be a datetime.datetime object
+                      of the form: datetime.datetime(2018, 5, 25, 15, 17, 39, 916272)
+        :return: a dict containing a range filter which can be used later in an
+                 es_dsl Search object using the `filter` method.
         """
         if not start and not end:
             return ''
@@ -92,20 +95,24 @@ class ElasticQuery():
 
     @classmethod
     def __get_query_basic(cls, date_field=None, start=None, end=None,
-                          filters=None):
+                          filters={}):
         """
-        Create a query object with the date range and filters.
+        Create a es_dsl query object with the date range and filters.
 
         :param date_field: field with the date value
-        :param start: date with the from value
-        :param end: date with the to value
+        :param start: date with the from value, should be a datetime.datetime object
+        :param end: date with the to value, should be a datetime.datetime object
         :param filters: dict with the filters to be applied
         :return: a DSL query containing the required parameters
+                 Ex: {'query': {'bool': {'filter': [{'range': {'DATE_FIELD':
+                                                        {'gte': '2015-05-19T00:00:00',
+                                                         'lte': '2018-05-18T00:00:00'}}}],
+                    'must': [{'match_phrase': {'first_name': 'Jhon'}},
+                             {'match_phrase': {'last_name': 'Doe'}},
+                             {'match_phrase': {'Phone': 2222222}}
+                             ]}}}
         """
         query_basic = Search()
-
-        # Not using this for now.
-        # query_basic = query_basic.query("query_string", analyse_wildcard="true", query="*")
 
         query_filters = cls.__get_query_filters(filters)
         for f in query_filters:
@@ -117,7 +124,7 @@ class ElasticQuery():
             query_basic = query_basic.query(~f)
 
         if not date_field:
-            query_range = ''
+            query_range = {}
         else:
             query_range = cls.__get_query_range(date_field, start, end)
 
@@ -129,35 +136,37 @@ class ElasticQuery():
     @classmethod
     def __get_query_agg_terms(cls, field, agg_id=None):
         """
-        Create a aggregation DSL object based on a term.
+        Create a es_dsl aggregation object based on a term.
 
         :param field: field to be used to aggregate
-        :return: a tuple with the aggregation id and aggregation object
+        :return: a tuple with the aggregation id and es_dsl aggregation object. Ex:
+                {
+                    "terms": {
+                        "field": <field>,
+                        "size:": <size>,
+                        "order":{
+                            "_count":"desc"
+                    }
+                }
+        Which will then be used as Search.aggs.bucket(agg_id, query_agg) method
+        to add aggregations to the es_dsl Search object
         """
         if not agg_id:
             agg_id = cls.AGGREGATION_ID
         query_agg = A("terms", field=field, size=cls.AGG_SIZE, order={"_count": "desc"})
-        """
-        This will return:
-            "terms": {
-                "field": field,
-                "size:": size,
-                "order":{
-                        "_count":"desc"
-                }
-            }
-        Which will then be used as Search.aggs.bucket(agg_id, query_agg) method
-        to add aggregations to the search object
-        """
         return (agg_id, query_agg)
 
     @classmethod
     def __get_query_agg_max(cls, field, agg_id=None):
         """
-        Create an aggregation DSL object for getting the max value of a field.
+        Create an es_dsl aggregation object for getting the max value of a field.
 
         :param field: field from which the get the max value
-        :return: a tuple with the aggregation id and aggregation object
+        :return: a tuple with the aggregation id and es_dsl aggregation object. Ex:
+                {
+                    "max": {
+                        "field": <field>
+                }
         """
         if not agg_id:
             agg_id = cls.AGGREGATION_ID
@@ -167,11 +176,15 @@ class ElasticQuery():
     @classmethod
     def __get_query_agg_percentiles(cls, field, agg_id=None):
         """
-        Create an aggregation DSL object for getting the percentiles value of a field.
+        Create an es_dsl aggregation object for getting the percentiles value of a field.
         In general this is used to get the median (0.5) percentile.
 
         :param field: field from which the get the percentiles values
-        :return: a tuple with the aggregation id and aggregation object
+        :return: a tuple with the aggregation id and es_dsl aggregation object. Ex:
+                {
+                    "percentile": {
+                        "field": <field>
+                }
         """
         if not agg_id:
             agg_id = cls.AGGREGATION_ID
@@ -181,10 +194,14 @@ class ElasticQuery():
     @classmethod
     def __get_query_agg_avg(cls, field, agg_id=None):
         """
-        Create an aggregation DSL object for getting the average value of a field.
+        Create an es_dsl aggregation object for getting the average value of a field.
 
         :param field: field from which the get the average value
-        :return: a tuple with the aggregation id and aggregation object
+        :return: a tuple with the aggregation id and es_dsl aggregation object. Ex:
+                {
+                    "avg": {
+                        "field": <field>
+                }
         """
         if not agg_id:
             agg_id = cls.AGGREGATION_ID
@@ -194,10 +211,15 @@ class ElasticQuery():
     @classmethod
     def __get_query_agg_cardinality(cls, field, agg_id=None):
         """
-        Create an aggregation DSL object for getting the approximate count of distinct values of a field.
+        Create an es_dsl aggregation object for getting the approximate count of distinct values of a field.
 
         :param field: field from which the get count of distinct values
-        :return: a tuple with the aggregation id and aggregation object
+        :return: a tuple with the aggregation id and es_dsl aggregation object. Ex:
+                {
+                    "cardinality": {
+                        "field": <field>,
+                        "precision_threshold": 3000
+                }
         """
         if not agg_id:
             agg_id = cls.AGGREGATION_ID
@@ -207,11 +229,11 @@ class ElasticQuery():
     @classmethod
     def __get_bounds(cls, start=None, end=None):
         """
-        Return a dict with the DSL bounds for a date_histogram agg.
+        Return a dict with the bounds for a date_histogram agg.
 
-        :param start: date from for the date_histogram agg
-        :param end: date to for the date_histogram agg
-        :return: a dict with the DSL bounds for a date_histogram agg
+        :param start: date from for the date_histogram agg, should be a datetime.datetime object
+        :param end: date to for the date_histogram agg, should be a datetime.datetime object
+        :return: a dict with the DSL bounds for a date_histogram aggregation
         """
         bounds = {}
         if start or end:
@@ -239,14 +261,15 @@ class ElasticQuery():
                            time_zone=None, start=None, end=None,
                            agg_type='count', offset=None):
         """
-        Create an aggregation DSL object for getting the time series values for field.
+        Create an es_dsl aggregation object for getting the time series values for a field.
 
         :param field: field to get the time series values
         :param time_field: field with the date
-        :param interval: interval to be used to generate the time series values
+        :param interval: interval to be used to generate the time series values, such as:(year(y),
+                         quarter(q), month(M), week(w), day(d), hour(h), minute(m), second(s))
         :param time_zone: time zone for the time_field
-        :param start: date from for the time series
-        :param end: date to for the time series
+        :param start: date from for the time series, should be a datetime.datetime object
+        :param end: date to for the time series, should be a datetime.datetime object
         :param agg_type: kind of aggregation for the field (cardinality, avg, percentiles)
         :param offset: offset to be added to the time_field in days
         :return: a aggregation object to calculate timeseries values of a field
@@ -269,7 +292,7 @@ class ElasticQuery():
             else:
                 raise RuntimeError("Aggregation of %s in ts not supported" % agg_type)
 
-        bounds = None
+        bounds = {}
         if start or end:
             if not offset:
                 # With offset and quarter interval bogus buckets are added
@@ -288,13 +311,13 @@ class ElasticQuery():
         return (cls.AGGREGATION_ID, query_agg)
 
     @classmethod
-    def get_count(cls, date_field=None, start=None, end=None, filters=None):
+    def get_count(cls, date_field=None, start=None, end=None, filters={}):
         """
         Build the DSL query for counting the number of items.
 
         :param date_field: field with the date
-        :param start: date from which to start counting
-        :param end: date until which to count items
+        :param start: date from which to start counting, should be a datetime.datetime object
+        :param end: date until which to count items, should be a datetime.datetime object
         :param filters: dict with the filters to be applied
         :return: a DSL query with size parameter
         """
@@ -308,14 +331,15 @@ class ElasticQuery():
 
     @classmethod
     def get_agg(cls, field=None, date_field=None, start=None, end=None,
-                filters=None, agg_type="terms", offset=None, interval=None):
+                filters={}, agg_type="terms", offset=None, interval=None):
         """
         Compute the aggregated value for a field.
         :param field: field to get the time series values
         :param date_field: field with the date
-        :param interval: interval to be used to generate the time series values
-        :param start: date from for the time series
-        :param end: date to for the time series
+        :param interval: interval to be used to generate the time series values, such as:(year(y),
+                         quarter(q), month(M), week(w), day(d), hour(h), minute(m), second(s))
+        :param start: date from for the time series, should be a datetime.datetime object
+        :param end: date to for the time series, should be a datetime.datetime object
         :param agg_type: kind of aggregation for the field (cardinality, avg, percentiles)
         :param offset: offset to be added to the time_field in days
         :return: a query containing the aggregation, filters and range for the specified term
