@@ -24,3 +24,6 @@ $ > bin/manuscripts -h
 **Params**:
 
 `-d, --data-dir`: directory to store data files that will be used to create the report PDF file (csv and eps files containing metrics results).
+
+
+**NOTE:** Manuscripts is being upgraded under GSoC-18. If you'd like to see what is happening with manuscripts, please head over here: [gsoc-manuscripts](https://github.com/aswanipranjal/gsoc-manuscripts].
