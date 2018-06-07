@@ -25,10 +25,10 @@
 
 import logging
 
-import requests
+from elasticsearch import Elasticsearch
+from elasticsearch_dsl import Search
 
 from ..esquery import ElasticQuery
-
 
 logger = logging.getLogger(__name__)
 
@@ -53,8 +53,8 @@ class Metrics(object):
     FIELD_COUNT = None  # Field used for metric count
     FIELD_DATE = 'grimoire_creation_date'
     DEFAULT_INTERVAL = '1M'
-    filters = None  # fixed filters for the metric
-    filters_core = None  # Core filters to be used in all metrics
+    filters = {}  # fixed filters for the metric
+    filters_core = {}  # Core filters to be used in all metrics
     interval = '1M'  # interval to be used in all metrics
     offset = None  # offset to be used in date histogram in all metrics
     es_headers = {'Content-Type': 'application/json'}
@@ -157,12 +157,20 @@ class Metrics(object):
         :return: a dict with the results of executing the query
         """
         if self.es_url.startswith("http"):
-            url = self.es_url + '/' + self.es_index + '/_search'
+            url = self.es_url
         else:
-            url = 'http://' + self.es_url + '/' + self.es_index + '/_search'
-        r = requests.post(url, data=query, headers=self.es_headers)
-        r.raise_for_status()
-        return r.json()
+            url = 'http://' + self.es_url
+        es = Elasticsearch(url)
+        s = Search(using=es, index=self.es_index)
+        s = s.update_from_dict(query)
+        try:
+            response = s.execute()
+            return response.to_dict()
+        except Exception as e:
+            print()
+            print("In get_metrics_data: Failed to fetch data.\n Query: {}, \n Error Info: {}"
+                  .format(query, e.info))
+            raise
 
     def get_ts(self):
         """
