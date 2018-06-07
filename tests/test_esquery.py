@@ -21,10 +21,10 @@
 #     Pranjal Aswani <aswani.pranjal@gmail.com>
 
 import sys
-import json
 import unittest
 
 from datetime import datetime
+from collections import OrderedDict
 
 # Hack to make sure that tests import the right packages
 # due to setuptools behaviour
@@ -42,7 +42,7 @@ class TestEsquery(unittest.TestCase):
 
         self.field = "AGG_FIELD"  # field to aggregate
         self.date_field = "DATE_FIELD"  # field for range
-        self.filters = {"name1": "value1", "name2": "value2", "*name3": "value3"}
+        self.filters = OrderedDict({"name1": "value1", "name2": "value2", "*name3": "value3"})
         self.offset = 2
         self.interval = "1y"
         self.timezone = "UTC"
@@ -291,12 +291,9 @@ class TestEsquery(unittest.TestCase):
 
     def test_get_agg(self):
         """Test the aggregation function"""
+
         self.maxDiff = None
         # check with everything and interval==None
-        # aggregation names should be numeric here and not a string value,
-        # they are string because get_agg() function converts the dict into string
-        # using json.dumps and we are loading that string again using json.loads
-        # this should be changed when get_aggs is changed to use only es_dsl
         test_agg_dict1 = {
             "query": {
                 "bool": {
@@ -332,7 +329,7 @@ class TestEsquery(unittest.TestCase):
                 }
             },
             "aggs": {
-                "1": {
+                1: {
                     "terms": {
                         "field": "AGG_FIELD",
                         "size": 100,
@@ -344,9 +341,9 @@ class TestEsquery(unittest.TestCase):
             },
             "size": 0
         }
-        self.assertDictEqual(json.loads(self.es.get_agg(field=self.field, date_field=self.date_field, start=self.start,
-                                        end=self.end, filters=self.filters, agg_type="terms", offset=None,
-                                        interval=None)), test_agg_dict1)
+        self.assertDictEqual(self.es.get_agg(field=self.field, date_field=self.date_field, start=self.start,
+                                             end=self.end, filters=self.filters, agg_type="terms", offset=None,
+                                             interval=None), test_agg_dict1)
 
         # check with everything and interval==1year
         test_agg_dict2 = {
@@ -384,7 +381,7 @@ class TestEsquery(unittest.TestCase):
                 }
             },
             "aggs": {
-                '1': {
+                1: {
                     "date_histogram": {
                         "field": "DATE_FIELD",
                         "interval": "1y",
@@ -396,7 +393,7 @@ class TestEsquery(unittest.TestCase):
                         }
                     },
                     "aggs": {
-                        '2': {
+                        2: {
                             "cardinality": {
                                 "field": "AGG_FIELD",
                                 "precision_threshold": 3000
@@ -407,9 +404,9 @@ class TestEsquery(unittest.TestCase):
             },
             "size": 0
         }
-        self.assertDictEqual(json.loads(self.es.get_agg(field=self.field, date_field=self.date_field, start=self.start,
-                                        end=self.end, filters=self.filters, agg_type="cardinality",
-                                        offset=None, interval=self.interval)), test_agg_dict2)
+        self.assertDictEqual(self.es.get_agg(field=self.field, date_field=self.date_field, start=self.start,
+                                             end=self.end, filters=self.filters, agg_type="cardinality",
+                                             offset=None, interval=self.interval), test_agg_dict2)
 
 
 if __name__ == "__main__":

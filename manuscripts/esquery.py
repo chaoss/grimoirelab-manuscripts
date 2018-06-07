@@ -23,8 +23,6 @@
 #   Alvaro del Castillo San Felix <acs@bitergia.com>
 #
 
-import json
-
 from datetime import timezone
 
 from elasticsearch_dsl import A, Search, Q
@@ -75,9 +73,9 @@ class ElasticQuery():
 
         :param date_field: field with the date value
         :param start: date with the from value. Should be a datetime.datetime object
-                      of the form: datetime.datetime(2018, 5, 25, 15, 17, 39, 916272)
+                      of the form: datetime.datetime(2018, 5, 25, 15, 17, 39)
         :param end: date with the to value. Should be a datetime.datetime object
-                      of the form: datetime.datetime(2018, 5, 25, 15, 17, 39, 916272)
+                      of the form: datetime.datetime(2018, 5, 25, 15, 17, 39)
         :return: a dict containing a range filter which can be used later in an
                  es_dsl Search object using the `filter` method.
         """
@@ -241,9 +239,13 @@ class ElasticQuery():
             start_ts = None
             end_ts = None
             if start:
+                # elasticsearch is unable to convert date with microseconds into long
+                # format for processing, hence we convert microseconds to zero
+                start = start.replace(microsecond=0)
                 start_ts = start.replace(tzinfo=timezone.utc).timestamp()
                 start_ts_ms = start_ts * 1000  # ES uses ms
             if end:
+                end = end.replace(microsecond=0)
                 end_ts = end.replace(tzinfo=timezone.utc).timestamp()
                 end_ts_ms = end_ts * 1000  # ES uses ms
 
@@ -380,4 +382,4 @@ class ElasticQuery():
                                                                 offset=offset)
         s.aggs.bucket(agg_id, query_agg)
 
-        return json.dumps(s.to_dict())
+        return s.to_dict()
