@@ -33,6 +33,11 @@ sys.path.insert(0, '..')
 from manuscripts.esquery import ElasticQuery
 
 
+def sort_order(query):
+    for key, val in query.to_dict()['match_phrase'].items():
+        return key
+
+
 class TestEsquery(unittest.TestCase):
     maxDiff = None
 
@@ -42,7 +47,10 @@ class TestEsquery(unittest.TestCase):
 
         self.field = "AGG_FIELD"  # field to aggregate
         self.date_field = "DATE_FIELD"  # field for range
-        self.filters = OrderedDict({"name1": "value1", "name2": "value2", "*name3": "value3"})
+        self.filters = OrderedDict()
+        self.filters['name1'] = 'value1'
+        self.filters['name2'] = 'value2'
+        self.filters['*name3'] = 'value3'
         self.offset = 2
         self.interval = "1y"
         self.timezone = "UTC"
@@ -58,15 +66,17 @@ class TestEsquery(unittest.TestCase):
         # test for normal filters i.e non-inverse filters
         test_list_normal = [{"match_phrase": {"name1": "value1"}},
                             {"match_phrase": {"name2": "value2"}}]
-        output_list_normal = self.es._ElasticQuery__get_query_filters(self.filters)
-        for index, item in enumerate(output_list_normal):
-            self.assertDictEqual(test_list_normal[index], item.to_dict())
+        output_list = self.es._ElasticQuery__get_query_filters(OrderedDict(self.filters))
+        output_list_sorted = sorted(output_list, key=lambda x: sort_order(x))
+        for index, item in enumerate(output_list_sorted):
+            self.assertDictEqual(item.to_dict(), test_list_normal[index])
 
         # test for inverse filters
         test_list_inverse = [{"match_phrase": {"name3": "value3"}}]
         output_list_inverse = self.es._ElasticQuery__get_query_filters(self.filters, inverse=True)
-        for index, item in enumerate(output_list_inverse):
-            self.assertDictEqual(test_list_inverse[index], item.to_dict())
+        output_list_inverse_sorted = sorted(output_list_inverse, key=lambda x: sort_order(x))
+        for index, item in enumerate(output_list_inverse_sorted):
+            self.assertDictEqual(item.to_dict(), test_list_inverse[index])
 
     def test_get_query_range(self):
         """Test if appropriate range filter is created or not"""
@@ -84,8 +94,8 @@ class TestEsquery(unittest.TestCase):
         self.assertDictEqual(self.es._ElasticQuery__get_query_range(date_field=self.date_field,
                              start=self.start, end=self.end), test_range_dict)
 
-    def test_get_query_basic(self):
-        """Test if basic queries can be formed or not"""
+    def test_get_query_basic_no_filters(self):
+        """Test if basic queries can be formed or not, without filters"""
 
         # test without filters
         test_no_filters = {
@@ -106,6 +116,9 @@ class TestEsquery(unittest.TestCase):
         }
         self.assertDictEqual(self.es._ElasticQuery__get_query_basic(self.date_field, self.start, self.end).to_dict(),
                              test_no_filters)
+
+    def test_get_query_basic(self):
+        """Test if basic queries can be formed or not"""
 
         # test with everything (range, normal and inverse filters)
         test_with_filters = {
@@ -220,8 +233,8 @@ class TestEsquery(unittest.TestCase):
         }
         self.assertDictEqual(self.es._ElasticQuery__get_bounds(self.start, self.end), test_bounds_dict)
 
-    def test_get_query_agg_ts(self):
-        """Test the date histogram functionality"""
+    def test_get_query_agg_ts_no_params(self):
+        """Test the date histogram functionality without any parameters"""
 
         # with empty parameters (this TypeError is because of the empty bounds dict)
         with self.assertRaises(TypeError):
@@ -236,6 +249,9 @@ class TestEsquery(unittest.TestCase):
         with self.assertRaises(TypeError):
             self.es._ElasticQuery__get_query_agg_ts(date_field=self.date_field, start=self.start,
                                                     end=self.end, agg_type='avg', offset=None)
+
+    def test_get_query_agg_ts(self):
+        """Test the date histogram functionality"""
 
         # test with everything and offset==None
         test_cardinality_ts_dict = {
