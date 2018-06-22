@@ -152,10 +152,6 @@ class Report():
         elif self.interval == 'year':
             self.end_prev_month = end - relativedelta.relativedelta(months=12)
 
-        # Check if each data source has a corresponding index, if available
-        if len(data_sources) < len(indices):
-            logger.error('Insufficient data sources provided')
-            sys.exit(1)
         # Create a dict of indices which, for each data_source, will give the
         # name of the elasticsearch index that has to be used.
         self.index_dict = defaultdict(lambda: None)

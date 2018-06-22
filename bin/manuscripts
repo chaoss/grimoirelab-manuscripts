@@ -38,6 +38,8 @@ from manuscripts.report import Report
 from manuscripts.config import Config
 from manuscripts._version import __version__
 
+from manuscripts.esquery import get_first_date_of_index
+
 def get_params():
     """Parse command line arguments"""
 
@@ -53,8 +55,8 @@ def get_params():
                               Use *field for the inverse filter.')
     parser.add_argument('-g', '--debug', dest='debug', action='store_true')
     parser.add_argument('-i', '--interval', default='month', help="Analysis interval (month (default), quarter, year)")
-    parser.add_argument('-s', '--start-date', default='2015-01-01',
-                        help="Start date for the report (UTC) (>=) (default: 2015-01-01)")
+    parser.add_argument('-s', '--start-date', default=None,
+                        help="Start date for the report (UTC) (>=) (default: None)")
     parser.add_argument('--offset', help="Offset to be used in date histogram aggregations (e.g.: +31d)")
     parser.add_argument('-u', '--elastic-url', help="Elastic URL with the enriched indexes")
     parser.add_argument('--data-sources', nargs='*',
@@ -78,6 +80,19 @@ def get_offset_days(offset):
     days = int(offset[1:-1])
     return days
 
+def get_min_date(url, indices, data_sources):
+    """Get the min date from all the data sources/indices available"""
+    if indices:
+        min_date = min([get_first_date_of_index(url, index) for index in indices])
+    else:
+        if "github" in data_sources:
+            data_sources.remove("github")
+            data_sources.append("github_issues")
+            data_sources.append("github_prs")
+        min_date = min([get_first_date_of_index(url, Report.ds2index[Report.ds2class[ds]]) \
+                   for ds in data_sources])
+    return min_date
+
 
 if __name__ == '__main__':
 
@@ -93,6 +108,11 @@ if __name__ == '__main__':
 
     if not (args.elastic_url and args.data_sources):
         logging.error('Missing needed params for Report: elastic_url and data_sources')
+        sys.exit(1)
+
+    # Check if each data source has a corresponding index, if available
+    if len(args.data_sources) < len(args.indices):
+        logging.error('Number of data sources do not match the corresponding number of indices provided')
         sys.exit(1)
 
     elastic = args.elastic_url
@@ -111,7 +131,12 @@ if __name__ == '__main__':
         end_date = parser.parse(args.end_date).replace(tzinfo=timezone.utc)
     # The end date is not included, the report must finish the day before
     end_date += timedelta(microseconds=-1)
-    start_date = parser.parse(args.start_date).replace(tzinfo=timezone.utc)
+
+    start_date = args.start_date
+    # if start date is not present, it is calculated by querying all the indices given
+    if not start_date:
+        start_date = get_min_date(elastic, args.indices, args.data_sources)
+    start_date = parser.parse(start_date).replace(tzinfo=timezone.utc)
 
     offset = args.offset if args.offset else None
 

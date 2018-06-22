@@ -25,6 +25,7 @@
 
 from datetime import timezone
 
+from elasticsearch import Elasticsearch
 from elasticsearch_dsl import A, Search, Q
 # elasticsearch_dsl is referred to as es_dsl in the comments, henceforth
 
@@ -383,3 +384,15 @@ class ElasticQuery():
         s.aggs.bucket(agg_id, query_agg)
 
         return s.to_dict()
+
+
+def get_first_date_of_index(elastic_url, index):
+    """Get the first/min date present in the index"""
+    es = Elasticsearch(elastic_url)
+    search = Search(using=es, index=index)
+    agg = A("min", field="grimoire_creation_date")
+    search.aggs.bucket("1", agg)
+    search = search.extra(size=0)
+    response = search.execute()
+    start_date = response.to_dict()['aggregations']['1']['value_as_string'][:10]
+    return start_date
