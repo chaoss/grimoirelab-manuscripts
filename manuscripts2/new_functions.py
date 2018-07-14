@@ -61,8 +61,8 @@ class Query():
         :param interval: interval to use for timeseries data
         :param offset: TODO: this is still to be implemented
         """
-
-        self.search = Search(using=index.es, index=index.index_name)
+        self.index = index
+        self.search = Search(using=self.index.es, index=self.index.index_name)
         self.parent_agg_counter = 0
         self.filters = {}
         self.filters.update(esfilters)
