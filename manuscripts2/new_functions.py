@@ -54,6 +54,12 @@ class Query():
     Base query class used to query elasticsearch
     """
 
+    filters = {}
+    start_date = None
+    end_date = None
+    interval_ = "month"
+    offset_ = None
+
     def __init__(self, index, esfilters={}, interval=None, offset=None):
         """
         :param index: An Index object containing the connection details
@@ -63,20 +69,19 @@ class Query():
         """
         self.index = index
         self.search = Search(using=self.index.es, index=self.index.index_name)
-        self.parent_agg_counter = 0
-        self.filters = {}
-        self.filters.update(esfilters)
 
+        self.parent_agg_counter = 0
+        if esfilters:
+            self.filters.update(esfilters)
         # an ordered aggregation dict so that the nested aggregations can be made chainable
         self.aggregations = OrderedDict()
         self.child_agg_counter_dict = defaultdict(int)  # to keep a track of nested child aggregations
         self.size = 10000  # temporary hack to get all the data
         self.precision_threshold = 3000  # accuracy that we want when counting the number of items
-        self.start_date = None
-        self.end_date = None
-        self.interval = interval if interval else "month"
-        self.offset = offset
-        self.range = {}
+        if interval:
+            self.interval_ = interval
+        if offset:
+            self.offset_ = offset
 
     def add_query(self, key_val={}):
         """
@@ -255,7 +260,8 @@ class Query():
 
     def since(self, start, field=None):
         """
-        Add the start range to query data starting from that date
+        Add the start date to query data starting from that date
+        sets the default start date for each query
 
         :param start: date to start looking at the fields (from date)
         :param field: specific field for the start date in range filter
@@ -267,17 +273,14 @@ class Query():
             field = "grimoire_creation_date"
         self.start_date = start
 
-        date_dict = {"gte": "{}".format(self.start_date.isoformat())}
-
-        if field in self.range.keys():
-            self.range[field].update(date_dict)
-        else:
-            self.range[field] = date_dict
+        date_dict = {field: {"gte": "{}".format(self.start_date.isoformat())}}
+        self.search = self.search.filter("range", **date_dict)
         return self
 
     def until(self, end, field=None):
         """
-        Add the end data to query data upto that date
+        Add the end date to query data upto that date
+        sets the default end date for each query
 
         :param end: date to stop looking at the fields (to date)
         :param field: specific field for the end date in range filter
@@ -289,12 +292,8 @@ class Query():
             field = "grimoire_creation_date"
         self.end_date = end
 
-        date_dict = {"lte": "{}".format(self.end_date.isoformat())}
-
-        if field in self.range.keys():
-            self.range[field].update(date_dict)
-        else:
-            self.range[field] = date_dict
+        date_dict = {field: {"lte": "{}".format(self.end_date.isoformat())}}
+        self.search = self.search.filter("range", **date_dict)
         return self
 
     def by_authors(self, field=None):
@@ -367,12 +366,12 @@ class Query():
         :returns: self, which allows the method to be chainable with the other methods
         """
 
-        hist_period = period if period else self.interval
+        hist_period = period if period else self.interval_
         time_zone = timezone if timezone else "UTC"
 
-        start = start if start else self.start_date
-        end = end if end else self.end_date
-        bounds = self.get_bounds(start, end)
+        start_ = start if start else self.start_date
+        end_ = end if end else self.end_date
+        bounds = self.get_bounds(start_, end_)
 
         date_field = field if field else "grimoire_creation_date"
         agg_key = "date_histogram_" + date_field
@@ -459,9 +458,6 @@ class Query():
             self.search.aggs.bucket(self.parent_agg_counter, val)
             self.parent_agg_counter += 1
 
-        if self.range:
-            self.search = self.search.filter("range", **self.range)
-
         self.search = self.search.extra(size=0)
         response = self.search.execute()
         self.flush_aggregations()
@@ -482,9 +478,6 @@ class Query():
             raise AttributeError("Please provide the fields to get from elasticsearch!")
 
         self.reset_aggregations()
-
-        if self.range:
-            self.search = self.search.filter("range", **self.range)
 
         self.search = self.search.extra(_source=fields)
         self.search = self.search.extra(size=self.size)
