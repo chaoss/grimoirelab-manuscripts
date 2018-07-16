@@ -5,7 +5,12 @@ python:
 
 sudo: false
 
+services:
+  - elasticsearch
+
+# sleep to wait for Elasticsearch init
 before_install:
+  - sleep 10
   - pip install -r "requirements.txt"
   - pip install flake8
   - pip install coveralls

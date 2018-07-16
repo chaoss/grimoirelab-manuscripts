@@ -1,0 +1,155 @@
+{
+    "buckets": [
+    {
+        "0":
+        {
+            "value": 45588
+        },
+        "key": "Santiago Dueñas",
+        "doc_count": 759
+    },
+    {
+        "0":
+        {
+            "value": 61941
+        },
+        "key": "Valerio Cosentino",
+        "doc_count": 296
+    },
+    {
+        "0":
+        {
+            "value": 15337
+        },
+        "key": "Alvaro del Castillo",
+        "doc_count": 56
+    },
+    {
+        "0":
+        {
+            "value": 21781
+        },
+        "key": "Alberto Martín",
+        "doc_count": 51
+    },
+    {
+        "0":
+        {
+            "value": 1105
+        },
+        "key": "Jesus M. Gonzalez-Barahona",
+        "doc_count": 19
+    },
+    {
+        "0":
+        {
+            "value": 1274
+        },
+        "key": "valerio cosentino",
+        "doc_count": 6
+    },
+    {
+        "0":
+        {
+            "value": 3593
+        },
+        "key": "quan",
+        "doc_count": 5
+    },
+    {
+        "0":
+        {
+            "value": 46
+        },
+        "key": "Miguel Ángel Fernández",
+        "doc_count": 3
+    },
+    {
+        "0":
+        {
+            "value": 4
+        },
+        "key": "David Pose Fernández",
+        "doc_count": 2
+    },
+    {
+        "0":
+        {
+            "value": 2
+        },
+        "key": "camillem",
+        "doc_count": 2
+    },
+    {
+        "0":
+        {
+            "value": 123
+        },
+        "key": "valerio",
+        "doc_count": 2
+    },
+    {
+        "0":
+        {
+            "value": 2
+        },
+        "key": "David Esler",
+        "doc_count": 1
+    },
+    {
+        "0":
+        {
+            "value": 61
+        },
+        "key": "Israel Herraiz",
+        "doc_count": 1
+    },
+    {
+        "0":
+        {
+            "value": 331
+        },
+        "key": "J. Manrique Lopez de la Fuente",
+        "doc_count": 1
+    },
+    {
+        "0":
+        {
+            "value": 2
+        },
+        "key": "Luis Cañas Díaz",
+        "doc_count": 1
+    },
+    {
+        "0":
+        {
+            "value": 14
+        },
+        "key": "Prabhat",
+        "doc_count": 1
+    },
+    {
+        "0":
+        {
+            "value": 54
+        },
+        "key": "Stephan Barth",
+        "doc_count": 1
+    },
+    {
+        "0":
+        {
+            "value": 153
+        },
+        "key": "anveshc05",
+        "doc_count": 1
+    },
+    {
+        "0":
+        {
+            "value": 3
+        },
+        "key": "david",
+        "doc_count": 1
+    }]
+}

@@ -81,7 +81,8 @@ setup(name="manuscripts",
       keywords="development repositories analytics",
       packages=[
           'manuscripts',
-          'manuscripts.metrics'
+          'manuscripts.metrics',
+          'manuscripts2'
       ],
       package_data={'': template_files},
       # package_data={'': ['latex_template/report.tex']},

@@ -1,0 +1,143 @@
+{
+  "aggregations": {
+    "0": {
+      "doc_count_error_upper_bound": 0,
+      "sum_other_doc_count": 0,
+      "buckets": [
+        {
+          "0": {
+            "value": 759
+          },
+          "key": "Santiago Dueñas",
+          "doc_count": 759
+        },
+        {
+          "0": {
+            "value": 296
+          },
+          "key": "Valerio Cosentino",
+          "doc_count": 296
+        },
+        {
+          "0": {
+            "value": 56
+          },
+          "key": "Alvaro del Castillo",
+          "doc_count": 56
+        },
+        {
+          "0": {
+            "value": 51
+          },
+          "key": "Alberto Martín",
+          "doc_count": 51
+        },
+        {
+          "0": {
+            "value": 19
+          },
+          "key": "Jesus M. Gonzalez-Barahona",
+          "doc_count": 19
+        },
+        {
+          "0": {
+            "value": 6
+          },
+          "key": "valerio cosentino",
+          "doc_count": 6
+        },
+        {
+          "0": {
+            "value": 5
+          },
+          "key": "quan",
+          "doc_count": 5
+        },
+        {
+          "0": {
+            "value": 3
+          },
+          "key": "Miguel Ángel Fernández",
+          "doc_count": 3
+        },
+        {
+          "0": {
+            "value": 2
+          },
+          "key": "David Pose Fernández",
+          "doc_count": 2
+        },
+        {
+          "0": {
+            "value": 2
+          },
+          "key": "camillem",
+          "doc_count": 2
+        },
+        {
+          "0": {
+            "value": 2
+          },
+          "key": "valerio",
+          "doc_count": 2
+        },
+        {
+          "0": {
+            "value": 1
+          },
+          "key": "David Esler",
+          "doc_count": 1
+        },
+        {
+          "0": {
+            "value": 1
+          },
+          "key": "Israel Herraiz",
+          "doc_count": 1
+        },
+        {
+          "0": {
+            "value": 1
+          },
+          "key": "J. Manrique Lopez de la Fuente",
+          "doc_count": 1
+        },
+        {
+          "0": {
+            "value": 1
+          },
+          "key": "Luis Cañas Díaz",
+          "doc_count": 1
+        },
+        {
+          "0": {
+            "value": 1
+          },
+          "key": "Prabhat",
+          "doc_count": 1
+        },
+        {
+          "0": {
+            "value": 1
+          },
+          "key": "Stephan Barth",
+          "doc_count": 1
+        },
+        {
+          "0": {
+            "value": 1
+          },
+          "key": "anveshc05",
+          "doc_count": 1
+        },
+        {
+          "0": {
+            "value": 1
+          },
+          "key": "david",
+          "doc_count": 1
+        }
+      ]
+    }
+  }
+}
