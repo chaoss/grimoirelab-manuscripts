@@ -437,6 +437,13 @@ class Query():
         self.child_agg_counter = 0
         self.child_agg_counter_dict = defaultdict(int)
 
+    def flush_aggregations(self):
+        """
+        Remove all the aggregations from the self.aggregations dict
+        """
+
+        self.aggregations = OrderedDict()
+
     def fetch_aggregation_results(self):
         """
         Loops though the self.aggregations dict and adds them to the Search object
@@ -457,6 +464,7 @@ class Query():
 
         self.search = self.search.extra(size=0)
         response = self.search.execute()
+        self.flush_aggregations()
         return response.to_dict()
 
     def fetch_results_from_source(self, *fields, dataframe=False):
@@ -489,77 +497,74 @@ class Query():
             return df.fillna(0)
         return data
 
+    def get_timeseries(self, child_agg_count=0, dataframe=False):
+        """
+        Get time series data for the specified fields and period of analysis
 
-def get_timeseries(query, child_agg_count=0, dataframe=False):
-    """
-    Get time series data for the specified fields and period of analysis
+        :param query: a Query object with the necessary aggregations and filters
+        :param child_agg_count: the child aggregation count to be used
+                                default = 0
+        :param dataframe: if dataframe=True, return a pandas.DataFrame object
+        :returns: dictionary containing "date", "value" and "unixtime" keys
+                  with lists as values containing data from each bucket in the
+                  aggregation
+        """
 
-    :param query: a Query object with the necessary aggregations and filters
-    :param child_agg_count: the child aggregation count to be used
-                            default = 0
-    :param dataframe: if dataframe=True, return a pandas.DataFrame object
-    :returns: dictionary containing "date", "value" and "unixtime" keys
-              with lists as values containing data from each bucket in the
-              aggregation
-    """
+        res = self.fetch_aggregation_results()
 
-    res = query.fetch_aggregation_results()
+        ts = {"date": [], "value": [], "unixtime": []}
 
-    ts = {"date": [], "value": [], "unixtime": []}
+        if 'buckets' not in res['aggregations'][str(self.parent_agg_counter - 1)]:
+            raise RuntimeError("Aggregation results have no buckets in time series results.")
 
-    if 'buckets' not in res['aggregations'][str(query.parent_agg_counter - 1)]:
-        raise RuntimeError("Aggregation results have no buckets in time series results.")
-
-    for bucket in res['aggregations'][str(query.parent_agg_counter - 1)]['buckets']:
-        ts['date'].append(parser.parse(bucket['key_as_string']))
-        if str(child_agg_count) in bucket:
-            # We have a subaggregation with the value
-            # If it is percentiles we get the median
-            if 'values' in bucket[str(child_agg_count)]:
-                val = bucket[str(child_agg_count)]['values']['50.0']
-                if val == 'NaN':
-                    # ES returns NaN. Convert to None for matplotlib graph
-                    val = None
-                ts['value'].append(val)
+        for bucket in res['aggregations'][str(self.parent_agg_counter - 1)]['buckets']:
+            ts['date'].append(parser.parse(bucket['key_as_string']).date())
+            if str(child_agg_count) in bucket:
+                # We have a subaggregation with the value
+                # If it is percentiles we get the median
+                if 'values' in bucket[str(child_agg_count)]:
+                    val = bucket[str(child_agg_count)]['values']['50.0']
+                    if val == 'NaN':
+                        # ES returns NaN. Convert to None for matplotlib graph
+                        val = None
+                    ts['value'].append(val)
+                else:
+                    ts['value'].append(bucket[str(child_agg_count)]['value'])
             else:
-                ts['value'].append(bucket[str(child_agg_count)]['value'])
+                ts['value'].append(bucket['doc_count'])
+            # unixtime comes in ms from ElasticSearch
+            ts['unixtime'].append(bucket['key'] / 1000)
+
+        if dataframe:
+            df = pd.DataFrame.from_records(ts, index="date")
+            return df.fillna(0)
+        return ts
+
+    def get_aggs(self):
+        """
+        Compute the values for single valued aggregations
+
+        :param query: a Query object with the necessary aggregations and filters
+        :returns: the single aggregation value
+        """
+
+        res = self.fetch_aggregation_results()
+        if 'aggregations' in res and 'values' in res['aggregations'][str(self.parent_agg_counter - 1)]:
+            try:
+                agg = res['aggregations'][str(self.parent_agg_counter - 1)]['values']["50.0"]
+                if agg == 'NaN':
+                    # ES returns NaN. Convert to None for matplotlib graph
+                    agg = None
+            except Exception as e:
+                raise RuntimeError("Multivalue aggregation result not supported")
+
+        elif 'aggregations' in res and 'value' in res['aggregations'][str(self.parent_agg_counter - 1)]:
+            agg = res['aggregations'][str(self.parent_agg_counter - 1)]['value']
+
         else:
-            ts['value'].append(bucket['doc_count'])
-        # unixtime comes in ms from ElasticSearch
-        ts['unixtime'].append(bucket['key'] / 1000)
+            agg = res['hits']['total']
 
-    if dataframe:
-        df = pd.DataFrame.from_records(ts, index="date")
-        return df.fillna(0)
-    return ts
-
-
-def get_aggs(query):
-    """
-    Compute the values for single valued aggregations
-
-    :param query: a Query object with the necessary aggregations and filters
-    :returns: the single aggregation value
-    """
-
-    res = query.fetch_aggregation_results()
-
-    if 'aggregations' in res and 'values' in res['aggregations'][str(query.parent_agg_counter - 1)]:
-        try:
-            agg = res['aggregations'][str(query.parent_agg_counter - 1)]['values']["50.0"]
-            if agg == 'NaN':
-                # ES returns NaN. Convert to None for matplotlib graph
-                agg = None
-        except Exception as e:
-            raise RuntimeError("Multivalue aggregation result not supported")
-
-    elif 'aggregations' in res and 'value' in res['aggregations'][str(query.parent_agg_counter - 1)]:
-        agg = res['aggregations'][str(query.parent_agg_counter - 1)]['value']
-
-    else:
-        agg = res['hits']['total']
-
-    return agg
+        return agg
 
 
 def get_trend(timeseries):

@@ -64,11 +64,11 @@ sample = Query(github_index).add_query({"name1":"value1"})\
 ##### EXAMPLE 2: Basic aggregations- Getting the number of authors who participated in the project
 
 ```python
-from manuscripts2.new_functions import Query, Index, get_aggs
+from manuscripts2.new_functions import Query, Index
 github_index = Index(index="<github_index_name>")
 
 github = Query(github_index).get_cardinality("author_uuid")
-get_aggs(github)
+github.get_aggs()
 ```
 
 **Steps:**
@@ -76,7 +76,7 @@ get_aggs(github)
 - Create an `Index` object containing the elasticsearch connection information 
 - Create an `Query` object using the `Index` object created
 - Add an `author_uuid` aggregation to the aggregations dict inside github object
-- Get the single valued aggregation (cardinality or number of author_uuids) using the get_aggs helper function
+- Get the single valued aggregation (cardinality or number of author_uuids) using the get_aggs method
 
 **Points to Note:**
 
@@ -160,7 +160,7 @@ Alternatively, we can just use the `get_aggs()` function such as:
 
 ```python
 
-number_of_closed_prs = get_aggs(prs.get_cardinality("id_in_repo"))
+number_of_closed_prs = prs.get_cardinality("id_in_repo").get_aggs()
 
 ```
 Which gives us the number of closed PRs and clears the aggregation dict for new aggregations.
@@ -256,7 +256,7 @@ Apart from aggregations, we can ge the actual values for analysis using the `fet
 ##### EXAMPLE 7: To get time series data:
 
 ```python
-from manuscripts2.new_functions import Index, get_timeseries
+from manuscripts2.new_functions import Index
 from manuscripts2.derived_classes import PullRequests
 
 github_index = Index(index="<github_index_name>")
@@ -267,7 +267,7 @@ pull_requests = PullRequests(github_index).is_closed()\
 										  .get_cardinality("id")\
 										  .by_period(period="week")
 
-prs_by_weeks = get_timeseries(pull_requests, dataframe=True)
+prs_by_weeks = pull_requests.get_timeseries(dataframe=True)
 
 
 							unixtime	value
