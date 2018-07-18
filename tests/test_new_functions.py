@@ -36,10 +36,7 @@ from grimoire_elk.elk import feed_backend, enrich_backend
 # due to setuptools behaviour
 sys.path.insert(0, '..')
 
-from manuscripts2.new_functions import (Query,
-                                        Index,
-                                        get_aggs)
-
+from manuscripts2.new_functions import Query, Index
 
 # We are going to insert perceval's data into elasticsearch
 # So that we can test the the functions
@@ -172,7 +169,7 @@ class TestNewFunctions(unittest.TestCase):
         self.Query_test_object.get_sum(field=field)\
                               .since(start=self.start)\
                               .until(end=self.end)
-        self.assertEqual(int(get_aggs(self.Query_test_object)), SUM_LINES_CHANGED)
+        self.assertEqual(int(self.Query_test_object.get_aggs()), SUM_LINES_CHANGED)
 
     def test_get_average(self):
         """
@@ -188,7 +185,7 @@ class TestNewFunctions(unittest.TestCase):
         self.Query_test_object.get_average(field)\
                               .since(start=self.start)\
                               .until(end=self.end)
-        avg_lines_changed = "%.1f" % get_aggs(self.Query_test_object)
+        avg_lines_changed = "%.1f" % self.Query_test_object.get_aggs()
         avg_lines_changed = float(avg_lines_changed)
         self.assertEqual(avg_lines_changed, AVERAGE_LINES_ADDED)
 
@@ -206,7 +203,7 @@ class TestNewFunctions(unittest.TestCase):
         self.Query_test_object.get_percentiles(field)\
                               .since(start=self.start)\
                               .until(end=self.end)
-        percentiles = int(get_aggs(self.Query_test_object))
+        percentiles = int(self.Query_test_object.get_aggs())
         self.assertEqual(percentiles, PERCENTILE_LINES_ADDED)
 
     def test_get_terms(self):
@@ -242,7 +239,7 @@ class TestNewFunctions(unittest.TestCase):
         self.Query_test_object.get_min(field)\
                               .since(start=self.start)\
                               .until(end=self.end)
-        self.assertEqual(get_aggs(self.Query_test_object), MIN_GRIMOIRE_CREATION_DATE)
+        self.assertEqual(self.Query_test_object.get_aggs(), MIN_GRIMOIRE_CREATION_DATE)
 
     def test_get_max(self):
         """
@@ -258,7 +255,7 @@ class TestNewFunctions(unittest.TestCase):
         self.Query_test_object.get_max(field)\
                               .since(start=self.start)\
                               .until(end=self.end)
-        self.assertEqual(get_aggs(self.Query_test_object), MAX_COMMIT_DATE)
+        self.assertEqual(self.Query_test_object.get_aggs(), MAX_COMMIT_DATE)
 
     def test_get_cardinality(self):
         """
@@ -274,7 +271,7 @@ class TestNewFunctions(unittest.TestCase):
         self.Query_test_object.get_cardinality(field)\
                               .since(start=self.start)\
                               .until(end=self.end)
-        self.assertEqual(get_aggs(self.Query_test_object), NUM_COMMITTERS)
+        self.assertEqual(self.Query_test_object.get_aggs(), NUM_COMMITTERS)
 
     def test_get_extended_stats(self):
         """
@@ -335,7 +332,7 @@ class TestNewFunctions(unittest.TestCase):
         self.Query_test_object.get_cardinality(self.field1)\
                               .since(start=datetime(2016, 7, 10), field=self.date_field1)\
                               .until(end=datetime(2017, 7, 10), field=self.date_field2)
-        self.assertEqual(get_aggs(self.Query_test_object), NUM_COMMITS2)
+        self.assertEqual(self.Query_test_object.get_aggs(), NUM_COMMITS2)
 
     def test_by_authors(self):
         """
@@ -477,12 +474,12 @@ class TestNewFunctions(unittest.TestCase):
 
         self.Query_test_object.until(end=self.end)
         self.Query_test_object.get_cardinality(self.field1)
-        num_commits = get_aggs(self.Query_test_object)
+        num_commits = self.Query_test_object.get_aggs()
         self.assertEqual(NUM_COMMITS, num_commits)
 
         self.Query_test_object.until(end=self.end)
         self.Query_test_object.get_cardinality(self.field2)
-        num_authors = get_aggs(self.Query_test_object)
+        num_authors = self.Query_test_object.get_aggs()
         self.assertEqual(NUM_AUTHORS, num_authors)
 
     @classmethod
