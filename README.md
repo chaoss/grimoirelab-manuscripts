@@ -1,4 +1,4 @@
-# GrimoireLab Manuscripts [![Build Status](https://travis-ci.org/grimoirelab/reports.svg?branch=master)](https://travis-ci.org/grimoirelab/reports)
+# GrimoireLab Manuscripts [![Build Status](https://travis-ci.org/chaoss/grimoirelab-manuscripts.svg?branch=master)](https://travis-ci.org/chaoss/grimoirelab-manuscripts) [![Coverage Status](https://coveralls.io/repos/github/chaoss/grimoirelab-manuscripts/badge.svg?branch=master)](https://coveralls.io/github/chaoss/grimoirelab-manuscripts?branch=master)
 
 The aim of this project is the automatic generation of reports from the enriched indexes with items from perceval data sources (git commits, github pull requests, bugzilla bugs ...) enriched using GrimoireELK.
 
