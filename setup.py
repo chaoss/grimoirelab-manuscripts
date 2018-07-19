@@ -82,7 +82,8 @@ setup(name="manuscripts",
       packages=[
           'manuscripts',
           'manuscripts.metrics',
-          'manuscripts2'
+          'manuscripts2',
+          'manuscripts2.metrics'
       ],
       package_data={'': template_files},
       # package_data={'': ['latex_template/report.tex']},
@@ -94,6 +95,7 @@ setup(name="manuscripts",
           'sortinghat>=0.4.2'
       ],
       scripts=[
-          'bin/manuscripts'
+          'bin/manuscripts',
+          'bin/manuscripts2'
       ],
       zip_safe=False)

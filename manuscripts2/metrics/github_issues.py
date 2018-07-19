@@ -25,7 +25,7 @@
 import sys
 sys.path.insert(0, '..')
 
-from manuscripts2.derived_classes import Issues
+from manuscripts2.elasticsearch import Issues
 
 
 class IssuesMetrics():

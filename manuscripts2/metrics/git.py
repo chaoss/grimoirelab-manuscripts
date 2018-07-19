@@ -25,7 +25,7 @@
 import sys
 sys.path.insert(0, '..')
 
-from manuscripts2.new_functions import Query
+from manuscripts2.elasticsearch import Query
 
 
 class GitMetrics():

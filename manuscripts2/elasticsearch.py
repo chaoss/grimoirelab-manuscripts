@@ -560,6 +560,19 @@ class Query():
         return agg
 
 
+class PullRequests(Query):
+    def __init__(self, index_obj, esfilters={}, interval=None, offset=None):
+        super().__init__(index_obj, esfilters, interval, offset)
+        super().add_query({"pull_request": "true"})
+
+
+class Issues(Query):
+
+    def __init__(self, index_obj, esfilters={}, interval=None, offset=None):
+        super().__init__(index_obj, esfilters, interval, offset)
+        super().add_query({"pull_request": "false"})
+
+
 def get_trend(timeseries):
     """
     Using the values returned by get_timeseries(), compare the current

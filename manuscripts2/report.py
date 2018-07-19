@@ -29,10 +29,9 @@ from collections import defaultdict
 
 from elasticsearch import Elasticsearch
 
-from .new_functions import (Query,
+from .elasticsearch import (Query,
                             Index,
-                            get_trend,
-                            get_timeseries)
+                            get_trend)
 
 from .metrics import git
 from .metrics import github_prs
@@ -143,7 +142,7 @@ class Report():
         csv = "metricsnames, netvalues, relativevalues, datasource\n"
 
         for metric in metrics:
-            (last, percentage) = get_trend(get_timeseries(metric))
+            (last, percentage) = get_trend(metric.get_timeseries())
             csv += "{}, {}, {}, {}\n".format(metric.index.index_name, last,
                                              percentage, metric.index.index_name)
 

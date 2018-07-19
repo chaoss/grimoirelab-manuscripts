@@ -41,7 +41,7 @@ These are subclasses derieved from the `Query` object. They have the initial que
 The idea is that the user can use the chainability of functions to create nested aggs and add queries seamlessly.
 
 ```python
-from manuscripts2.new_functions import Query, Index
+from manuscripts2.elasticsearch import Query, Index
 github_index = Index(index="<github_index_name>")
 
 sample = Query(github_index).add_query({"name1":"value1"})\
@@ -64,7 +64,7 @@ sample = Query(github_index).add_query({"name1":"value1"})\
 ##### EXAMPLE 2: Basic aggregations- Getting the number of authors who participated in the project
 
 ```python
-from manuscripts2.new_functions import Query, Index
+from manuscripts2.elasticsearch import Query, Index
 github_index = Index(index="<github_index_name>")
 
 github = Query(github_index).get_cardinality("author_uuid")
@@ -100,8 +100,8 @@ github.get_aggs()
 ##### EXAMPLE 3: Get all the closed issues by authors.
 
 ```python
-from manuscripts2.new_functions import Index
-from manuscripts2.derived_classes import Issues
+from manuscripts2.elasticsearch import Index
+from manuscripts2.elasticsearch import Issues
 github_index = Index(index="<github_index_name>")  # using default es connection here
 
 issues = Issues(github_index).is_closed()\
@@ -137,8 +137,8 @@ This will return a response from elasticsearch in the form of a dictionary havin
 ##### EXAMPLE 4: Moar chainability
 
 ```python
-from manuscripts2.new_functions import Index
-from manuscripts2.derived_classes import PullRequests
+from manuscripts2.elasticsearch import Index
+from manuscripts2.elasticsearch import PullRequests
 
 github_index = Index(index="<github_index_name>")
 prs = PullRequests(github_index).is_closed()\
@@ -189,7 +189,7 @@ As we can see, it has 2 aggregations. The first `terms` agg has a `field=author_
 ##### EXAMPLE 5: Multiple nested aggregations for the same field:
 
 ```python
-from manuscripts2.new_functions import Query, Index
+from manuscripts2.elasticsearch import Query, Index
 
 commits = Index(index="<github_index_name>")
 
@@ -224,8 +224,8 @@ This allows us to get all the related aggregations in one go.
 ##### EXAMPLE 6: To get all the values from source:
 
 ```python
-from manuscripts2.new_functions import Index
-from manuscripts2.derived_classes import Issues
+from manuscripts2.elasticsearch import Index
+from manuscripts2.elasticsearch import Issues
 
 github_index = Index(index="<github_index_name>")
 issues = Issues(github_index).is_closed()
@@ -256,8 +256,8 @@ Apart from aggregations, we can ge the actual values for analysis using the `fet
 ##### EXAMPLE 7: To get time series data:
 
 ```python
-from manuscripts2.new_functions import Index
-from manuscripts2.derived_classes import PullRequests
+from manuscripts2.elasticsearch import Index
+from manuscripts2.elasticsearch import PullRequests
 
 github_index = Index(index="<github_index_name>")
 

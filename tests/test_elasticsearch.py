@@ -36,7 +36,7 @@ from grimoire_elk.elk import feed_backend, enrich_backend
 # due to setuptools behaviour
 sys.path.insert(0, '..')
 
-from manuscripts2.new_functions import Query, Index
+from manuscripts2.elasticsearch import Query, Index
 
 # We are going to insert perceval's data into elasticsearch
 # So that we can test the the functions
@@ -75,7 +75,7 @@ def load_json_file(filename, mode="r"):
     return json_content
 
 
-class TestNewFunctions(unittest.TestCase):
+class TestElasticsearch(unittest.TestCase):
     """Base class to test new_functions.py"""
 
     maxDiff = None

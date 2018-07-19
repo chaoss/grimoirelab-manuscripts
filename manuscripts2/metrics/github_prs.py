@@ -25,7 +25,7 @@
 import sys
 sys.path.insert(0, '..')
 
-from manuscripts2.derived_classes import PullRequests
+from manuscripts2.elasticsearch import PullRequests
 
 
 class PullRequestsMetrics():
