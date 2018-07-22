@@ -20,6 +20,11 @@
 # Authors:
 #     Pranjal Aswani <aswani.pranjal@gmail.com>
 
+# TODO:
+# These tests will fail if some old PR is accepted and that code
+# is added to the master branch. To remedy that, we should look
+# into using github issues or prs instead of using git data source
+
 import os
 import sys
 import json
@@ -48,15 +53,15 @@ BACKEND = "git"
 BACKEND_PARAMS = [REPOSITORY]
 
 # Some aggregation results as seen on 10th July 2018
-NUM_COMMITS = 1209
+NUM_COMMITS = 1217
 NUM_AUTHORS = 19
 NUM_COMMITTERS = 10
-SUM_LINES_CHANGED = 196209
-AVERAGE_LINES_ADDED = 125.2
+SUM_LINES_CHANGED = 196966
+AVERAGE_LINES_ADDED = 125.0
 # This was tested over 50 values and 10 was the most stable one
 PERCENTILE_LINES_ADDED = 10
 MIN_GRIMOIRE_CREATION_DATE = 1439914107000
-MAX_COMMIT_DATE = 1531248096000
+MAX_COMMIT_DATE = 1530905769000
 
 # These commits have "grimoire_creation_date" greater than 10/07/2016
 # And "commit_date" less than 10/07/2017 to test double range
@@ -253,8 +258,8 @@ class TestElasticsearch(unittest.TestCase):
 
         # with field param
         self.Query_test_object.get_max(field)\
-                              .since(start=self.start)\
-                              .until(end=self.end)
+                              .since(start=self.start, field=self.date_field2)\
+                              .until(end=self.end, field=self.date_field2)
         self.assertEqual(self.Query_test_object.get_aggs(), MAX_COMMIT_DATE)
 
     def test_get_cardinality(self):
