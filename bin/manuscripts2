@@ -26,7 +26,13 @@
 import sys
 sys.path.insert(0, '.')
 
+from datetime import datetime
 from manuscripts2.report import Report
 
-test_report = Report(data_dir="PERCEVAL_TESTS", data_sources=['git', 'github_issues', 'github_prs'])
-test_report.get_activity_metrics()
+start_date = datetime(2015, 1, 1)
+end_date = datetime(2018, 7, 10)
+es_url = "http://localhost:9200"
+
+test_report = Report(es_url=es_url, start=start_date, end=end_date, data_dir="PERCEVAL_TESTS",
+					 data_sources=['git'], interval="month")
+test_report.get_sec_overview()

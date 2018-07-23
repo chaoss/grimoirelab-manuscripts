@@ -20,50 +20,82 @@
 #
 # Author:
 #   Pranjal Aswani <aswani.pranjal@gmail.com>
-#
-
-import sys
-sys.path.insert(0, '..')
 
 from manuscripts2.elasticsearch import Query
 
 
 class GitMetrics():
+    """Root of all metric classes based on queries to a git enriched index.
 
-    def __init__(self, index):
+    This class is not intended to be instantiated, but to be
+    extened by child classes that will populate self.query with real
+    queries.
 
-        self.name = "git"
-        self.commits = Query(index)
+    :param index: index object
+    """
 
-    def get_section_metrics(self):
+    def __init__(self, index, start, end):
 
-        return {
-            "overview": {
-                "activity_metrics": [self.commits.get_cardinality("hash").by_period()],
-                "author_metrics": [],
-                "bmi_metrics": [],
-                "time_to_close_metrics": [],
-                "projects_metrics": []
-            },
-            "com_channels": {
-                "activity_metrics": [],
-                "author_metrics": []
-            },
-            "project_activity": {
-                # TODO: Authors is not activity but we need two metrics here
-                "metrics": []
-            },
-            "project_community": {
-                "author_metrics": [],
-                "people_top_metrics": [],
-                "orgs_top_metrics": [],
-            },
-            "project_process": {
-                "bmi_metrics": [],
-                "time_to_close_metrics": [],
-                "time_to_close_title": "",
-                "time_to_close_review_metrics": [],
-                "time_to_close_review_title": "",
-                "patchsets_metrics": []
-            }
-        }
+        self.query = Query(index)
+        self.start = start
+        self.end = end
+        self.query.since(self.start).until(self.end)
+
+    def timeseries(self):
+        """Obtain a time series from the current query"""
+
+        return self.query.get_timeseries(dataframe=True)
+
+    def aggregations(self):
+        """Obtain a single valued aggregation from the current query"""
+
+        return self.query.get_aggs()
+
+
+class Commits(GitMetrics):
+    """Class for computing the "commits" metric.
+
+    :param index: index object
+    """
+
+    def __init__(self, index, start, end):
+        super().__init__(index, start, end)
+        self.id = "commits"
+        self.name = "Commits"
+        self.desc = "Changes to the source code"
+        self.query = self.query.get_cardinality("hash").by_period()
+
+
+class Authors(GitMetrics):
+    """
+    class for computing the "Authors" metric
+
+    :param:
+    """
+    def __init__(self, index, start, end):
+        super().__init__(index, start, end)
+        self.id = "authors"
+        self.name = "Authors"
+        self.desc = "People authoring commits (changes to source code)"
+        self.query = self.query.get_cardinality("author_uuid").by_period()
+
+
+def overview(index, start, end):
+    """Compute metrics in the overview section for enriched git indexes.
+
+    Returns a dictionary. Each key in the dictionary is the name of
+    a metric, the value is the value of that metric. Value can be
+    a complex object (eg, a time series).
+
+    :return: dictionary with the value of the metrics
+    """
+
+    results = {
+        "activity_metrics": [Commits(index, start, end)],
+        "author_metrics": [Authors(index, start, end)],
+        "bmi_metrics": [],
+        "time_to_close_metrics": [],
+        "projects_metrics": []
+    }
+
+    return results
