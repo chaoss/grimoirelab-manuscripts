@@ -41,10 +41,10 @@ class GitMetrics():
         self.end = end
         self.query.since(self.start).until(self.end)
 
-    def timeseries(self):
+    def timeseries(self, dataframe=False):
         """Obtain a time series from the current query"""
 
-        return self.query.get_timeseries(dataframe=True)
+        return self.query.get_timeseries(dataframe=dataframe)
 
     def aggregations(self):
         """Obtain a single valued aggregation from the current query"""
