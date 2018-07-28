@@ -32,29 +32,31 @@ ES_URL = "http://127.0.0.1:9200"
 
 class TestBaseElasticSearch(unittest.TestCase):
 
-    def setUp(self):
-        self.es = Elasticsearch([ES_URL], timeout=3600, max_retries=50, retry_on_timeout=True)
+    @classmethod
+    def setUpClass(cls):
+        cls.es = Elasticsearch([ES_URL], timeout=3600, max_retries=50, retry_on_timeout=True)
 
-        with open(os.path.join("data", self.name + "_mappings.json")) as f:
+        with open(os.path.join("data", cls.name + "_mappings.json")) as f:
             mappings = json.load(f)
 
-        with open(os.path.join("data", self.name + ".json")) as f:
+        with open(os.path.join("data", cls.name + ".json")) as f:
             docs = []
             for line in f.readlines():
                 doc = json.loads(line)
                 docs.append(doc)
 
-        if self.es.indices.exists(index=self.enrich_index):
-            self.es.indices.delete(index=self.enrich_index)
+        if cls.es.indices.exists(index=cls.enrich_index):
+            cls.es.indices.delete(index=cls.enrich_index)
 
-        self.es.indices.create(index=self.enrich_index, body=mappings)
+        cls.es.indices.create(index=cls.enrich_index, body=mappings)
 
         for doc in docs:
-            doc['_index'] = self.enrich_index
-            self.es.indices.refresh(index=self.enrich_index)
-            helpers.bulk(self.es, [doc], raise_on_error=True)
+            doc['_index'] = cls.enrich_index
+            cls.es.indices.refresh(index=cls.enrich_index)
+            helpers.bulk(cls.es, [doc], raise_on_error=True)
 
-        self.es.indices.refresh(index=self.enrich_index)
+        cls.es.indices.refresh(index=cls.enrich_index)
 
-    def tearDown(self):
-        self.es.indices.delete(index=self.enrich_index)
+    @classmethod
+    def tearDownClass(cls):
+        cls.es.indices.delete(index=cls.enrich_index)
