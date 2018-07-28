@@ -26,6 +26,9 @@ import json
 
 from base import TestBaseElasticSearch
 
+NAME = "git_commit"
+ENRICH_INDEX = "git_enrich"
+
 
 def load_json_file(filename, mode="r"):
     with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), filename), mode) as f:
@@ -36,8 +39,11 @@ def load_json_file(filename, mode="r"):
 class TestGit(TestBaseElasticSearch):
     """Base class to test new_functions.py"""
 
-    name = "git_commit"
-    enrich_index = "git_enrich"
+    @classmethod
+    def setUpClass(cls):
+        cls.name = NAME
+        cls.enrich_index = ENRICH_INDEX
+        super().setUpClass()
 
     def test_read_items(self):
         """Check that the items fetched from the data folder are correctly loaded"""
