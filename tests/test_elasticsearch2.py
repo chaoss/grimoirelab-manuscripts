@@ -71,4 +71,4 @@ class TestGit(TestBaseElasticSearch):
             sid = page['_scroll_id']
             scroll_size = len(page['hits']['hits'])
 
-        self.assertEqual(len(data), 1217)
+        self.assertEqual(len(data), 1244)
