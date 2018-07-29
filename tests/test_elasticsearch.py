@@ -28,33 +28,28 @@
 import os
 import sys
 import json
-import unittest
 
 from datetime import datetime
 
-from elasticsearch import Elasticsearch
 from elasticsearch_dsl import A
-
-from grimoire_elk.elk import feed_backend, enrich_backend
 
 # Hack to make sure that tests import the right packages
 # due to setuptools behaviour
 sys.path.insert(0, '..')
 
+from base import TestBaseElasticSearch
 from manuscripts2.elasticsearch import Query, Index
 
 # We are going to insert perceval's data into elasticsearch
 # So that we can test the the functions
 ES_URL = "http://127.0.0.1:9200"
-REPOSITORY = "https://github.com/chaoss/grimoirelab-perceval"
-GIT_ENRICH_INDEX = "perceval_git_test"
-GIT_RAW_INDEX = "perceval_git_test_raw"
-BACKEND = "git"
-BACKEND_PARAMS = [REPOSITORY]
+NAME = "git_commit"
+ENRICH_INDEX = "git_enrich"
+
 
 # Some aggregation results as seen on 10th July 2018
 NUM_COMMITS = 1217
-NUM_AUTHORS = 19
+NUM_AUTHORS = 18
 NUM_COMMITTERS = 10
 SUM_LINES_CHANGED = 196966
 AVERAGE_LINES_ADDED = 125.0
@@ -80,32 +75,22 @@ def load_json_file(filename, mode="r"):
     return json_content
 
 
-class TestElasticsearch(unittest.TestCase):
+class TestElasticsearch(TestBaseElasticSearch):
     """Base class to test new_functions.py"""
 
     maxDiff = None
 
     @classmethod
     def setUpClass(cls):
-
-        cls.es = Elasticsearch(hosts=ES_URL)
-
-        feed_backend(ES_URL, clean=True, fetch_archive=False, backend_name=BACKEND,
-                     backend_params=BACKEND_PARAMS, es_index=GIT_RAW_INDEX,
-                     es_index_enrich=GIT_ENRICH_INDEX, project=None, arthur=False)
-
-        enrich_backend(ES_URL, clean=True, backend_name=BACKEND,
-                       backend_params=BACKEND_PARAMS,
-                       ocean_index=GIT_RAW_INDEX,
-                       ocean_index_enrich=GIT_ENRICH_INDEX,
-                       unaffiliated_group=None)
+        cls.name = NAME
+        cls.enrich_index = ENRICH_INDEX
+        super().setUpClass()
 
     def setUp(self):
         """Set up the necessary functions to run unittests"""
 
-        self.es = Elasticsearch(ES_URL)
-        self.github_index = Index(index_name=GIT_ENRICH_INDEX,
-                                  es=self.es)
+        self.github_index = Index(index_name=ENRICH_INDEX,
+                                  es=TestElasticsearch.es)
 
         self.Query_test_object = Query(self.github_index)
 
@@ -468,6 +453,12 @@ class TestElasticsearch(unittest.TestCase):
         """
 
         self.Query_test_object.until(end=self.end)
+        self.Query_test_object.search = self.Query_test_object.search.extra(sort=[
+            {
+                "commit_date": {
+                    "order": "asc"
+                }
+            }])
         response = self.Query_test_object.fetch_results_from_source(self.field2)
         actual_response = load_json_file(FETCH_SOURCE_RESULTS_DATA1)
         self.assertEqual(response, actual_response['hits'])
@@ -486,12 +477,3 @@ class TestElasticsearch(unittest.TestCase):
         self.Query_test_object.get_cardinality(self.field2)
         num_authors = self.Query_test_object.get_aggs()
         self.assertEqual(NUM_AUTHORS, num_authors)
-
-    @classmethod
-    def tearDownClass(cls):
-        """
-        Deleting the indices that were created for the tests
-        """
-
-        cls.es.indices.delete(index=GIT_ENRICH_INDEX)
-        cls.es.indices.delete(index=GIT_RAW_INDEX)
