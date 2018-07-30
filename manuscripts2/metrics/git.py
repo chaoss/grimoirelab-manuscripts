@@ -32,6 +32,8 @@ class GitMetrics():
     queries.
 
     :param index: index object
+    :param start: start date to get the data from
+    :param end: end date to get the data upto
     """
 
     def __init__(self, index, start, end):
@@ -42,12 +44,16 @@ class GitMetrics():
         self.query.since(self.start).until(self.end)
 
     def timeseries(self, dataframe=False):
-        """Obtain a time series from the current query"""
+        """Obtain a time series from the current query.
+
+        :param dataframe: if true, return results as a pandas.DataFrame
+        :return: return the date histogram aggregations
+        """
 
         return self.query.get_timeseries(dataframe=dataframe)
 
     def aggregations(self):
-        """Obtain a single valued aggregation from the current query"""
+        """Obtain a single valued aggregation from the current query."""
 
         return self.query.get_aggs()
 
@@ -56,6 +62,8 @@ class Commits(GitMetrics):
     """Class for computing the "commits" metric.
 
     :param index: index object
+    :param start: start date to get the data from
+    :param end: end date to get the data upto
     """
 
     def __init__(self, index, start, end):
@@ -67,11 +75,13 @@ class Commits(GitMetrics):
 
 
 class Authors(GitMetrics):
-    """
-    class for computing the "Authors" metric
+    """Class for computing the "Authors" metric.
 
-    :param:
+    :param index: index object
+    :param start: start date to get the data from
+    :param end: end date to get the data upto
     """
+
     def __init__(self, index, start, end):
         super().__init__(index, start, end)
         self.id = "authors"
