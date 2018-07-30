@@ -227,8 +227,8 @@ class TestEsquery(unittest.TestCase):
 
         test_bounds_dict = {
             "extended_bounds": {
-                "min": 1495497600000.0,
-                "max": 1527033600000.0
+                "min": 1495497600000,
+                "max": 1527033600000
             }
         }
         self.assertDictEqual(self.es._ElasticQuery__get_bounds(self.start, self.end), test_bounds_dict)
@@ -261,8 +261,8 @@ class TestEsquery(unittest.TestCase):
                 "time_zone": "UTC",
                 "min_doc_count": 0,
                 "extended_bounds": {
-                    "min": 1495497600000.0,
-                    "max": 1527033600000.0
+                    "min": 1495497600000,
+                    "max": 1527033600000
                 }
             },
             "aggs": {
@@ -404,8 +404,8 @@ class TestEsquery(unittest.TestCase):
                         "time_zone": "UTC",
                         "min_doc_count": 0,
                         "extended_bounds": {
-                            "min": 1495497600000.0,
-                            "max": 1527033600000.0
+                            "min": 1495497600000,
+                            "max": 1527033600000
                         }
                     },
                     "aggs": {

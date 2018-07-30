@@ -245,10 +245,12 @@ class ElasticQuery():
                 start = start.replace(microsecond=0)
                 start_ts = start.replace(tzinfo=timezone.utc).timestamp()
                 start_ts_ms = start_ts * 1000  # ES uses ms
+                start_ts_ms = int(start_ts_ms)
             if end:
                 end = end.replace(microsecond=0)
                 end_ts = end.replace(tzinfo=timezone.utc).timestamp()
                 end_ts_ms = end_ts * 1000  # ES uses ms
+                end_ts_ms = int(end_ts_ms)
 
             bounds_data = {}
             if start:
