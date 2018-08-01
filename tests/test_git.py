@@ -22,7 +22,6 @@
 
 
 import sys
-import unittest
 from datetime import datetime
 from dateutil import parser
 
@@ -30,14 +29,14 @@ sys.path.insert(0, '..')
 
 import pandas as pd
 from numpy.testing import assert_array_equal
-from elasticsearch import Elasticsearch
 
 from manuscripts2.metrics import git
 from manuscripts2.elasticsearch import Query, Index, get_trend
-from utils import setup_data_source, teardown_data_source, DATA_SOURCES
+from base import TestBaseElasticSearch
 
 
-ES_URL = "http://localhost:9200"
+NAME = "git_commit"
+ENRICH_INDEX = "git_enrich"
 
 # All values as seen on 2018-07-10
 TREND_LAST = 12
@@ -47,28 +46,28 @@ TREND_PRECENTAGE = -41
 AUTHORS_BY_PERIOD = "data/git_authors_by_months.csv"
 
 
-class TestGit(unittest.TestCase):
+class TestGit(TestBaseElasticSearch):
     """
-    Test the git data source
+    Test the git data source.
     """
 
     @classmethod
     def setUpClass(cls):
         """
-        Setup necessary infrastructure to test the functions
+        Setup necessary infrastructure to test the functions.
         """
 
-        cls.git = DATA_SOURCES['git']
-        setup_data_source('git', cls.git[0], cls.git[1])
+        cls.name = NAME
+        cls.enrich_index = ENRICH_INDEX
+        super().setUpClass()
 
     def setUp(self):
         """
-        Set up the necessary functions to run unittests
+        Set up the necessary functions to run unittests.
         """
 
-        self.es = Elasticsearch(ES_URL)
-        self.git = DATA_SOURCES['git']
-        self.git_index = Index(self.git[1])
+        self.git_index = Index(index_name=ENRICH_INDEX,
+                               es=TestGit.es)
 
         # Set the interval for the data that is to be tested
         # This will set the interval for all the query objects used
@@ -79,46 +78,37 @@ class TestGit(unittest.TestCase):
         self.start = datetime(2015, 1, 1)  # from date
         self.end = datetime(2018, 7, 10)  # to date
 
-    def test_overview_trend(self):
+    def test_commits_trend(self):
         """
-        Test if activity metrics are returned correctly or not
+        Test the aggregations for Commits class.
         """
 
-        overview = git.overview(self.git_index, self.start, self.end)
-
-        last, trend_percentage = get_trend(overview['activity_metrics'][0].timeseries())
+        commits = git.Commits(self.git_index, self.start, self.end)
+        last, trend_percentage = get_trend(commits.timeseries())
         self.assertEquals(last, TREND_LAST)
         self.assertEquals(trend_percentage, TREND_PRECENTAGE)
 
-    def test_overview_timeseries_non_df(self):
+    def test_authors_timeseries_non_df(self):
         """
-        Test if author metrics are returned correctly or not
+        Test if the timeseries for author metrics are returned
+        correctly or not.
         """
 
-        overview = git.overview(self.git_index, self.start, self.end)
-
-        authors = overview['author_metrics'][0].timeseries()
+        authors_ts = git.Authors(self.git_index, self.start, self.end)
+        authors = authors_ts.timeseries()
         authors_test = pd.read_csv(AUTHORS_BY_PERIOD)
         authors_test['date'] = [parser.parse(item).date() for item in authors_test['date']]
         assert_array_equal(authors_test['value'], authors['value'])
         assert_array_equal(authors_test['date'], authors['date'])
 
-    def test_overview_timeseries_with_df(self):
+    def test_authors_timeseries_with_df(self):
         """
-        Test if author metrics are returned correctly or not
+        Test if the timeseries dataframe for author metrics are
+        returned correctly or not.
         """
 
-        overview = git.overview(self.git_index, self.start, self.end)
-
-        authors = overview['author_metrics'][0].timeseries(dataframe=True)
+        authors_ts = git.Authors(self.git_index, self.start, self.end)
+        authors = authors_ts.timeseries(dataframe=True)
         authors_test = pd.read_csv(AUTHORS_BY_PERIOD)
         self.assertIsInstance(authors, pd.DataFrame)
         assert_array_equal(authors_test['value'], authors['value'])
-
-    @classmethod
-    def tearDownClass(cls):
-        """
-        Destroy the infrastructure created for unittests
-        """
-
-        teardown_data_source(cls.git[0], cls.git[1])
