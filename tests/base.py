@@ -36,10 +36,10 @@ class TestBaseElasticSearch(unittest.TestCase):
     def setUpClass(cls):
         cls.es = Elasticsearch([ES_URL], timeout=3600, max_retries=50, retry_on_timeout=True)
 
-        with open(os.path.join("data", cls.name + "_mappings.json")) as f:
+        with open(os.path.join("data/mappings", cls.name + "_mappings.json")) as f:
             mappings = json.load(f)
 
-        with open(os.path.join("data", cls.name + ".json")) as f:
+        with open(os.path.join("data/indices", cls.name + ".json")) as f:
             docs = []
             for line in f.readlines():
                 doc = json.loads(line)
