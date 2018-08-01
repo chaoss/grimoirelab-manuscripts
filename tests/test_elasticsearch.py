@@ -62,11 +62,11 @@ MAX_COMMIT_DATE = 1530905769000
 # And "commit_date" less than 10/07/2017 to test double range
 NUM_COMMITS2 = 389
 
-FETCH_AGGREGATION_RESULTS_DATA1 = "data/num_hash_by_authors.json"
-FETCH_SOURCE_RESULTS_DATA1 = "data/authors.json"
-TERMS_AGGREGATION_DATA = "data/terms_aggregation_authors.json"
-SUM_LINES_ADDED_BY_AUTHORS = "data/sum_lines_added_by_authors.json"
-NUM_HASHES_BY_QUARTER = "data/num_hashes_by_quarter.json"
+FETCH_AGGREGATION_RESULTS_DATA1 = "data/test_data/num_hash_by_authors.json"
+FETCH_SOURCE_RESULTS_DATA1 = "data/test_data/authors.json"
+TERMS_AGGREGATION_DATA = "data/test_data/terms_aggregation_authors.json"
+SUM_LINES_ADDED_BY_AUTHORS = "data/test_data/sum_lines_added_by_authors.json"
+NUM_HASHES_BY_QUARTER = "data/test_data/num_hashes_by_quarter.json"
 
 
 def load_json_file(filename, mode="r"):

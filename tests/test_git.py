@@ -43,7 +43,7 @@ TREND_LAST = 12
 TREND_PRECENTAGE = -41
 
 # files
-AUTHORS_BY_PERIOD = "data/git_authors_by_months.csv"
+AUTHORS_BY_PERIOD = "data/test_data/git_authors_by_months.csv"
 
 
 class TestGit(TestBaseElasticSearch):
