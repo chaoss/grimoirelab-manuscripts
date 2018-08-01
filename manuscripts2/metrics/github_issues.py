@@ -20,52 +20,187 @@
 #
 # Author:
 #   Pranjal Aswani <aswani.pranjal@gmail.com>
-#
-
-import sys
-sys.path.insert(0, '..')
-
-from manuscripts2.elasticsearch import Issues
 
 
-class IssuesMetrics():
+from manuscripts2.elasticsearch import Issues, calculate_bmi
+from manuscripts2.utils import get_prev_month
 
-    def __init__(self, index):
 
-        self.name = "github_issues"
-        self.opened_issues = Issues(index)
-        self.closed_issues = Issues(index)
-        self.closed_issues.is_closed()
+class GitHubIssuesMetrics():
+    """Root of all metric classes based on queries to a github
+    enriched issues index.
 
-    def get_section_metrics(self):
+    This class is not intended to be instantiated, but to be
+    extened by child classes that will populate self.query with real
+    queries.
 
-        return {
-            "overview": {
-                "activity_metrics": [self.opened_issues.get_cardinality("id").by_period(),
-                                     self.closed_issues.get_cardinality("id").by_period()],
-                "author_metrics": [],
-                "bmi_metrics": [],
-                "time_to_close_metrics": [],
-                "projects_metrics": []
-            },
-            "com_channels": {
-                "activity_metrics": [],
-                "author_metrics": []
-            },
-            "project_activity": {
-                "metrics": []
-            },
-            "project_community": {
-                "author_metrics": [],
-                "people_top_metrics": [],
-                "orgs_top_metrics": [],
-            },
-            "project_process": {
-                "bmi_metrics": [],
-                "time_to_close_metrics": [],
-                "time_to_close_title": "Days to close (median and average)",
-                "time_to_close_review_metrics": [],
-                "time_to_close_review_title": "",
-                "patchsets_metrics": []
-            }
-        }
+    :param index: index object
+    :param start: start date to get the data from
+    :param end: end date to get the data upto
+    """
+
+    def __init__(self, index, start, end):
+        self.query = Issues(index)
+        self.start = start
+        self.end = end
+        self.query.since(self.start).until(self.end)
+
+    def timeseries(self, dataframe=False):
+        """Obtain a time series from the current query."""
+
+        return self.query.get_timeseries(dataframe=dataframe)
+
+    def aggregations(self):
+        """Obtain a single valued aggregation from the current query."""
+
+        return self.query.get_aggs()
+
+
+class OpenedIssues(GitHubIssuesMetrics):
+    """Class for computing opened issues metrics.
+
+    :param index: index object
+    :param start: start date to get the data from
+    :param end: end date to get the data upto
+    """
+
+    def __init__(self, index, start, end):
+        super().__init__(index, start, end)
+        self.id = "opened"
+        self.name = "Opened tickets"
+        self.desc = "Number of opened tickets"
+        self.query.get_cardinality("id").by_period()
+
+
+class ClosedIssues(GitHubIssuesMetrics):
+    """Class for computing closed issues metrics.
+
+    :param index: index object
+    :param start: start date to get the data from
+    :param end: end date to get the data upto
+    """
+
+    def __init__(self, index, start, end):
+        super().__init__(index, start, end)
+        self.id = "closed"
+        self.name = "Closed tickets"
+        self.desc = "Number of closed tickets"
+        self.query.is_closed()\
+                  .since(self.start, field="closed_at")\
+                  .until(self.end, field="closed_at")
+        self.query.get_cardinality("id").by_period()
+
+
+class DaysToCloseMedian(GitHubIssuesMetrics):
+    """Class for computing the metrics related to median values
+    for the number of days to close a github issue.
+
+    :param index: index object
+    :param start: start date to get the data from
+    :param end: end date to get the data upto
+    """
+
+    def __init__(self, index, start, end):
+        super().__init__(index, start, end)
+        self.id = "days_to_close_ticket_median"
+        self.name = "Days to close tickets (median)"
+        self.desc = "Number of days needed to close a ticket (median)"
+        self.query.is_closed()
+        self.query.get_percentiles("time_to_close_days")
+
+    def aggregations(self):
+        """Get the single valued aggregations for current query
+        with respect to the previous time interval."""
+
+        prev_month_start = get_prev_month(self.end, self.query.interval_)
+        self.query.since(prev_month_start)
+        agg = super().aggregations()
+        if agg is None:
+            agg = 0  # None is because NaN in ES. Let's convert to 0
+        return agg
+
+    def timeseries(self, dataframe=False):
+        """Get the date histogram aggregations.
+
+        :param dataframe: if true, return a pandas.DataFrame object
+        """
+
+        self.query.by_period()
+        return super().timeseries(dataframe=dataframe)
+
+
+class BMI():
+    """The Backlog Management Index measures efficiency dealing with tickets.
+
+    This is based on the book "Metrics and Models in Software Quality
+    Engineering. Chapter 4.3.1. By Stephen H. Kan.
+    BMI is calculated as the number of closed tickets out of the opened
+    tickets in a given interval. This metric aims at having an overview of
+    how the community deals with tickets. Continuous values under 1
+    (or 100 if this is calculated as a percentage) shows low peformance
+    given that the community leaves a lot of opened tickets. Continuous
+    values close to 1 or over 1 shows a better performance. This would
+    indicate that most of the tickets are being closed.
+
+    :param index: index object
+    :param start: start date to get the data from
+    :param end: end date to get the data upto
+    """
+
+    def __init__(self, index, start, end):
+        self.start = start
+        self.end = end
+        self.id = "bmi_tickets"
+        self.name = "Backlog Management Index"
+        self.desc = "Number of tickets closed out of the opened ones in a given interval"
+        self.closed = ClosedIssues(index, start, end)
+        self.opened = OpenedIssues(index, start, end)
+
+    def aggregations(self):
+        """Get the aggregation value for BMI with respect to the previous
+        time interval."""
+
+        prev_month_start = get_prev_month(self.end,
+                                          self.closed.query.interval_)
+        self.closed.query.since(prev_month_start,
+                                field="closed_at")
+        closed_agg = self.closed.aggregations()
+        self.opened.query.since(prev_month_start)
+        opened_agg = self.opened.aggregations()
+        if opened_agg == 0:
+            bmi = 1.0  # if no submitted issues/prs, bmi is at 100%
+        else:
+            bmi = closed_agg / opened_agg
+        return bmi
+
+    def timeseries(self, dataframe=False):
+        """Get BMI as a time series."""
+
+        closed_timeseries = self.closed.timeseries(dataframe=dataframe)
+        opened_timeseries = self.opened.timeseries(dataframe=dataframe)
+        return calculate_bmi(closed_timeseries, opened_timeseries)
+
+
+def overview(index, start, end):
+    """Compute metrics in the overview section for enriched github issues
+    indexes.
+    Returns a dictionary. Each key in the dictionary is the name of
+    a metric, the value is the value of that metric. Value can be
+    a complex object (eg, a time series).
+
+    :param index: index object
+    :param start: start date to get the data from
+    :param end: end date to get the data upto
+    :return: dictionary with the value of the metrics
+    """
+
+    results = {
+        "activity_metrics": [OpenedIssues(index, start, end),
+                             ClosedIssues(index, start, end)],
+        "author_metrics": [],
+        "bmi_metrics": [BMI(index, start, end)],
+        "time_to_close_metrics": [DaysToCloseMedian(index, start, end)],
+        "projects_metrics": []
+    }
+
+    return results

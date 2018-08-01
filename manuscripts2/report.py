@@ -195,7 +195,7 @@ class Report():
             title_label = file_label = authors_by_period.name + '_per_' + self.interval
             file_name = os.path.join(data_path, file_label)
 
-            csv_data = authors_by_period.timeseries()
+            csv_data = authors_by_period.timeseries(dataframe=True)
             del csv_data['unixtime']
 
             self.create_csv_from_df([csv_data], headers=[authors_by_period.name],

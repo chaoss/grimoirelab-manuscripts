@@ -20,8 +20,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 # Authors:
-#   	Pranjal Aswani <aswani.pranjal@gmail.com>
-#
+#       Pranjal Aswani <aswani.pranjal@gmail.com>
 
 import sys
 sys.path.insert(0, '.')
@@ -34,5 +33,5 @@ end_date = datetime(2018, 7, 10)
 es_url = "http://localhost:9200"
 
 test_report = Report(es_url=es_url, start=start_date, end=end_date, data_dir="PERCEVAL_TESTS",
-					 data_sources=['git'], interval="month")
+                     data_sources=['git', 'github_issues'], interval="month")
 test_report.get_sec_overview()
