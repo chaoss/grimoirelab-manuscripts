@@ -32,6 +32,7 @@ import matplotlib.pyplot as plt
 from matplotlib.pyplot import figure
 # Plot figures in style similar to 'seaborn'
 plt.style.use('seaborn')
+import pandas as pd
 
 from elasticsearch import Elasticsearch
 
@@ -85,7 +86,7 @@ class Report():
                  interval="month", offset=None, data_sources=None,
                  report_name=None, projects=False, indices=[], logo=None):
         """
-        Report init method called when creating a new Report object
+        Report init method called when creating a new Report object.
 
         :param es_url: Elasticsearch URL in which metrics data is stored
         :param start: start (from) date from which to compute the metrics
@@ -124,7 +125,7 @@ class Report():
         """
         This function will return the elasticsearch index for a corresponding
         data source. It chooses in between the default and the user inputed
-        es indices and returns the user inputed one if it is available
+        es indices and returns the user inputed one if it is available.
 
         :param data_source: the data source for which the index has to be returned
         :returns: an elasticsearch index name
@@ -137,9 +138,8 @@ class Report():
         return Index(index_name=index)
 
     def get_sec_overview(self):
-
         """
-        Generate the "overview" section of the report
+        Generate the "overview" section of the report.
         """
 
         logger.debug("Calculating Overview metrics.")
@@ -192,17 +192,13 @@ class Report():
         author = overview_config['author_metrics']
         if author:
             authors_by_period = author[0]
-            title_label = file_label = authors_by_period.name + '_per_' + self.interval
-            file_name = os.path.join(data_path, file_label)
-
+            title_label = file_label = authors_by_period.name + ' per ' + self.interval
+            file_path = os.path.join(data_path, file_label)
             csv_data = authors_by_period.timeseries(dataframe=True)
-            del csv_data['unixtime']
-
-            self.create_csv_from_df([csv_data], headers=[authors_by_period.name],
-                                    index_label=None, filename=file_name)
-            self.create_fig_from_df(csv_data, fig_type="bar", title=title_label, filename=file_name,
-                                    xlabel="time_period", ylabel=authors_by_period.id)
-
+            # generate the CSV and the image file displaying the data
+            self.create_csv_fig_from_df([csv_data], file_path, [authors_by_period.name],
+                                        fig_type="bar", title=title_label, xlabel="time_period",
+                                        ylabel=authors_by_period.id)
         # BMI METRICS
         bmi = []
         bmi_metrics = overview_config['bmi_metrics']
@@ -224,51 +220,56 @@ class Report():
         bmi.extend(ttc)
         for val in bmi:
             csv += "%s, " % str_val(val)
-
         if csv[-2:] == ", ":
             csv = csv[:-2]
 
         file_name = os.path.join(data_path, 'efficiency.csv')
         create_csv(file_name, csv)
-
         logger.debug("Overview metrics generation complete!")
 
-    def create_csv_from_df(self, data_frames=[], headers=[], index_label=None, filename=None):
+    def get_sec_project_activity(self):
         """
-        Joins all the datafarames horizontally and creates a CSV file containing the dataframes
+        Generate the "project activity" section of the report.
+        """
 
-        :param dataframes: a list of dataframes containing timeseries data from various metrics
+        logger.debug("Calculating Project Activity metrics.")
+
+        data_path = os.path.join(self.data_dir, "project_activity")
+        if not os.path.exists(data_path):
+            os.makedirs(data_path)
+
+        for ds in self.data_sources:
+            metric_file = self.ds2class[ds]
+            metric_index = self.get_metric_index(ds)
+            project_activity = metric_file.project_activity(metric_index, self.start_date,
+                                                            self.end_date)
+            headers = []
+            data_frames = []
+            title_names = []
+            file_name = ""
+            for metric in project_activity['metrics']:
+                file_name += metric_file.NAME + "_" + metric.id + "_"
+                title_names.append(metric.name)
+                headers.append(metric.id)
+                data_frames.append(metric.timeseries(dataframe=True))
+
+            file_name = file_name[:-1]  # remove trailing underscore
+            file_path = os.path.join(data_path, file_name)
+            title_name = " & ".join(title_names) + ' per ' + self.interval
+            self.create_csv_fig_from_df(data_frames, file_path, headers,
+                                        fig_type="bar", title=title_name)
+
+    def create_csv_fig_from_df(self, data_frames=[], filename=None, headers=[], index_label=None,
+                               fig_type=None, title=None, xlabel=None, ylabel=None, xfont=20,
+                               yfont=20, titlefont=30, fig_size=(10, 15), image_type="png"):
+        """
+        Joins all the datafarames horizontally and creates a CSV and an image file from
+        those dataframes.
+
+        :param data_frames: a list of dataframes containing timeseries data from various metrics
+        :param filename: the name of the csv and image file
         :param headers: a list of headers to be applied to columns of the dataframes
-        :param index_label: the index column name
-        :param filename: the name of the csv file
-
-        :returns: creates a csv having name as "filename".csv
-        """
-
-        if not data_frames:
-            logger.error("No dataframes provided to create CSV")
-            sys.exit(1)
-
-        csv_name = filename + ".csv"
-        res_df = data_frames[0]
-        for df in data_frames[1:]:
-            res_df = res_df.join(df, how="outer")
-
-        if not headers:
-            headers = res_df.columns.names
-        if not index_label:
-            index_label = "Date"
-
-        res_df.to_csv(csv_name, header=headers, index_label=index_label)
-        logger.debug("file: {} was created.".format(csv_name))
-
-    def create_fig_from_df(self, data_frame, fig_type=None, title=None, filename=None,
-                           xlabel=None, ylabel=None, xfont=20, yfont=20, titlefont=30,
-                           fig_size=(10, 15), image_type="png"):
-        """
-        Create a figure from the given df and save it as an image file
-
-        :param dataframe: the data frame to be plotted
+        :param index_label: name of the index column
         :param fig_type: figure type. Currently we support 'bar' graphs
                          default: normal graph
         :param title: display title of the figure
@@ -281,21 +282,48 @@ class Report():
         :param fig_size: tuple describing size of the figure (in centimeters) (H x W)
         :param image_type: the image type to save the image as: jpg, png, etc
                            default: png
+
+        :returns: creates a csv having name as "filename".csv and an image file
+                  having the name as "filename"."image_type"
         """
 
-        if "unixtime" in data_frame:
-            del data_frame['unixtime']
+        if not data_frames:
+            logger.error("No dataframes provided to create CSV")
+            sys.exit(1)
+        assert(len(data_frames) == len(headers))
+        dataframes = []
 
+        for index, df in enumerate(data_frames):
+            df = df.rename(columns={"value": headers[index]})
+            dataframes.append(df)
+        res_df = pd.concat(dataframes, axis=1)
+
+        if "unixtime" in res_df:
+            del res_df['unixtime']
+        if not index_label:
+            index_label = "Date"
+
+        # Create the CSV file:
+        csv_name = filename + ".csv"
+        res_df.to_csv(csv_name, index_label=index_label)
+        logger.debug("file: {} was created.".format(csv_name))
+
+        # Create the Image:
         image_name = filename + "." + image_type
         figure(figsize=fig_size)
         plt.subplot(111)
 
         if fig_type == "bar":
-            ax = data_frame.plot.bar(figsize=fig_size)
-            ticklabels = data_frame.index
+            ax = res_df.plot.bar(figsize=fig_size)
+            ticklabels = res_df.index
             ax.xaxis.set_major_formatter(matplotlib.ticker.FixedFormatter(ticklabels))
         else:
-            plt.plot(data_frame)
+            plt.plot(res_df)
+
+        if not ylabel:
+            ylabel = "num " + " & ".join(headers)
+        if not xlabel:
+            xlabel = index_label
 
         plt.title(title, fontsize=titlefont)
         plt.ylabel(ylabel, fontsize=yfont)
