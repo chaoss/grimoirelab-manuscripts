@@ -21,9 +21,10 @@
 # Author:
 #   Pranjal Aswani <aswani.pranjal@gmail.com>
 
-
 from manuscripts2.elasticsearch import Issues, calculate_bmi
 from manuscripts2.utils import get_prev_month
+
+NAME = "github_issues"
 
 
 class GitHubIssuesMetrics():
@@ -201,6 +202,27 @@ def overview(index, start, end):
         "bmi_metrics": [BMI(index, start, end)],
         "time_to_close_metrics": [DaysToCloseMedian(index, start, end)],
         "projects_metrics": []
+    }
+
+    return results
+
+
+def project_activity(index, start, end):
+    """Compute the metrics for the project activity section of the enriched
+    github issues index.
+
+    Returns a dictionary containing a "metric" key. This key contains the
+    metrics for this section.
+
+    :param index: index object
+    :param start: start date to get the data from
+    :param end: end date to get the data upto
+    :return: dictionary with the value of the metrics
+    """
+
+    results = {
+        "metrics": [OpenedIssues(index, start, end),
+                    ClosedIssues(index, start, end)]
     }
 
     return results
