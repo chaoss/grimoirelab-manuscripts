@@ -23,6 +23,8 @@
 
 from manuscripts2.elasticsearch import Query
 
+NAME = "git"
+
 
 class GitMetrics():
     """Root of all metric classes based on queries to a git enriched index.
@@ -97,6 +99,9 @@ def overview(index, start, end):
     a metric, the value is the value of that metric. Value can be
     a complex object (eg, a time series).
 
+    :param index: index object
+    :param start: start date to get the data from
+    :param end: end date to get the data upto
     :return: dictionary with the value of the metrics
     """
 
@@ -106,6 +111,27 @@ def overview(index, start, end):
         "bmi_metrics": [],
         "time_to_close_metrics": [],
         "projects_metrics": []
+    }
+
+    return results
+
+
+def project_activity(index, start, end):
+    """Compute the metrics for the project activity section of the enriched
+    git index.
+
+    Returns a dictionary containing a "metric" key. This key contains the
+    metrics for this section.
+
+    :param index: index object
+    :param start: start date to get the data from
+    :param end: end date to get the data upto
+    :return: dictionary with the value of the metrics
+    """
+
+    results = {
+        "metrics": [Commits(index, start, end),
+                    Authors(index, start, end)]
     }
 
     return results
