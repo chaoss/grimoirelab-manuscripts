@@ -23,9 +23,12 @@
 
 import sys
 from datetime import datetime
+from dateutil import parser
 
 sys.path.insert(0, '..')
 
+import pandas as pd
+from numpy.testing import assert_array_equal
 
 from manuscripts2.metrics import github_issues
 from manuscripts2.elasticsearch import Query, Index, get_trend
@@ -44,6 +47,10 @@ CLOSED_TREND_PRECENTAGE = -100
 
 BMITICKETS = 0.67
 TIME_TO_CLOSE_DAYS_MEDIAN = 2.10
+
+# files
+CLOSED_ISSUES_BY_MONTH = "data/test_data/github_closed_issues_per_month.csv"
+OPENED_ISSUES_BY_MONTH = "data/test_data/github_opened_issues_per_month.csv"
 
 
 class TestGitHubIssues(TestBaseElasticSearch):
@@ -77,7 +84,7 @@ class TestGitHubIssues(TestBaseElasticSearch):
         self.start = datetime(2015, 1, 1)  # from date
         self.end = datetime(2018, 7, 10)  # to date
 
-    def test_opened_issues(self):
+    def test_opened_issues_trend(self):
         """
         Test the the opened issues metric trend.
         """
@@ -87,7 +94,7 @@ class TestGitHubIssues(TestBaseElasticSearch):
         self.assertEquals(last, OPENED_TREND_LAST)
         self.assertEquals(trend_percentage, OPENED_TREND_PRECENTAGE)
 
-    def test_closed_issues(self):
+    def test_closed_issues_trend(self):
         """
         Test the the closed issues metric trend.
         """
@@ -118,3 +125,53 @@ class TestGitHubIssues(TestBaseElasticSearch):
         ttc = "%.2f" % ttc
         ttc = float(ttc)
         self.assertEquals(ttc, TIME_TO_CLOSE_DAYS_MEDIAN)
+
+    def test_closed_issues_timeseries_non_df(self):
+        """
+        Test if the timeseries for closed issues metrics
+        are returned correctly or not.
+        """
+
+        closed_issues = github_issues.ClosedIssues(self.github_index, self.start, self.end)
+        closed_issues_ts = closed_issues.timeseries()
+        closed_issues_test = pd.read_csv(CLOSED_ISSUES_BY_MONTH)
+        closed_issues_test['date'] = [parser.parse(item).date() for item in closed_issues_test['date']]
+        assert_array_equal(closed_issues_test['date'], closed_issues_ts['date'])
+        assert_array_equal(closed_issues_test['value'], closed_issues_ts['value'])
+
+    def test_closed_issues_timeseries_with_df(self):
+        """
+        Test if the timeseries dataframe for closed issues metrics
+        are returned correctly or not.
+        """
+
+        closed_issues = github_issues.ClosedIssues(self.github_index, self.start, self.end)
+        closed_issues_ts = closed_issues.timeseries(dataframe=True)
+        closed_issues_test = pd.read_csv(CLOSED_ISSUES_BY_MONTH)
+        self.assertIsInstance(closed_issues_ts, pd.DataFrame)
+        assert_array_equal(closed_issues_test['value'], closed_issues_ts['value'])
+
+    def test_opened_issues_timeseries_non_df(self):
+        """
+        Test if the timeseries for opened issues metrics
+        are returned correctly or not.
+        """
+
+        opened_issues = github_issues.OpenedIssues(self.github_index, self.start, self.end)
+        opened_issues_ts = opened_issues.timeseries()
+        opened_issues_test = pd.read_csv(OPENED_ISSUES_BY_MONTH)
+        opened_issues_test['date'] = [parser.parse(item).date() for item in opened_issues_test['date']]
+        assert_array_equal(opened_issues_test['date'], opened_issues_ts['date'])
+        assert_array_equal(opened_issues_test['value'], opened_issues_ts['value'])
+
+    def test_opened_issues_timeseries_with_df(self):
+        """
+        Test if the timeseries dataframe for opened issues metrics
+        are returned correctly or not.
+        """
+
+        opened_issues = github_issues.OpenedIssues(self.github_index, self.start, self.end)
+        opened_issues_ts = opened_issues.timeseries(dataframe=True)
+        opened_issues_test = pd.read_csv(OPENED_ISSUES_BY_MONTH)
+        self.assertIsInstance(opened_issues_ts, pd.DataFrame)
+        assert_array_equal(opened_issues_test['value'], opened_issues_ts['value'])
