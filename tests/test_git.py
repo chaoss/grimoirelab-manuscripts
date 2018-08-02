@@ -44,6 +44,7 @@ TREND_PRECENTAGE = -41
 
 # files
 AUTHORS_BY_PERIOD = "data/test_data/git_authors_by_months.csv"
+COMMITS_BY_PERIOD = "data/test_data/git_commits_by_months.csv"
 
 
 class TestGit(TestBaseElasticSearch):
@@ -88,18 +89,43 @@ class TestGit(TestBaseElasticSearch):
         self.assertEquals(last, TREND_LAST)
         self.assertEquals(trend_percentage, TREND_PRECENTAGE)
 
+    def test_commits_timeseries_non_df(self):
+        """
+        Test if the timeseries for commits metrics are returned
+        correctly or not.
+        """
+
+        commits = git.Commits(self.git_index, self.start, self.end)
+        commits_ts = commits.timeseries()
+        commits_test = pd.read_csv(COMMITS_BY_PERIOD)
+        commits_test['date'] = [parser.parse(item).date() for item in commits_test['date']]
+        assert_array_equal(commits_test['value'], commits_ts['value'])
+        assert_array_equal(commits_test['date'], commits_ts['date'])
+
+    def test_commits_timeseries_with_df(self):
+        """
+        Test if the timeseries dataframe for commits metrics are returned
+        correctly or not.
+        """
+
+        commits = git.Commits(self.git_index, self.start, self.end)
+        commits_ts = commits.timeseries(dataframe=True)
+        commits_test = pd.read_csv(COMMITS_BY_PERIOD)
+        self.assertIsInstance(commits_ts, pd.DataFrame)
+        assert_array_equal(commits_test['value'], commits_ts['value'])
+
     def test_authors_timeseries_non_df(self):
         """
         Test if the timeseries for author metrics are returned
         correctly or not.
         """
 
-        authors_ts = git.Authors(self.git_index, self.start, self.end)
-        authors = authors_ts.timeseries()
+        authors = git.Authors(self.git_index, self.start, self.end)
+        authors_ts = authors.timeseries()
         authors_test = pd.read_csv(AUTHORS_BY_PERIOD)
         authors_test['date'] = [parser.parse(item).date() for item in authors_test['date']]
-        assert_array_equal(authors_test['value'], authors['value'])
-        assert_array_equal(authors_test['date'], authors['date'])
+        assert_array_equal(authors_test['value'], authors_ts['value'])
+        assert_array_equal(authors_test['date'], authors_ts['date'])
 
     def test_authors_timeseries_with_df(self):
         """
@@ -107,8 +133,8 @@ class TestGit(TestBaseElasticSearch):
         returned correctly or not.
         """
 
-        authors_ts = git.Authors(self.git_index, self.start, self.end)
-        authors = authors_ts.timeseries(dataframe=True)
+        authors = git.Authors(self.git_index, self.start, self.end)
+        authors_ts = authors.timeseries(dataframe=True)
         authors_test = pd.read_csv(AUTHORS_BY_PERIOD)
-        self.assertIsInstance(authors, pd.DataFrame)
-        assert_array_equal(authors_test['value'], authors['value'])
+        self.assertIsInstance(authors_ts, pd.DataFrame)
+        assert_array_equal(authors_test['value'], authors_ts['value'])
