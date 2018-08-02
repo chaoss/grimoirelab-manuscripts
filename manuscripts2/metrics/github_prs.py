@@ -24,6 +24,8 @@
 from manuscripts2.elasticsearch import PullRequests, calculate_bmi
 from manuscripts2.utils import get_prev_month
 
+NAME = "github_prs"
+
 
 class GitHubPRsMetrics():
     """Root of all metric classes based on queries to a github
@@ -191,6 +193,27 @@ def overview(index, start, end):
         "bmi_metrics": [BMIPR(index, start, end)],
         "time_to_close_metrics": [DaysToClosePRMedian(index, start, end)],
         "projects_metrics": []
+    }
+
+    return results
+
+
+def project_activity(index, start, end):
+    """Compute the metrics for the project activity section of the enriched
+    github pull requests index.
+
+    Returns a dictionary containing a "metric" key. This key contains the
+    metrics for this section.
+
+    :param index: index object
+    :param start: start date to get the data from
+    :param end: end date to get the data upto
+    :return: dictionary with the value of the metrics
+    """
+
+    results = {
+        "metrics": [SubmittedPRs(index, start, end),
+                    ClosedPRs(index, start, end)]
     }
 
     return results
