@@ -23,9 +23,12 @@
 
 import sys
 from datetime import datetime
+from dateutil import parser
 
 sys.path.insert(0, '..')
 
+import pandas as pd
+from numpy.testing import assert_array_equal
 
 from manuscripts2.metrics import github_prs
 from manuscripts2.elasticsearch import Query, Index, get_trend
@@ -44,6 +47,10 @@ CLOSED_TREND_PRECENTAGE = -60
 
 BMI_PR = 0.91
 TIME_TO_CLOSE_DAYS_PR_MEDIAN = 2.71
+
+# files
+SUBMITTED_PRS_BY_MONTH = "data/test_data/github_submitted_prs_per_month.csv"
+CLOSED_PRS_BY_MONTH = "data/test_data/github_closed_prs_per_month.csv"
 
 
 class TestGitHubPRs(TestBaseElasticSearch):
@@ -118,3 +125,53 @@ class TestGitHubPRs(TestBaseElasticSearch):
         ttc = "%.2f" % ttc
         ttc = float(ttc)
         self.assertEquals(ttc, TIME_TO_CLOSE_DAYS_PR_MEDIAN)
+
+    def test_closed_prs_timeseries_non_df(self):
+        """
+        Test if the timeseries for closed prs metrics
+        are returned correctly or not.
+        """
+
+        closed_prs = github_prs.ClosedPRs(self.github_index, self.start, self.end)
+        closed_prs_ts = closed_prs.timeseries()
+        closed_prs_test = pd.read_csv(CLOSED_PRS_BY_MONTH)
+        closed_prs_test['date'] = [parser.parse(item).date() for item in closed_prs_test['date']]
+        assert_array_equal(closed_prs_test['date'], closed_prs_ts['date'])
+        assert_array_equal(closed_prs_test['value'], closed_prs_ts['value'])
+
+    def test_closed_prs_timeseries_with_df(self):
+        """
+        Test if the timeseries dataframe for closed prs metrics
+        are returned correctly or not.
+        """
+
+        closed_prs = github_prs.ClosedPRs(self.github_index, self.start, self.end)
+        closed_prs_ts = closed_prs.timeseries(dataframe=True)
+        closed_prs_test = pd.read_csv(CLOSED_PRS_BY_MONTH)
+        self.assertIsInstance(closed_prs_ts, pd.DataFrame)
+        assert_array_equal(closed_prs_test['value'], closed_prs_ts['value'])
+
+    def test_opened_prs_timeseries_non_df(self):
+        """
+        Test if the timeseries for submitted prs metrics
+        are returned correctly or not.
+        """
+
+        opened_prs = github_prs.SubmittedPRs(self.github_index, self.start, self.end)
+        opened_prs_ts = opened_prs.timeseries()
+        opened_prs_test = pd.read_csv(SUBMITTED_PRS_BY_MONTH)
+        opened_prs_test['date'] = [parser.parse(item).date() for item in opened_prs_test['date']]
+        assert_array_equal(opened_prs_test['date'], opened_prs_ts['date'])
+        assert_array_equal(opened_prs_test['value'], opened_prs_ts['value'])
+
+    def test_opened_prs_timeseries_with_df(self):
+        """
+        Test if the timeseries dataframe for submitted prs metrics
+        are returned correctly or not.
+        """
+
+        opened_prs = github_prs.SubmittedPRs(self.github_index, self.start, self.end)
+        opened_prs_ts = opened_prs.timeseries(dataframe=True)
+        opened_prs_test = pd.read_csv(SUBMITTED_PRS_BY_MONTH)
+        self.assertIsInstance(opened_prs_ts, pd.DataFrame)
+        assert_array_equal(opened_prs_test['value'], opened_prs_ts['value'])
