@@ -20,6 +20,8 @@
 # Authors:
 #       Alvaro del Castillo <acs@bitergia.com>
 #       Luis Cañas-Díaz <lcanas@bitergia.com>
+#       Quan Zhou <quan@bitergia.com>
+
 
 import configparser
 import logging
@@ -384,8 +386,65 @@ class Config():
             }
         }
 
+        params_enrich_onion = {
+            "enrich_onion": {
+                "in_index": {
+                    "optional": False,
+                    "default": None,
+                    "type": str
+                },
+                "out_index": {
+                    "optional": False,
+                    "default": None,
+                    "type": str
+                },
+                "contribs_field": {
+                    "optional": True,
+                    "default": "hash",
+                    "type": str
+                },
+                "no_incremental": {
+                    "optional": True,
+                    "default": True,
+                    "type": bool
+                }
+            }
+        }
+
+        params_enrich_areas_of_code = {
+            "enrich_areas_of_code": {
+                "in_index": {
+                    "optional": False,
+                    "default": None,
+                    "type": str
+                },
+                "out_index": {
+                    "optional": False,
+                    "default": None,
+                    "type": str
+                },
+                "no_incremental": {
+                    "optional": True,
+                    "default": True,
+                    "type": bool
+                }
+            }
+        }
+
+        params_enrich_demography = {
+            "enrich_demography": {
+                "no_incremental": {
+                    "optional": True,
+                    "default": True,
+                    "type": bool
+                }
+            }
+        }
+
         tasks_config_params = [params_collection, params_enrichment, params_panels,
-                               params_report, params_sortinghat, params_track_items]
+                               params_report, params_sortinghat, params_track_items,
+                               params_enrich_areas_of_code, params_enrich_demography,
+                               params_enrich_onion]
 
         for section_params in tasks_config_params:
             params.update(section_params)
