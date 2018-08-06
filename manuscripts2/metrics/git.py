@@ -24,8 +24,6 @@
 from manuscripts2.elasticsearch import Query
 from manuscripts2.utils import get_prev_month
 
-NAME = "git"
-
 
 class GitMetrics():
     """Root of all metric classes based on queries to a git enriched index.
@@ -38,6 +36,8 @@ class GitMetrics():
     :param start: start date to get the data from
     :param end: end date to get the data upto
     """
+
+    DS_NAME = "git"
 
     def __init__(self, index, start, end):
 
@@ -201,9 +201,9 @@ def project_community(index, start, end):
     """
 
     results = {
-        "author_metrics": [Authors],
-        "people_top_metrics": [Authors],
-        "orgs_top_metrics": [Organizations],
+        "author_metrics": [Authors(index, start, end)],
+        "people_top_metrics": [Authors(index, start, end)],
+        "orgs_top_metrics": [Organizations(index, start, end)],
     }
 
     return results

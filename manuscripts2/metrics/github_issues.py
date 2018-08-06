@@ -24,8 +24,6 @@
 from manuscripts2.elasticsearch import Issues, calculate_bmi
 from manuscripts2.utils import get_prev_month
 
-NAME = "github_issues"
-
 
 class GitHubIssuesMetrics():
     """Root of all metric classes based on queries to a github
@@ -39,6 +37,8 @@ class GitHubIssuesMetrics():
     :param start: start date to get the data from
     :param end: end date to get the data upto
     """
+
+    DS_NAME = "github_issues"
 
     def __init__(self, index, start, end):
         self.query = Issues(index)
@@ -147,6 +147,8 @@ class BMI():
     :param start: start date to get the data from
     :param end: end date to get the data upto
     """
+
+    DS_NAME = "github_issues"
 
     def __init__(self, index, start, end):
         self.start = start
