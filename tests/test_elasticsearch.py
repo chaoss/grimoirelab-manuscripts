@@ -67,6 +67,7 @@ FETCH_SOURCE_RESULTS_DATA1 = "data/test_data/authors.json"
 TERMS_AGGREGATION_DATA = "data/test_data/terms_aggregation_authors.json"
 SUM_LINES_ADDED_BY_AUTHORS = "data/test_data/sum_lines_added_by_authors.json"
 NUM_HASHES_BY_QUARTER = "data/test_data/num_hashes_by_quarter.json"
+AUTHORS_LIST = "data/test_data/authors_list.json"
 
 
 def load_json_file(filename, mode="r"):
@@ -477,3 +478,14 @@ class TestElasticsearch(TestBaseElasticSearch):
         self.Query_test_object.get_cardinality(self.field2)
         num_authors = self.Query_test_object.get_aggs()
         self.assertEqual(NUM_AUTHORS, num_authors)
+
+    def test_get_list(self):
+        """
+        Testing multi valued aggregations.
+        """
+
+        self.Query_test_object.until(end=self.end)
+        self.Query_test_object.get_terms("author_name")
+        authors = self.Query_test_object.get_list()
+        authors_test = load_json_file(AUTHORS_LIST)
+        self.assertDictEqual(authors, authors_test)
