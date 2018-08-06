@@ -494,7 +494,6 @@ class Query():
         """
         Get time series data for the specified fields and period of analysis
 
-        :param query: a Query object with the necessary aggregations and filters
         :param child_agg_count: the child aggregation count to be used
                                 default = 0
         :param dataframe: if dataframe=True, return a pandas.DataFrame object
@@ -537,7 +536,6 @@ class Query():
         """
         Compute the values for single valued aggregations
 
-        :param query: a Query object with the necessary aggregations and filters
         :returns: the single aggregation value
         """
 
@@ -558,6 +556,25 @@ class Query():
             agg = res['hits']['total']
 
         return agg
+
+    def get_list(self, dataframe=False):
+        """
+        Compute the value for multi-valued aggregations
+
+        :returns: a dict containing 'keys' and their corresponding 'values'
+        """
+
+        res = self.fetch_aggregation_results()
+        keys = []
+        values = []
+        for bucket in res['aggregations'][str(self.parent_agg_counter - 1)]['buckets']:
+            keys.append(bucket['key'])
+            values.append(bucket['doc_count'])
+
+        result = {"keys": keys, "values": values}
+        if dataframe:
+            result = pd.DataFrame.from_records(result)
+        return result
 
 
 class PullRequests(Query):
