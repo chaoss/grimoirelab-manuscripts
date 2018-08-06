@@ -260,6 +260,59 @@ class Report():
             self.create_csv_fig_from_df(data_frames, file_path, headers,
                                         fig_type="bar", title=title_name)
 
+    def get_sec_project_community(self):
+        """
+        Generate the "project community" section of the report.
+        """
+
+        logger.debug("Calculating Project Community metrics.")
+
+        data_path = os.path.join(self.data_dir, "project_community")
+        if not os.path.exists(data_path):
+            os.makedirs(data_path)
+
+        project_community_config = {
+            "author_metrics": [],
+            "people_top_metrics": [],
+            "orgs_top_metrics": []
+        }
+
+        for ds in self.data_sources:
+            metric_file = self.ds2class[ds]
+            metric_index = self.get_metric_index(ds)
+            project_community = metric_file.project_community(metric_index, self.start_date,
+                                                              self.end_date)
+            for section in project_community_config:
+                project_community_config[section] += project_community[section]
+
+        # Get git authors:
+        author = project_community_config['author_metrics'][0]
+        author_ts = author.timeseries(dataframe=True)
+        csv_labels = [author.id]
+        file_label = author.DS_NAME + "_" + author.id
+        file_path = os.path.join(data_path, file_label)
+        title_label = author.name + " per " + self.interval
+        self.create_csv_fig_from_df([author_ts], file_path, csv_labels, fig_type="bar",
+                                    title=title_label)
+
+        """Main developers"""
+        authors = project_community_config['people_top_metrics'][0]
+        authors_df = authors.aggregations()
+        authors_df = authors_df.head(self.TOP_MAX)
+        authors_df.columns = [authors.id, "commits"]
+        file_label = authors.DS_NAME + "_top_" + authors.id + ".csv"
+        file_path = os.path.join(data_path, file_label)
+        authors_df.to_csv(file_path, index=False)
+
+        """Main organizations"""
+        orgs = project_community_config['orgs_top_metrics'][0]
+        orgs_df = orgs.aggregations()
+        orgs_df = orgs_df.head(self.TOP_MAX)
+        orgs_df.columns = [orgs.id, "commits"]
+        file_label = orgs.DS_NAME + "_top_" + orgs.id
+        file_path = os.path.join(data_path, file_label)
+        orgs_df.to_csv(file_path, index=False)
+
     def create_csv_fig_from_df(self, data_frames=[], filename=None, headers=[], index_label=None,
                                fig_type=None, title=None, xlabel=None, ylabel=None, xfont=20,
                                yfont=20, titlefont=30, fig_size=(10, 15), image_type="png"):

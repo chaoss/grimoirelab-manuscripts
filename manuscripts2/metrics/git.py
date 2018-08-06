@@ -201,9 +201,9 @@ def project_community(index, start, end):
     """
 
     results = {
-        "author_metrics": [Authors],
-        "people_top_metrics": [Authors],
-        "orgs_top_metrics": [Organizations],
+        "author_metrics": [Authors(index, start, end)],
+        "people_top_metrics": [Authors(index, start, end)],
+        "orgs_top_metrics": [Organizations(index, start, end)],
     }
 
     return results
