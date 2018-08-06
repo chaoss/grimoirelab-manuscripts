@@ -22,6 +22,7 @@
 #   Pranjal Aswani <aswani.pranjal@gmail.com>
 
 from manuscripts2.elasticsearch import Query
+from manuscripts2.utils import get_prev_month
 
 NAME = "git"
 
@@ -89,7 +90,56 @@ class Authors(GitMetrics):
         self.id = "authors"
         self.name = "Authors"
         self.desc = "People authoring commits (changes to source code)"
-        self.query = self.query.get_cardinality("author_uuid").by_period()
+
+    def aggregations(self):
+        """
+        Override parent method. Obtain list of the terms and their corresponding
+        values using "terms" aggregations for the previous time period.
+
+        :returns: a data frame containing terms and their corresponding values
+        """
+
+        prev_month_start = get_prev_month(self.end, self.query.interval_)
+        self.query.since(prev_month_start)
+        self.query.get_terms("author_name")
+        return self.query.get_list(dataframe=True)
+
+    def timeseries(self, dataframe=False):
+        """Get the date histogram aggregations.
+
+        :param dataframe: if true, return a pandas.DataFrame object
+        """
+
+        self.query.get_cardinality("author_uuid").by_period()
+        return super().timeseries(dataframe)
+
+
+class Organizations(GitMetrics):
+    """Projects in the source code management system
+
+    :param index: index object
+    :param start: start date to get the data from
+    :param end: end date to get the data upto
+    """
+
+    def __init__(self, index, start, end):
+        super().__init__(index, start, end)
+        self.id = "organizations"
+        self.name = "Organizations"
+        self.desc = "Organizations in the source code management system"
+
+    def aggregations(self):
+        """
+        Override parent method. Obtain list of the terms and their corresponding
+        values using "terms" aggregations for the previous time period.
+
+        :returns: a data frame containing terms and their corresponding values
+        """
+
+        prev_month_start = get_prev_month(self.end, self.query.interval_)
+        self.query.since(prev_month_start)
+        self.query.get_terms("author_org_name")
+        return self.query.get_list(dataframe=True)
 
 
 def overview(index, start, end):
@@ -132,6 +182,28 @@ def project_activity(index, start, end):
     results = {
         "metrics": [Commits(index, start, end),
                     Authors(index, start, end)]
+    }
+
+    return results
+
+
+def project_community(index, start, end):
+    """Compute the metrics for the project community section of the enriched
+    git index.
+
+    Returns a dictionary containing "author_metrics", "people_top_metrics"
+    and "orgs_top_metrics" as the keys and the related Metrics as the values.
+
+    :param index: index object
+    :param start: start date to get the data from
+    :param end: end date to get the data upto
+    :return: dictionary with the value of the metrics
+    """
+
+    results = {
+        "author_metrics": [Authors],
+        "people_top_metrics": [Authors],
+        "orgs_top_metrics": [Organizations],
     }
 
     return results
