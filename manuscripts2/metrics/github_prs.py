@@ -24,8 +24,6 @@
 from manuscripts2.elasticsearch import PullRequests, calculate_bmi
 from manuscripts2.utils import get_prev_month
 
-NAME = "github_prs"
-
 
 class GitHubPRsMetrics():
     """Root of all metric classes based on queries to a github
@@ -39,6 +37,8 @@ class GitHubPRsMetrics():
     :param start: date to apply the filters from
     :param end: date to apply the filters upto
     """
+
+    DS_NAME = "github_prs"
 
     def __init__(self, index, start, end):
         self.query = PullRequests(index)
@@ -137,6 +137,8 @@ class BMIPR():
     :param start: start date to get the data from
     :param end: end date to get the data upto
     """
+
+    DS_NAME = "github_prs"
 
     def __init__(self, index, start, end):
         self.start = start

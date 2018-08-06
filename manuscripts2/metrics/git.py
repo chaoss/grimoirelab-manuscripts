@@ -24,8 +24,6 @@
 from manuscripts2.elasticsearch import Query
 from manuscripts2.utils import get_prev_month
 
-NAME = "git"
-
 
 class GitMetrics():
     """Root of all metric classes based on queries to a git enriched index.
@@ -38,6 +36,8 @@ class GitMetrics():
     :param start: start date to get the data from
     :param end: end date to get the data upto
     """
+
+    DS_NAME = "git"
 
     def __init__(self, index, start, end):
 

@@ -71,6 +71,7 @@ class Report():
     GIT_INDEX = 'git'
     GITHUB_ISSUES_INDEX = 'github_issues'
     GITHUB_PRS_INDEX = 'github_prs'
+    TOP_MAX = 20  # maxinum number of top performers/orgs to be displayed
 
     # Helper dict to map a data source class with its Elasticsearch index
     class2index = {
@@ -176,7 +177,7 @@ class Report():
         for metric in metrics:
             (last, percentage) = get_trend(metric.timeseries())
             csv += "{}, {}, {}, {}\n".format(metric.name, last,
-                                             percentage, metric.id)
+                                             percentage, metric.DS_NAME)
         create_csv(file_name, csv)
 
         # AUTHOR METRICS
@@ -248,7 +249,7 @@ class Report():
             title_names = []
             file_name = ""
             for metric in project_activity['metrics']:
-                file_name += metric_file.NAME + "_" + metric.id + "_"
+                file_name += metric.DS_NAME + "_" + metric.id + "_"
                 title_names.append(metric.name)
                 headers.append(metric.id)
                 data_frames.append(metric.timeseries(dataframe=True))
