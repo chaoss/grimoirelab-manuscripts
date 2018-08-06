@@ -32,6 +32,8 @@ from numpy.testing import assert_array_equal
 
 from manuscripts2.metrics import git
 from manuscripts2.elasticsearch import Query, Index, get_trend
+
+from utils import load_json_file
 from base import TestBaseElasticSearch
 
 
@@ -45,6 +47,8 @@ TREND_PRECENTAGE = -41
 # files
 AUTHORS_BY_PERIOD = "data/test_data/git_authors_by_months.csv"
 COMMITS_BY_PERIOD = "data/test_data/git_commits_by_months.csv"
+TOP_AUTHORS = "data/test_data/git_top_authors.json"
+TOP_ORGANIZATIONS = "data/test_data/git_top_organizations.json"
 
 
 class TestGit(TestBaseElasticSearch):
@@ -138,3 +142,25 @@ class TestGit(TestBaseElasticSearch):
         authors_test = pd.read_csv(AUTHORS_BY_PERIOD)
         self.assertIsInstance(authors_ts, pd.DataFrame)
         assert_array_equal(authors_test['value'], authors_ts['value'])
+
+    def test_authors_list(self):
+        """
+        Test if the list of top authors is returned correctly or not.
+        """
+
+        authors = git.Authors(self.git_index, self.start, self.end)
+        authors_list = authors.aggregations()
+        authors_test = load_json_file(TOP_AUTHORS)
+        assert_array_equal(authors_list['keys'], authors_test['keys'])
+        assert_array_equal(authors_list['values'], authors_test['values'])
+
+    def test_organization_list(self):
+        """
+        Test if the list of top organizations is returned correctly or not.
+        """
+
+        orgs = git.Organizations(self.git_index, self.start, self.end)
+        orgs_list = orgs.aggregations()
+        orgs_test = load_json_file(TOP_ORGANIZATIONS)
+        assert_array_equal(orgs_list['keys'], orgs_test['keys'])
+        assert_array_equal(orgs_list['values'], orgs_test['values'])

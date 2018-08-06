@@ -20,14 +20,7 @@
 # Authors:
 #     Pranjal Aswani <aswani.pranjal@gmail.com>
 
-# TODO:
-# These tests will fail if some old PR is accepted and that code
-# is added to the master branch. To remedy that, we should look
-# into using github issues or prs instead of using git data source
-
-import os
 import sys
-import json
 
 from datetime import datetime
 
@@ -39,6 +32,7 @@ sys.path.insert(0, '..')
 
 from base import TestBaseElasticSearch
 from manuscripts2.elasticsearch import Query, Index
+from utils import load_json_file
 
 # We are going to insert perceval's data into elasticsearch
 # So that we can test the the functions
@@ -68,12 +62,6 @@ TERMS_AGGREGATION_DATA = "data/test_data/terms_aggregation_authors.json"
 SUM_LINES_ADDED_BY_AUTHORS = "data/test_data/sum_lines_added_by_authors.json"
 NUM_HASHES_BY_QUARTER = "data/test_data/num_hashes_by_quarter.json"
 AUTHORS_LIST = "data/test_data/authors_list.json"
-
-
-def load_json_file(filename, mode="r"):
-    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), filename), mode) as f:
-        json_content = json.load(f)
-    return json_content
 
 
 class TestElasticsearch(TestBaseElasticSearch):

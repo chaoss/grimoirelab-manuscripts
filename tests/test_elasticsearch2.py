@@ -20,20 +20,10 @@
 # Authors:
 #     Valerio Cosentino <valcos@bitergia.com>
 
-
-import os
-import json
-
 from base import TestBaseElasticSearch
 
 NAME = "git_commit"
 ENRICH_INDEX = "git_enrich"
-
-
-def load_json_file(filename, mode="r"):
-    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), filename), mode) as f:
-        json_content = json.load(f)
-    return json_content
 
 
 class TestGit(TestBaseElasticSearch):

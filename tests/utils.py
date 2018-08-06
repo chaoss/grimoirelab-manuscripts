@@ -22,36 +22,19 @@
 # Author:
 #   Pranjal Aswani <aswani.pranjal@gmail.com>
 
-
-from dateutil import relativedelta
-
-
-def get_prev_month(end_date, interval):
-
-    if interval not in ['month', 'quarter', 'year']:
-        raise RuntimeError("Interval not supported ", interval)
-    if interval == 'month':
-        end_prev_month = end_date - relativedelta.relativedelta(months=1)
-    elif interval == 'quarter':
-        end_prev_month = end_date - relativedelta.relativedelta(months=3)
-    elif interval == 'year':
-        end_prev_month = end_date - relativedelta.relativedelta(months=12)
-
-    return end_prev_month
+import os
+import json
 
 
-def str_val(val):
+def load_json_file(filename, mode="r"):
     """
-    Format the value of a metric value to a string
+    Load a json file and return the data.
 
-    :param val: number to be formatted
-    :return: a string with the formatted value
+    :param filename: the name of the json file to be loaded
+    :param mode: the mode to open the file in. Default: 'r'
+    :returns: content of the json file as a python dict
     """
-    str_val = val
-    if val is None:
-        str_val = "NA"
-    elif type(val) == float:
-        str_val = '%0.2f' % val
-    else:
-        str_val = str(val)
-    return str_val
+
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), filename), mode) as f:
+        json_content = json.load(f)
+    return json_content
