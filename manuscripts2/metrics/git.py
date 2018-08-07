@@ -207,3 +207,27 @@ def project_community(index, start, end):
     }
 
     return results
+
+
+def project_process(index, start, end):
+    """Compute the metrics for the project process section of the enriched
+    git index.
+
+    Returns a dictionary containing "bmi_metrics", "time_to_close_metrics",
+    "time_to_close_review_metrics" and patchsets_metrics as the keys and
+    the related Metrics as the values.
+
+    :param index: index object
+    :param start: start date to get the data from
+    :param end: end date to get the data upto
+    :return: dictionary with the value of the metrics
+    """
+
+    results = {
+        "bmi_metrics": [],
+        "time_to_close_metrics": [],
+        "time_to_close_review_metrics": [],
+        "patchsets_metrics": []
+    }
+
+    return results

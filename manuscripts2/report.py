@@ -313,6 +313,99 @@ class Report():
         file_path = os.path.join(data_path, file_label)
         orgs_df.to_csv(file_path, index=False)
 
+    def get_sec_project_process(self):
+        """
+        Generate the "project process" section of the report.
+        """
+
+        logger.debug("Calculating Project Process metrics.")
+
+        data_path = os.path.join(self.data_dir, "project_process")
+        if not os.path.exists(data_path):
+            os.makedirs(data_path)
+
+        project_process_config = {
+            "bmi_metrics": [],
+            "time_to_close_metrics": [],
+            "time_to_close_review_metrics": [],
+            "patchsets_metrics": []
+        }
+
+        for ds in self.data_sources:
+            metric_file = self.ds2class[ds]
+            metric_index = self.get_metric_index(ds)
+            project_process = metric_file.project_process(metric_index, self.start_date,
+                                                          self.end_date)
+            for section in project_process_config:
+                project_process_config[section].extend(project_process[section])
+
+        project_process_config["time_to_close_title"] = "Days to close (median and average)"
+        project_process_config["time_to_close_review_title"] = "Days to close review (median and average)"
+
+        """
+        BMI Pull Requests, BMI Issues
+        description: closed PRs/issues out of open PRs/issues in a period of time
+        """
+        for bmi_metric in project_process_config['bmi_metrics']:
+            headers = bmi_metric.id
+            dataframe = bmi_metric.timeseries(dataframe=True)
+            file_label = bmi_metric.DS_NAME + "_" + bmi_metric.id
+            file_path = os.path.join(data_path, file_label)
+            title_name = bmi_metric.name
+            self.create_csv_fig_from_df([dataframe], file_path, [headers],
+                                        fig_type="bar", title=title_name)
+        """
+        Time to close Issues and gerrit and ITS tickets
+        description: median and mean time to close issues
+        """
+        i = 0
+        if len(project_process_config['time_to_close_metrics']) > 0:
+            metrics = project_process_config['time_to_close_metrics']
+            while i < len(metrics):
+                headers = [metrics[i].id, metrics[i + 1].id]
+                file_label += metrics[i].DS_NAME + "_" + metrics[i].id + "_"
+                file_label += metrics[i + 1].DS_NAME + "_" + metrics[i + 1].id
+                dataframes = [metrics[i].timeseries(dataframe=True),
+                              metrics[i + 1].timeseries(dataframe=True)]
+                title_name = project_process_config['time_to_close_title']
+                file_path = os.path.join(data_path, file_label)
+                self.create_csv_fig_from_df(dataframes, file_path, headers,
+                                            fig_type="bar", title=title_name)
+                i += 2
+        """
+        Time to close PRs and gerrit reviews
+        description: median and mean time to close prs and gerrit reviews
+        """
+        i = 0
+        if len(project_process_config['time_to_close_review_metrics']) > 0:
+            metrics = project_process_config['time_to_close_review_metrics']
+            while i < len(metrics):
+                headers = [metrics[i].id, metrics[i + 1].id]
+                file_label += metrics[i].DS_NAME + "_" + metrics[i].id + "_"
+                file_label += metrics[i + 1].DS_NAME + "_" + metrics[i + 1].id
+                dataframes = [metrics[i].timeseries(dataframe=True),
+                              metrics[i + 1].timeseries(dataframe=True)]
+                title_name = project_process_config['time_to_close_review_title']
+                file_path = os.path.join(data_path, file_label)
+                self.create_csv_fig_from_df(dataframes, file_path, headers,
+                                            fig_type="bar", title=title_name)
+                i += 2
+        """
+        Patchsets per review
+        description: median and average of the number of patchsets per review
+        """
+        if project_process_config['patchsets_metrics']:
+            metrics = project_process_config['patchsets_metrics']
+            headers = [metrics[0].id, metrics[1].id]
+            dataframes = [metrics[0].timeseries(dataframe=True),
+                          metrics[1].timeseries(dataframe=True)]
+            file_label = metrics[0].DS_NAME + "_" + metrics[0].id + "_"
+            file_label += metrics[1].DS_NAME + "_" + metrics[1].id
+            file_path = os.path.join(data_path, file_label)
+            title_name = project_process_config['patchsets_title']
+            self.create_csv_fig_from_df(dataframes, file_path, headers,
+                                        fig_type="bar", title=title_name)
+
     def create_csv_fig_from_df(self, data_frames=[], filename=None, headers=[], index_label=None,
                                fig_type=None, title=None, xlabel=None, ylabel=None, xfont=20,
                                yfont=20, titlefont=30, fig_size=(10, 15), image_type="png"):
