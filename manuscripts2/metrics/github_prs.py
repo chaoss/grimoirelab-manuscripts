@@ -125,7 +125,38 @@ class DaysToClosePRMedian(GitHubPRsMetrics):
         """
 
         self.query.by_period()
-        return super().timeseries(dataframe=dataframe)
+        ts = super().timeseries(dataframe=dataframe)
+        ts['value'] = ts['value'].apply(lambda x: float("%.2f" % x))
+        return ts
+
+
+class DaysToClosePRAverage(GitHubPRsMetrics):
+    """Class for computing the metrics related to average values
+    for the number days it took to close a pull request.
+
+    :param index: index object
+    :param start: start date to get the data from
+    :param end: end date to get the data upto
+    """
+
+    def __init__(self, index, start, end):
+        super().__init__(index, start, end)
+        self.id = "days_to_close_pr_average"
+        self.name = "Days to close reviews (average)"
+        self.desc = "Number of days needed to close a review (average)"
+        self.query.is_closed()
+        self.query.get_average("time_to_close_days")
+
+    def timeseries(self, dataframe=False):
+        """Get the date histogram aggregations.
+
+        :param dataframe: if true, return a pandas.DataFrame object
+        """
+
+        self.query.by_period()
+        ts = super().timeseries(dataframe=dataframe)
+        ts['value'] = ts['value'].apply(lambda x: float("%.2f" % x))
+        return ts
 
 
 class BMIPR():
@@ -238,6 +269,36 @@ def project_community(index, start, end):
         "author_metrics": [],
         "people_top_metrics": [],
         "orgs_top_metrics": [],
+    }
+
+    return results
+
+
+def project_process(index, start, end):
+    """Compute the metrics for the project process section of the enriched
+    github issues index.
+
+    Returns a dictionary containing "bmi_metrics", "time_to_close_metrics",
+    "time_to_close_review_metrics" and patchsets_metrics as the keys and
+    the related Metrics as the values.
+    time_to_close_title and time_to_close_review_title contain the file names
+    to be used for time_to_close_metrics and time_to_close_review_metrics
+    metrics data.
+
+    :param index: index object
+    :param start: start date to get the data from
+    :param end: end date to get the data upto
+    :return: dictionary with the value of the metrics
+    """
+
+    results = {
+        "bmi_metrics": [BMIPR(index, start, end)],
+        "time_to_close_metrics": [],
+        "time_to_close_title": "Days to close (median and average)",
+        "time_to_close_review_metrics": [DaysToClosePRAverage(index, start, end),
+                                         DaysToClosePRMedian(index, start, end)],
+        "time_to_close_review_title": "Days to close review (median and average)",
+        "patchsets_metrics": []
     }
 
     return results
