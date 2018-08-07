@@ -51,6 +51,9 @@ TIME_TO_CLOSE_DAYS_PR_MEDIAN = 2.71
 # files
 SUBMITTED_PRS_BY_MONTH = "data/test_data/github_submitted_prs_per_month.csv"
 CLOSED_PRS_BY_MONTH = "data/test_data/github_closed_prs_per_month.csv"
+TIME_TO_CLOSE_DAYS_MEDIAN_TS = "data/test_data/time_to_close_prs_days_median.csv"
+TIME_TO_CLOSE_DAYS_AVERAGE_TS = "data/test_data/time_to_close_prs_days_average.csv"
+BMI_PR_PER_MONTH = "data/test_data/github_prs_bmipr.csv"
 
 
 class TestGitHubPRs(TestBaseElasticSearch):
@@ -175,3 +178,39 @@ class TestGitHubPRs(TestBaseElasticSearch):
         opened_prs_test = pd.read_csv(SUBMITTED_PRS_BY_MONTH)
         self.assertIsInstance(opened_prs_ts, pd.DataFrame)
         assert_array_equal(opened_prs_test['value'], opened_prs_ts['value'])
+
+    def test_time_to_close_days_pr_median_timeseries(self):
+        """
+        Test if the timeseries dataframe for the metrics related to the median values of number
+        of days it took to close an pull requests are returned correctly or not.
+        """
+
+        median_values = github_prs.DaysToClosePRMedian(self.github_index, self.start, self.end)
+        median_values_ts = median_values.timeseries(dataframe=True)
+        median_values_test = pd.read_csv(TIME_TO_CLOSE_DAYS_MEDIAN_TS)
+        self.assertIsInstance(median_values_ts, pd.DataFrame)
+        assert_array_equal(median_values_test['value'], median_values_ts['value'])
+
+    def test_time_to_close_days_pr_average_timeseries(self):
+        """
+        Test if the timeseries dataframe for the metrics related to the average values of number
+        of days it took to close an pull requests are returned correctly or not.
+        """
+
+        average_values = github_prs.DaysToClosePRAverage(self.github_index, self.start, self.end)
+        average_values_ts = average_values.timeseries(dataframe=True)
+        average_values_test = pd.read_csv(TIME_TO_CLOSE_DAYS_AVERAGE_TS)
+        self.assertIsInstance(average_values_ts, pd.DataFrame)
+        assert_array_equal(average_values_test['value'], average_values_ts['value'])
+
+    def test_bmipr_timeseries(self):
+        """
+        Test if timeseries dataframe for the BMI pull requests metrics are returned correctly
+        or not.
+        """
+
+        bmi_values = github_prs.BMIPR(self.github_index, self.start, self.end)
+        bmi_values_ts = bmi_values.timeseries(dataframe=True)
+        bmi_values_test = pd.read_csv(BMI_PR_PER_MONTH)
+        self.assertIsInstance(bmi_values_ts, pd.DataFrame)
+        assert_array_equal(bmi_values_test['bmi'], bmi_values_ts['bmi'])
