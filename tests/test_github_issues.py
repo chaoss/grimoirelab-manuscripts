@@ -51,6 +51,9 @@ TIME_TO_CLOSE_DAYS_MEDIAN = 2.10
 # files
 CLOSED_ISSUES_BY_MONTH = "data/test_data/github_closed_issues_per_month.csv"
 OPENED_ISSUES_BY_MONTH = "data/test_data/github_opened_issues_per_month.csv"
+TIME_TO_CLOSE_DAYS_MEDIAN_TS = "data/test_data/time_to_close_issue_days_median.csv"
+TIME_TO_CLOSE_DAYS_AVERAGE_TS = "data/test_data/time_to_close_issue_days_average.csv"
+BMI_ISSUES_PER_MONTH = "data/test_data/github_issues_bmi_tickets.csv"
 
 
 class TestGitHubIssues(TestBaseElasticSearch):
@@ -175,3 +178,39 @@ class TestGitHubIssues(TestBaseElasticSearch):
         opened_issues_test = pd.read_csv(OPENED_ISSUES_BY_MONTH)
         self.assertIsInstance(opened_issues_ts, pd.DataFrame)
         assert_array_equal(opened_issues_test['value'], opened_issues_ts['value'])
+
+    def test_time_to_close_days_median_timeseries(self):
+        """
+        Test if the timeseries dataframe for the metrics related to the median values of number
+        of days it took to close an issue are returned correctly or not.
+        """
+
+        median_values = github_issues.DaysToCloseMedian(self.github_index, self.start, self.end)
+        median_values_ts = median_values.timeseries(dataframe=True)
+        median_values_test = pd.read_csv(TIME_TO_CLOSE_DAYS_MEDIAN_TS)
+        self.assertIsInstance(median_values_ts, pd.DataFrame)
+        assert_array_equal(median_values_test['value'], median_values_ts['value'])
+
+    def test_time_to_close_days_average_timeseries(self):
+        """
+        Test if the timeseries dataframe for the metrics related to the average values of number
+        of days it took to close an issue are returned correctly or not.
+        """
+
+        average_values = github_issues.DaysToCloseAverage(self.github_index, self.start, self.end)
+        average_values_ts = average_values.timeseries(dataframe=True)
+        average_values_test = pd.read_csv(TIME_TO_CLOSE_DAYS_AVERAGE_TS)
+        self.assertIsInstance(average_values_ts, pd.DataFrame)
+        assert_array_equal(average_values_test['value'], average_values_ts['value'])
+
+    def test_bmitickets_timeseries(self):
+        """
+        Test if timeseries dataframe for the BMI tickets metrics are returned correctly
+        or not.
+        """
+
+        bmi_values = github_issues.BMI(self.github_index, self.start, self.end)
+        bmi_values_ts = bmi_values.timeseries(dataframe=True)
+        bmi_values_test = pd.read_csv(BMI_ISSUES_PER_MONTH)
+        self.assertIsInstance(bmi_values_ts, pd.DataFrame)
+        assert_array_equal(bmi_values_test['bmi'], bmi_values_ts['bmi'])
