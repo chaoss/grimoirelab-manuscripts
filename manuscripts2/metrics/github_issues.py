@@ -89,7 +89,7 @@ class ClosedIssues(GitHubIssuesMetrics):
         self.query.is_closed()\
                   .since(self.start, field="closed_at")\
                   .until(self.end, field="closed_at")
-        self.query.get_cardinality("id").by_period()
+        self.query.get_cardinality("id").by_period(field="closed_at")
 
 
 class DaysToCloseMedian(GitHubIssuesMetrics):
