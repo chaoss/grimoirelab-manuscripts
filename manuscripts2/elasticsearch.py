@@ -620,9 +620,10 @@ def calculate_bmi(closed, submitted):
     submitted in a particular period of analysis. The items can be issues, pull
     requests and such
 
-    :param closed: data returned from get_timeseries() containing closed items
-    :param submitted: data returned from get_timeseries() containing total items
-    :returns: a dict containing "period" and "bmi" keys with values as lists
+    :param closed: dataframe returned from get_timeseries() containing closed items
+    :param submitted: dataframe returned from get_timeseries() containing total items
+    :returns: a dataframe with "date" and "bmi" columns where the date column is also
+              the index.
               bmi is the ratio of the number of items closed by the total
               number of items submitted in a "period" of analysis
     """
@@ -630,16 +631,18 @@ def calculate_bmi(closed, submitted):
     if sorted(closed.keys()) != sorted(submitted.keys()):
         raise AttributeError("The buckets supplied are not congruent!")
 
-    dates = closed['date']
+    dates = closed.index.values
     closed_values = closed['value']
     submitted_values = submitted['value']
     ratios = []
     for x, y in zip(closed_values, submitted_values):
         if y == 0:
-            ratios.append(0)
+            ratios.append(0.0)
         else:
-            ratios.append(x / y)
-    return {"period": dates, "bmi": ratios}
+            ratios.append(float("%.2f" % (x / y)))
+
+    df = pd.DataFrame.from_records({"date": dates, "bmi": ratios}, index="date")
+    return df.fillna(0)
 
 
 def buckets_to_df(buckets):
