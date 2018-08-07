@@ -304,8 +304,8 @@ def project_process(index, start, end):
         "bmi_metrics": [BMI(index, start, end)],
         "time_to_close_metrics": [DaysToCloseAverage(index, start, end),
                                   DaysToCloseMedian(index, start, end)],
-        "time_to_close_title": "Days to close (median and average)",
         "time_to_close_review_metrics": [],
-        "time_to_close_review_title": "",
         "patchsets_metrics": []
     }
+
+    return results

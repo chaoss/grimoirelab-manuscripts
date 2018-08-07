@@ -37,3 +37,4 @@ test_report = Report(es_url=es_url, start=start_date, end=end_date, data_dir="PE
 test_report.get_sec_overview()
 test_report.get_sec_project_activity()
 test_report.get_sec_project_community()
+test_report.get_sec_project_process()
