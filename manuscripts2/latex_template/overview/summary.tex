@@ -1,0 +1,33 @@
+The report looks at activities across the PROJECT-NAME community during
+2016-QUARTER (DATEFRAME), comparing it to previous period of analysis.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{c|c|c|}
+		% specify table head
+	    \bfseries Data source & \bfseries Activity last quarter & \bfseries Change (wrt to prev. quarter)
+	    % use head of csv as column names
+	    \csvreader[head to column names]{overview/data_source_evolution.csv}{}
+	    {\\\datasource & \netvalues ~ \metricsnames & \relativevalues\% }
+    \end{tabular}
+    \caption{Activity during the last period of analysis and its evolution}
+    \label{tab:_summary}
+\end{table}
+
+Table~\ref{tab:_summary} shows development activity for each of the analyzed
+data sources. The activity column displays information about the net
+activity numbers, while the Change column displays information
+about the relative difference with respect to the previous period of
+analysis.\\
+
+%TODO: add list of repositories analyzed per quarter
+
+%\section{Development and Conversations}
+
+%The mean number of developers per month
+
+%\begin{figure}[H]
+%    \centering
+%    \includegraphics[scale=.35]{figs/authors_month.eps}
+%\caption{Number of developers per month in mean for each quarter}
+%\end{figure}

@@ -1,0 +1,160 @@
+\documentclass[a4wide,4pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{float}
+\usepackage{csvsimple}
+\usepackage[pdfborder=0 0 0]{hyperref}
+\usepackage{longtable}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\usepackage{graphicx}
+
+\begin{document}
+
+\title{Standard Grimoire Report \\
+  PROJECT-NAME Project \\
+      2016-QUARTER \\
+        ~~\\~~\\  \includegraphics[scale=.35]{logo}       \\}
+
+
+
+
+\maketitle
+
+
+\newpage
+~~\\~\\~\\~\\
+%\begin{tabular}{p{5cm}p{10cm}}
+%~  & Daniel Izquierdo Cort\'azar \\
+%       & Chief Data Officer  \\
+%       & dizquierdo@bitergia.com \\
+
+%\end{tabular}
+
+~~\\~~\\
+
+~~\\
+~~\\
+
+\begin{tabular}{p{5cm}p{10cm}}
+
+\end{tabular}
+
+~~\\
+~~\\
+
+This report would not exist without the effort of the people involved in the development of the \href{http://grimoirelab.github.io}{Grimoire toolset}.
+
+~~\\
+~~\\
+~~\\
+~~\\
+~~\\
+~~\\
+
+\begin{flushright}
+  (cc) 2016 Bitergia. Some rights reserved. \\
+  This work licensed under Creative Commons
+  Attribution-ShareAlike 4.0 Unported License. \\
+  To view a copy of full license, see
+  \url{http://creativecommons.org/licenses/by-sa/4.0}, \\
+  or write to
+  Creative Commons, 559 Nathan Abbott Way, Stanford,
+  California 94305, USA. \\ \ 
+\end{flushright}
+
+
+%\rhead{Bitergia Report}
+%\rhead{\includegraphics[scale=.15]{openstack.eps}\includegraphics[scale=.15]{logo.eps}}
+\rhead{\includegraphics[scale=.15]{logo}}
+%\rhead{\includegraphics[scale=.15]{logo.eps}}
+
+
+\newpage
+
+\begin{center}
+\textbf{Executive Summary}
+\end{center}
+
+This report provides a quantitative analysis of the current and past situation of the PROJECT-NAME project. All the data presented in it is based on information retrieved from the software development repositories of the project. The analysis includes a summary of the general situation of the project, and specific analysis of some of its development processes and communication channels. Data from previous periods is also shown for comparison.
+
+\newpage
+
+\setcounter{tocdepth}{4}
+\setcounter{secnumdepth}{4}
+\tableofcontents
+
+\newpage
+
+\section{Project overview} \label{overview}
+
+\input{overview.tex}
+
+The rest of the document is divided into three sections with information from the last periods: 
+
+\begin{itemize}
+\item Activity: focused on contributions. 
+\item Community: focused on contributors.
+\item Process: focused on efficiency and timing.
+\end{itemize}
+
+\section{Activity} \label{activity}
+This section covers contributions in the different data sources.\\
+
+\input{activity.tex}
+
+
+\section{Community} \label{community}
+This section tries to help us to understand the evolution of PROJECT-NAME community by looking at active contributors and organizations in the last period of analysis, compared to previous ones.\\
+
+\input{community.tex}
+
+
+\section{Process} \label{process}
+This section intends to show the evolution of efficiency and timing when dealing with tasks related with code review processes.\\
+	
+\input{process.tex}
+
+\appendix{}
+
+\section{Metrics Definitions} \label{metrics}
+\label{chap:metrics_definitions}
+
+\begin{itemize}
+\item Commit: this is defined as the action(s) that performes a change in the source code. Bots, merges and other type of automatic activity is removed from the records. In addition, when aggregating several git repositories, this metric only counts unique revisions (unique hashes found in the git repositories). In addition, all branches are aggregated to the analysis.
+
+\item Submitted changesets: a code review is the process of peer reviewing source code changes. A submitted code is not merged to the master code of a given project till this is approved. A submitted code review is defined as any changeset submitted to the Gerrit
+system. 
+ 
+\item Authors: a developer is defined as author if she is the owner of the patchset sent for reviewing and this is merged into the source code. As previously indicated, automatic commits such bot's are removed from this analysis.
+
+\item Efficiency closing changesets: this metric is a derivation of the Backlog Management Index as it is named as Review efficiency index (REI). As similarly used in the BMI index, this metrics measures the number of closed changesets
+ out of the total number of new changesets in a given period.
+
+\item Time to Merge: this time consists of the time between the first upload of the first changeset till the last iteration of the code review process is merged into the code. This metric is provided in number of days.
+
+\item Developer per period: average of developers per period ignoring bots and merges.
+
+\item Emails sent: number of emails sent by people to the several mailing lists. Bots are not registered.
+
+\item People sending emails: number of people sending those emails ignoring bots.
+
+\end{itemize}
+
+
+%\chapter{Source code and data sources}
+%\label{chap:data_sources}
+
+%The source code of the scripts and templates used to produce this
+%report are available from the GrimoireReports repository\footnote{\url{
+%https://github.com/grimoirelab}}.
+%Commit identified with the hash \emph{d33b6f5951662fb5bd895eee89c0b0344b09c956}. 
+
+%select p.id, pr.data_source, pr.repository_name 
+%from projects p, project_repositories pr 
+%where p.project_id=pr.project_id order by p.id, pr.data_source;
+
+%\input{repositories.tex}
+
+\end{document}

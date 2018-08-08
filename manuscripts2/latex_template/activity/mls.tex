@@ -1,0 +1,58 @@
+%\chapter{Communication and support-related activities}
+
+%Analysis of the communication channels used for communication and support-related activities.
+
+The following chart shows activity in terms of emails sent grouped by quarter.
+
+\begin{tabular}{p{9cm} p{5cm}}
+    \vspace{0pt} 
+    \hspace*{-6cm}  
+    \includegraphics[scale=.75]{activity/mls_emails_sent.eps}
+    & 
+    \vspace{0pt}
+    \begin{tabular}{l|l}%
+    \bfseries Period & \bfseries Emails % specify table head
+    \csvreader[head to column names]{activity/mls_emails_sent.csv}{}% use head of csv as column names
+    {\\\Date & \emailssent}
+    \end{tabular}
+\end{tabular}
+
+
+
+%\begin{tabular}{p{7cm} p{5cm}}
+%    \vspace{0pt} 
+%    \includegraphics[scale=.35]{figs/emails_senders_init.eps}
+%    & 
+%    \vspace{0pt}
+%    \begin{tabular}{l|l}%
+%    \bfseries Period & \bfseries People % specify table head
+%    \csvreader[head to column names]{data/emails_senders_init.csv}{}% use head of csv as column names
+%    {\\\labels & \senders}
+%    \end{tabular}
+%\end{tabular}
+
+%\noindent{\footnotesize
+%\begin{tabular}{p{2.5cm}p{7.5cm}p{1.5cm}}
+%    \bfseries Initial Author &  & \bfseries Number \\ 
+%    \bfseries and Date       & \bfseries Subject  & \bfseries Messages% specify table head
+%    \csvreader[head to column names]{data/mls_top_longest_threads.csv}{}% use head of csv as column names
+%    {\\\initiator \\\date & \subject & \len}
+%   % {\\\hline\csvcoli & \csvcolvii & \csvcolv & \csvcolii}% specify your coloumns here
+%\end{tabular}
+%}
+
+%% \noindent{\footnotesize
+%% \begin{tabular}{p{3cm}p{6cm}p{2cm}}
+%%     \bfseries Initial Author & & \bfseries Diff. \\
+%%     \bfseries and Date & \bfseries Subject  &  \bfseries People% specify table head
+%%     \csvreader[head to column names]{data/mls_top_crowded_threads.csv}{}% use head of csv as column names
+%%     {\\\initiator \\\date & \subject  & \people}
+%%    % {\\\hline\csvcoli & \csvcolvii & \csvcolv & \csvcolii}% specify your coloumns here
+%% \end{tabular}
+%% }
+
+%\begin{tabular}{p{5cm}p{3cm}p{2cm}}
+%    \bfseries Initial Author & \bfseries Subject  & \bfseries Date % specify table head
+%    \csvreader[head to column names]{data/mls_top_longest_threads.csv}{}% use head of csv as column names
+%    {\\\hline\csvcoli & \csvcolvi & \csvcoliv }% specify your coloumns here
+%\end{tabular}

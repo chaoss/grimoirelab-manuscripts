@@ -1,0 +1,14 @@
+The following chart shows activity in Gerrit data source. It is based on comparing the number of opened and closed reviews grouped by quarters.
+
+\begin{tabular}{p{8cm} p{5cm}}
+	\vspace{0pt} 
+	\hspace*{-5cm}  
+	\includegraphics[scale=.75]{activity/gerrit_submitted_gerrit_closed.eps}
+	& 
+	\vspace{0pt}
+	\begin{tabular}{l|r|r|}%
+		\bfseries Period & \bfseries Opened & \bfseries Closed % specify table head
+		\csvreader[head to column names]{activity/gerrit_submitted_gerrit_closed.csv}{}% use head of csv as column names
+		{\\\Date & \submitted & \closed}
+	\end{tabular}
+\end{tabular}

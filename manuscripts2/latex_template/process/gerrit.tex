@@ -1,0 +1,29 @@
+For Gerrit data source, we use REI, that was defined in section \ref{overview}, to measure the efficiency in code review process. The chart below shows evolution of REI by quarters in order to visualize how changesets are being managed by the community.
+
+\begin{tabular}{p{9cm} p{5cm}}
+	\vspace{0pt} 
+	\hspace*{-6cm}  
+	\includegraphics[scale=.75]{process/gerrit_bmi_reviews_general.eps}
+	& 
+	\vspace{0pt}
+	\begin{tabular}{l|l}%
+		\bfseries Period & \bfseries Closed/Subm. % specify table head
+		\csvreader[head to column names]{process/gerrit_bmi_reviews_general.csv}{}% use head of csv as column names
+		{\\\Date & \bmireviews}
+	\end{tabular}
+\end{tabular}
+
+In terms of time and again for Gerrit, the chart below shows the evolution of the mean and median times--in days--to close a review (TTM, defined in section \ref{overview}).
+
+\begin{tabular}{p{9cm} p{5cm}}
+	\vspace{0pt} 
+	\hspace*{-6cm}  
+	\includegraphics[scale=.75]{process/gerrit_days_to_merge_review_avg_gerrit_days_to_merge_review_median_general.eps}
+	& 
+	\vspace{0pt}
+	\begin{tabular}{l|r|r|}%
+		\bfseries Period & \bfseries Median & \bfseries Mean % specify table head
+		\csvreader[head to column names]{process/gerrit_days_to_merge_review_avg_gerrit_days_to_merge_review_median_general.csv}{}% use head of csv as column names
+		{\\\Date & \daystomergereviewmedian & \daystomergereviewaverage}
+	\end{tabular}
+\end{tabular}

@@ -1,0 +1,14 @@
+The following chart shows activity in GitHub pull requests data source. It is based on comparing the number of opened and closed reviews grouped by the time interval. A review is equivalent to a pull request in GitHub terminology.
+
+\begin{tabular}{p{9cm} p{5cm}}
+	\vspace{0pt} 
+	\hspace*{-6cm}  
+	\includegraphics[scale=.75]{activity/github_prs_submitted_github_prs_closed.eps}
+	& 
+	\vspace{0pt}
+	\begin{tabular}{l|r|r|}%
+		\bfseries Period & \bfseries Opened & \bfseries Closed % specify table head
+		\csvreader[head to column names]{activity/github_prs_submitted_github_prs_closed.csv}{}% use head of csv as column names
+		{\\\Date & \submitted & \closed}
+	\end{tabular}
+\end{tabular}
