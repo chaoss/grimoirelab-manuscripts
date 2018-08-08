@@ -180,6 +180,7 @@ class Report():
             (last, percentage) = get_trend(metric.timeseries())
             csv += "{}, {}, {}, {}\n".format(metric.name, last,
                                              percentage, metric.DS_NAME)
+        csv = csv.replace("_", "\_")
         create_csv(file_name, csv)
 
         # AUTHOR METRICS
@@ -412,8 +413,8 @@ class Report():
                                         fig_type="bar", title=title_name)
 
     def create_csv_fig_from_df(self, data_frames=[], filename=None, headers=[], index_label=None,
-                               fig_type=None, title=None, xlabel=None, ylabel=None, xfont=20,
-                               yfont=20, titlefont=30, fig_size=(10, 15), image_type="png"):
+                               fig_type=None, title=None, xlabel=None, ylabel=None, xfont=10,
+                               yfont=10, titlefont=15, fig_size=(8, 10), image_type="eps"):
         """
         Joins all the datafarames horizontally and creates a CSV and an image file from
         those dataframes.
@@ -431,7 +432,7 @@ class Report():
         :param xfont: font size of x axis label
         :param yfont: font size of y axis label
         :param titlefont: font size of title of the figure
-        :param fig_size: tuple describing size of the figure (in centimeters) (H x W)
+        :param fig_size: tuple describing size of the figure (in centimeters) (W x H)
         :param image_type: the image type to save the image as: jpg, png, etc
                            default: png
 
@@ -446,7 +447,7 @@ class Report():
         dataframes = []
 
         for index, df in enumerate(data_frames):
-            df = df.rename(columns={"value": headers[index]})
+            df = df.rename(columns={"value": headers[index].replace("_", "")})
             dataframes.append(df)
         res_df = pd.concat(dataframes, axis=1)
 
@@ -462,6 +463,7 @@ class Report():
 
         # Create the Image:
         image_name = filename + "." + image_type
+        title = title.replace("_", "")
         figure(figsize=fig_size)
         plt.subplot(111)
 
