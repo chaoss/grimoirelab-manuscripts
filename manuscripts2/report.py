@@ -19,7 +19,6 @@
 #
 # Author:
 #   Pranjal Aswani <aswani.pranjal@gmail.com>
-#
 
 import sys
 import os
@@ -28,6 +27,7 @@ import logging
 from collections import defaultdict
 
 import matplotlib
+matplotlib.use('agg')
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import figure
 # Plot figures in style similar to 'seaborn'
@@ -121,6 +121,8 @@ class Report():
         self.index_dict = defaultdict(lambda: None)
         for pos, index in enumerate(indices):
             self.index_dict[data_sources[pos]] = index
+
+        self.logo = logo
 
     def get_metric_index(self, data_source):
         """
@@ -235,7 +237,7 @@ class Report():
 
         logger.debug("Calculating Project Activity metrics.")
 
-        data_path = os.path.join(self.data_dir, "project_activity")
+        data_path = os.path.join(self.data_dir, "activity")
         if not os.path.exists(data_path):
             os.makedirs(data_path)
 
@@ -267,7 +269,7 @@ class Report():
 
         logger.debug("Calculating Project Community metrics.")
 
-        data_path = os.path.join(self.data_dir, "project_community")
+        data_path = os.path.join(self.data_dir, "community")
         if not os.path.exists(data_path):
             os.makedirs(data_path)
 
@@ -309,7 +311,7 @@ class Report():
         orgs_df = orgs.aggregations()
         orgs_df = orgs_df.head(self.TOP_MAX)
         orgs_df.columns = [orgs.id, "commits"]
-        file_label = orgs.DS_NAME + "_top_" + orgs.id
+        file_label = orgs.DS_NAME + "_top_" + orgs.id + ".csv"
         file_path = os.path.join(data_path, file_label)
         orgs_df.to_csv(file_path, index=False)
 
@@ -320,7 +322,7 @@ class Report():
 
         logger.debug("Calculating Project Process metrics.")
 
-        data_path = os.path.join(self.data_dir, "project_process")
+        data_path = os.path.join(self.data_dir, "process")
         if not os.path.exists(data_path):
             os.makedirs(data_path)
 
@@ -362,6 +364,7 @@ class Report():
         if len(project_process_config['time_to_close_metrics']) > 0:
             metrics = project_process_config['time_to_close_metrics']
             while i < len(metrics):
+                file_label = ""
                 headers = [metrics[i].id, metrics[i + 1].id]
                 file_label += metrics[i].DS_NAME + "_" + metrics[i].id + "_"
                 file_label += metrics[i + 1].DS_NAME + "_" + metrics[i + 1].id
@@ -380,6 +383,7 @@ class Report():
         if len(project_process_config['time_to_close_review_metrics']) > 0:
             metrics = project_process_config['time_to_close_review_metrics']
             while i < len(metrics):
+                file_label = ""
                 headers = [metrics[i].id, metrics[i + 1].id]
                 file_label += metrics[i].DS_NAME + "_" + metrics[i].id + "_"
                 file_label += metrics[i + 1].DS_NAME + "_" + metrics[i + 1].id
@@ -395,6 +399,7 @@ class Report():
         description: median and average of the number of patchsets per review
         """
         if project_process_config['patchsets_metrics']:
+            file_label = ""
             metrics = project_process_config['patchsets_metrics']
             headers = [metrics[0].id, metrics[1].id]
             dataframes = [metrics[0].timeseries(dataframe=True),
