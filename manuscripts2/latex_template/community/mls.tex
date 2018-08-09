@@ -1,0 +1,14 @@
+The following chart shows the evolution of the community in terms of people sending emails, grouped by quarters for comparison. 
+
+\begin{tabular}{p{9cm} p{5cm}}
+    \vspace{0pt} 
+    \hspace*{-6cm}  
+    \includegraphics[scale=.75]{community/mls_emails_senders.eps}
+    & 
+    \vspace{0pt}
+    \begin{tabular}{l|l}%
+    \bfseries Period & \bfseries People % specify table head
+    \csvreader[head to column names]{community/mls_emails_senders.csv}{}% use head of csv as column names
+    {\\\Date & \emailssenders}
+    \end{tabular}
+\end{tabular}

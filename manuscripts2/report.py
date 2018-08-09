@@ -19,15 +19,21 @@
 #
 # Author:
 #   Pranjal Aswani <aswani.pranjal@gmail.com>
-#
 
-import sys
 import os
+import sys
+import glob
 import logging
+import subprocess
 
+from datetime import datetime
+from dateutil import relativedelta
 from collections import defaultdict
+from distutils.dir_util import copy_tree
+from distutils.file_util import copy_file
 
 import matplotlib
+matplotlib.use('agg')
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import figure
 # Plot figures in style similar to 'seaborn'
@@ -122,6 +128,9 @@ class Report():
         for pos, index in enumerate(indices):
             self.index_dict[data_sources[pos]] = index
 
+        self.logo = logo
+        self.report_name = report_name
+
     def get_metric_index(self, data_source):
         """
         This function will return the elasticsearch index for a corresponding
@@ -178,6 +187,7 @@ class Report():
             (last, percentage) = get_trend(metric.timeseries())
             csv += "{}, {}, {}, {}\n".format(metric.name, last,
                                              percentage, metric.DS_NAME)
+        csv = csv.replace("_", "\_")
         create_csv(file_name, csv)
 
         # AUTHOR METRICS
@@ -235,7 +245,7 @@ class Report():
 
         logger.debug("Calculating Project Activity metrics.")
 
-        data_path = os.path.join(self.data_dir, "project_activity")
+        data_path = os.path.join(self.data_dir, "activity")
         if not os.path.exists(data_path):
             os.makedirs(data_path)
 
@@ -267,7 +277,7 @@ class Report():
 
         logger.debug("Calculating Project Community metrics.")
 
-        data_path = os.path.join(self.data_dir, "project_community")
+        data_path = os.path.join(self.data_dir, "community")
         if not os.path.exists(data_path):
             os.makedirs(data_path)
 
@@ -309,7 +319,7 @@ class Report():
         orgs_df = orgs.aggregations()
         orgs_df = orgs_df.head(self.TOP_MAX)
         orgs_df.columns = [orgs.id, "commits"]
-        file_label = orgs.DS_NAME + "_top_" + orgs.id
+        file_label = orgs.DS_NAME + "_top_" + orgs.id + ".csv"
         file_path = os.path.join(data_path, file_label)
         orgs_df.to_csv(file_path, index=False)
 
@@ -320,7 +330,7 @@ class Report():
 
         logger.debug("Calculating Project Process metrics.")
 
-        data_path = os.path.join(self.data_dir, "project_process")
+        data_path = os.path.join(self.data_dir, "process")
         if not os.path.exists(data_path):
             os.makedirs(data_path)
 
@@ -362,6 +372,7 @@ class Report():
         if len(project_process_config['time_to_close_metrics']) > 0:
             metrics = project_process_config['time_to_close_metrics']
             while i < len(metrics):
+                file_label = ""
                 headers = [metrics[i].id, metrics[i + 1].id]
                 file_label += metrics[i].DS_NAME + "_" + metrics[i].id + "_"
                 file_label += metrics[i + 1].DS_NAME + "_" + metrics[i + 1].id
@@ -380,6 +391,7 @@ class Report():
         if len(project_process_config['time_to_close_review_metrics']) > 0:
             metrics = project_process_config['time_to_close_review_metrics']
             while i < len(metrics):
+                file_label = ""
                 headers = [metrics[i].id, metrics[i + 1].id]
                 file_label += metrics[i].DS_NAME + "_" + metrics[i].id + "_"
                 file_label += metrics[i + 1].DS_NAME + "_" + metrics[i + 1].id
@@ -395,6 +407,7 @@ class Report():
         description: median and average of the number of patchsets per review
         """
         if project_process_config['patchsets_metrics']:
+            file_label = ""
             metrics = project_process_config['patchsets_metrics']
             headers = [metrics[0].id, metrics[1].id]
             dataframes = [metrics[0].timeseries(dataframe=True),
@@ -407,8 +420,8 @@ class Report():
                                         fig_type="bar", title=title_name)
 
     def create_csv_fig_from_df(self, data_frames=[], filename=None, headers=[], index_label=None,
-                               fig_type=None, title=None, xlabel=None, ylabel=None, xfont=20,
-                               yfont=20, titlefont=30, fig_size=(10, 15), image_type="png"):
+                               fig_type=None, title=None, xlabel=None, ylabel=None, xfont=10,
+                               yfont=10, titlefont=15, fig_size=(8, 10), image_type="eps"):
         """
         Joins all the datafarames horizontally and creates a CSV and an image file from
         those dataframes.
@@ -426,7 +439,7 @@ class Report():
         :param xfont: font size of x axis label
         :param yfont: font size of y axis label
         :param titlefont: font size of title of the figure
-        :param fig_size: tuple describing size of the figure (in centimeters) (H x W)
+        :param fig_size: tuple describing size of the figure (in centimeters) (W x H)
         :param image_type: the image type to save the image as: jpg, png, etc
                            default: png
 
@@ -441,7 +454,7 @@ class Report():
         dataframes = []
 
         for index, df in enumerate(data_frames):
-            df = df.rename(columns={"value": headers[index]})
+            df = df.rename(columns={"value": headers[index].replace("_", "")})
             dataframes.append(df)
         res_df = pd.concat(dataframes, axis=1)
 
@@ -457,6 +470,7 @@ class Report():
 
         # Create the Image:
         image_name = filename + "." + image_type
+        title = title.replace("_", "")
         figure(figsize=fig_size)
         plt.subplot(111)
 
@@ -478,3 +492,151 @@ class Report():
         plt.grid(True)
         plt.savefig(image_name)
         logger.debug("Figure {} was generated.".format(image_name))
+
+    def create_data_figs(self):
+        """
+        Generate the data and figs files for the report
+
+        :return:
+        """
+
+        logger.info("Generating the report data and figs from %s to %s",
+                    self.start_date, self.end_date)
+
+        self.get_sec_overview()
+        self.get_sec_project_activity()
+        self.get_sec_project_community()
+        self.get_sec_project_process()
+
+        logger.info("Data and figs done")
+
+    @staticmethod
+    def replace_text(filepath, to_replace, replacement):
+        """
+        Replaces a string in a given file with another string
+
+        :param file: the file in which the string has to be replaced
+        :param to_replace: the string to be replaced in the file
+        :param replacement: the string which replaces 'to_replace' in the file
+        """
+        with open(filepath) as file:
+            s = file.read()
+        s = s.replace(to_replace, replacement)
+        with open(filepath, 'w') as file:
+            file.write(s)
+
+    def replace_text_dir(self, directory, to_replace, replacement, file_type=None):
+        """
+        Replaces a string with its replacement in all the files in the directory
+
+        :param directory: the directory in which the files have to be modified
+        :param to_replace: the string to be replaced in the files
+        :param replacement: the string which replaces 'to_replace' in the files
+        :param file_type: file pattern to match the files in which the string has to be replaced
+        """
+        if not file_type:
+            file_type = "*.tex"
+        for file in glob.iglob(os.path.join(directory, file_type)):
+            self.replace_text(file, to_replace, replacement)
+
+    def create_pdf(self):
+        """
+        Create the report pdf file filling the LaTeX templates with the figs and data for the report
+
+        :return:
+        """
+
+        logger.info("Generating PDF report")
+
+        # First step is to create the report dir from the template
+        report_path = self.data_dir
+        templates_path = os.path.join(os.path.dirname(__file__), "latex_template")
+
+        # Copy the data generated to be used in LaTeX template
+        copy_tree(templates_path, report_path)
+
+        # if user specified a logo then replace it with default logo
+        if self.logo:
+            os.remove(os.path.join(report_path, "logo.eps"))
+            os.remove(os.path.join(report_path, "logo-eps-converted-to.pdf"))
+            print(copy_file(self.logo, os.path.join(report_path, "logo." + self.logo.split('/')[-1].split('.')[-1])))
+
+        # Change the project global name
+        report_name = self.report_name.replace(' ', r'\ ')
+        self.replace_text_dir(report_path, 'PROJECT-NAME', report_name)
+        self.replace_text_dir(os.path.join(report_path, 'overview'), 'PROJECT-NAME', report_name)
+
+        # TODO: customize for different interval
+        period_name = self.start_date.strftime("%y-%m") + "-" + self.end_date.strftime("%y-%m")
+        period_replace = period_name.replace(' ', r'\ ')
+        self.replace_text_dir(report_path, '2016-QUARTER', period_replace)
+        self.replace_text_dir(os.path.join(report_path, 'overview'), '2016-QUARTER', period_replace)
+
+        # Report date frame
+        quarter_start = self.end_date - relativedelta.relativedelta(months=3)
+        quarter_start += relativedelta.relativedelta(days=1)
+        dateframe = (quarter_start.strftime('%Y-%m-%d') + " to " + self.end_date.strftime('%Y-%m-%d')).replace(' ', r'\ ')
+        self.replace_text_dir(os.path.join(report_path, 'overview'), 'DATEFRAME', dateframe)
+
+        # Change the date Copyright
+        self.replace_text_dir(report_path, '(cc) 2016', '(cc) ' + datetime.now().strftime('%Y'))
+
+        # Fix LaTeX special chars
+        self.replace_text_dir(report_path, '&', '\&', 'data/git_top_organizations_*')
+        self.replace_text_dir(report_path, '^#', '', 'data/git_top_organizations_*')
+
+        # Activity section
+        activity = ''
+        for activity_ds in ['git', 'github_prs', 'github_issues']:
+            if activity_ds in self.data_sources:
+                activity += r"\input{activity/" + activity_ds + ".tex}\n"
+        with open(os.path.join(report_path, "activity.tex"), "w") as flatex:
+            flatex.write(activity)
+
+        # Community section
+        community = ''
+        for community_ds in ['git']:
+            if community_ds in self.data_sources:
+                community += r"\input{community/" + community_ds + ".tex}\n"
+        with open(os.path.join(report_path, "community.tex"), "w") as flatex:
+            flatex.write(community)
+
+        # Overview section
+        overview = r'\input{overview/summary.tex}'
+        for overview_ds in ['github_issues']:
+            if overview_ds in self.data_sources:
+                overview += r"\input{overview/efficiency-" + overview_ds + ".tex}\n"
+        with open(os.path.join(report_path, "overview.tex"), "w") as flatex:
+            flatex.write(overview)
+
+        # Process section
+        process = ''
+        for process_ds in ['github_prs', 'github_issues']:
+            if process_ds in self.data_sources:
+                process += r"\input{process/" + process_ds + ".tex}\n"
+        with open(os.path.join(report_path, "process.tex"), "w") as flatex:
+            flatex.write(process)
+
+        # Time to generate the pdf report
+        res = subprocess.call("pdflatex report.tex", shell=True, cwd=report_path)
+        if res > 0:
+            logger.error("Error generating PDF")
+            return
+        # A second time so the TOC is generated
+        subprocess.call("pdflatex report.tex", shell=True, cwd=report_path)
+
+        logger.info("PDF report done %s", report_path + "/report.pdf")
+
+    def create(self):
+        """
+        Generate the data and figs for the report and fill the LaTeX templates with them
+        to generate a PDF file with the report.
+
+        :return:
+        """
+        logger.info("Generating the report from %s to %s", self.start_date, self.end_date)
+
+        self.create_data_figs()
+        self.create_pdf()
+
+        logger.info("Report completed")

@@ -33,8 +33,6 @@ end_date = datetime(2018, 7, 10)
 es_url = "http://localhost:9200"
 
 test_report = Report(es_url=es_url, start=start_date, end=end_date, data_dir="PERCEVAL_TESTS",
-                     data_sources=['git', 'github_issues', 'github_prs'], interval="month")
-test_report.get_sec_overview()
-test_report.get_sec_project_activity()
-test_report.get_sec_project_community()
-test_report.get_sec_project_process()
+                     data_sources=['git', 'github_issues', 'github_prs'],
+                     interval="month", report_name="PercevalReport")
+test_report.create()
