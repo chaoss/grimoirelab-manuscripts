@@ -22,17 +22,105 @@
 # Authors:
 #       Pranjal Aswani <aswani.pranjal@gmail.com>
 
+
+import os
 import sys
 sys.path.insert(0, '.')
 
-from datetime import datetime
+import logging
+import argparse
+
+from dateutil import parser
+from datetime import date, timedelta, timezone
+
 from manuscripts2.report import Report
+from manuscripts.esquery import get_first_date_of_index
+from manuscripts._version import __version__
 
-start_date = datetime(2015, 1, 1)
-end_date = datetime(2018, 7, 10)
-es_url = "http://localhost:9200"
 
-test_report = Report(es_url=es_url, start=start_date, end=end_date, data_dir="PERCEVAL_TESTS",
-                     data_sources=['git', 'github_issues', 'github_prs'],
-                     interval="month", report_name="PercevalReport")
-test_report.create()
+def get_params():
+    """Parse command line arguments"""
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-v', '--version', action='version', version=__version__,
+                        help="Show version")
+    parser.add_argument('-d', '--data-dir', default='GENERATED-REPORT',
+                        help="Directory to store the data results (default: GENERATED-REPORT')")
+    parser.add_argument('-e', '--end-date', default='now',
+                        help="End date for the report (UTC) (<) (default: now)")
+    parser.add_argument('-g', '--debug', dest='debug', action='store_true')
+    parser.add_argument('-i', '--interval', default='month', help="Analysis interval (month (default), quarter, year)")
+    parser.add_argument('-s', '--start-date', default=None,
+                        help="Start date for the report (UTC) (>=) (default: None)")
+    parser.add_argument('-u', '--elastic-url', help="Elastic URL with the enriched indexes")
+    parser.add_argument('--data-sources', nargs='*',
+                        help="Data source for the report (git, ...)")
+    parser.add_argument('-n', '--name', nargs='?', const="UnnamedReport", default="UnnamedReport",
+                        help="Report name (default: UnnamedReport)")
+    parser.add_argument('--indices', default=[], nargs='*',
+                        help="Indices to be used to generate the report (git_index, github_index ...)")
+    parser.add_argument('-l', '--logo', help="""Provide a logo for the report. Allowed formats:
+                        .png, .pdf, .jpg, .mps, .jpeg, .jbig2, .jb2, .PNG, .PDF, .JPG, .JPEG, .JBIG2, .JB2, .eps""")
+
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit(1)
+
+    return parser.parse_args()
+
+
+def get_min_date(url, indices, data_sources):
+    """Get the min date from all the data sources/indices available"""
+
+    if indices:
+        min_date = min([get_first_date_of_index(url, index) for index in indices])
+    else:
+        min_date = min([get_first_date_of_index(url, ds) for ds in data_sources])
+    return min_date
+
+
+if __name__ == '__main__':
+
+    args = get_params()
+
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG, format='[%(asctime)s] %(message)s')
+        logging.debug("Debug mode activated")
+    else:
+        logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
+
+    if not (args.elastic_url and args.data_sources):
+        logging.error('Missing needed params for Report: elastic_url and data_sources')
+        sys.exit(1)
+
+    if args.indices and len(args.indices) != len(args.data_sources):
+        logging.error('Number of indices do not match the number of data sources provided.')
+        sys.exit(1)
+
+    elastic = args.elastic_url
+    report_name = args.name.replace("_", "\_")  # replace _ so that LaTex can process this
+    data_dir = args.data_dir
+    data_sources = args.data_sources
+    logo = args.logo
+
+    if not os.path.exists(data_dir):
+        os.makedirs(data_dir)
+
+    # All the dates must be UTC, including those from command line
+    if args.end_date == 'now':
+        end_date = parser.parse(date.today().strftime('%Y-%m-%d')).replace(tzinfo=timezone.utc)
+    else:
+        end_date = parser.parse(args.end_date).replace(tzinfo=timezone.utc)
+    # The end date is not included, the report must finish the day before
+    end_date += timedelta(microseconds=-1)
+
+    start_date = args.start_date
+    # if start date is not present, it is calculated by querying all the indices given
+    if not start_date:
+        start_date = get_min_date(elastic, args.indices, args.data_sources)
+    start_date = parser.parse(start_date).replace(tzinfo=timezone.utc)
+
+    report = Report(es_url=elastic, start=start_date, end=end_date, data_dir=data_dir,
+                    interval=args.interval, data_sources=data_sources,
+                    report_name=report_name, indices=args.indices, logo=logo)
+    report.create()
