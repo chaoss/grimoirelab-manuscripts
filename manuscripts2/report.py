@@ -603,7 +603,7 @@ class Report():
 
         # Overview section
         overview = r'\input{overview/summary.tex}'
-        for overview_ds in ['github_issues']:
+        for overview_ds in ['github_issues', 'github_prs']:
             if overview_ds in self.data_sources:
                 overview += r"\input{overview/efficiency-" + overview_ds + ".tex}\n"
         with open(os.path.join(report_path, "overview.tex"), "w") as flatex:

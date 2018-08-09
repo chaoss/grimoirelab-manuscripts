@@ -1,0 +1,14 @@
+\begin{itemize}
+	\item Review Efficiency Index (REI), measured as the number of closed pull requests out of the new ones in a given period.
+	\item Time to Merge (TTM), measured as the time since a pull request is submitted until this is closed.
+\end{itemize}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{c|c|c|l}%
+    \bfseries  REI  & \bfseries TTM
+    \csvreader[head to column names]{overview/efficiency.csv}{}% use head of csv as column names
+    {\\\bmipr & \daystocloseprmedian ~ days}
+    \end{tabular}
+    \caption{Closed out of opened pull requests(REI), median time to merge pull requests (TTM)}
+\end{table}
