@@ -21,42 +21,17 @@
 #     Valerio Cosentino <valcos@bitergia.com>
 #
 
-import json
-import os
 import unittest
-from elasticsearch import Elasticsearch, helpers
+from elasticsearch import Elasticsearch
 
 
 ES_URL = "http://127.0.0.1:9200"
 
 
 class TestBaseElasticSearch(unittest.TestCase):
+    """
+    Test base class from which all the test classes inherit.
+    All the variables common to the tests can be declared here.
+    """
 
-    @classmethod
-    def setUpClass(cls):
-        cls.es = Elasticsearch([ES_URL], timeout=3600, max_retries=50, retry_on_timeout=True)
-
-        with open(os.path.join("data/mappings", cls.name + "_mappings.json")) as f:
-            mappings = json.load(f)
-
-        with open(os.path.join("data/indices", cls.name + ".json")) as f:
-            docs = []
-            for line in f.readlines():
-                doc = json.loads(line)
-                docs.append(doc)
-
-        if cls.es.indices.exists(index=cls.enrich_index):
-            cls.es.indices.delete(index=cls.enrich_index)
-
-        cls.es.indices.create(index=cls.enrich_index, body=mappings)
-
-        for doc in docs:
-            doc['_index'] = cls.enrich_index
-            cls.es.indices.refresh(index=cls.enrich_index)
-            helpers.bulk(cls.es, [doc], raise_on_error=True)
-
-        cls.es.indices.refresh(index=cls.enrich_index)
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.es.indices.delete(index=cls.enrich_index)
+    es = Elasticsearch([ES_URL], timeout=3600, max_retries=50, retry_on_timeout=True)

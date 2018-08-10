@@ -22,24 +22,17 @@
 
 from base import TestBaseElasticSearch
 
-NAME = "git_commit"
 ENRICH_INDEX = "git_enrich"
 
 
 class TestGit(TestBaseElasticSearch):
     """Base class to test new_functions.py"""
 
-    @classmethod
-    def setUpClass(cls):
-        cls.name = NAME
-        cls.enrich_index = ENRICH_INDEX
-        super().setUpClass()
-
     def test_read_items(self):
         """Check that the items fetched from the data folder are correctly loaded"""
 
         page = self.es.search(
-            index=self.enrich_index,
+            index=ENRICH_INDEX,
             scroll="60m",
             size=200,
             body={"query": {"match_all": {}}}

@@ -37,7 +37,6 @@ from utils import load_json_file
 from base import TestBaseElasticSearch
 
 
-NAME = "git_commit"
 ENRICH_INDEX = "git_enrich"
 
 # All values as seen on 2018-07-10
@@ -55,16 +54,6 @@ class TestGit(TestBaseElasticSearch):
     """
     Test the git data source.
     """
-
-    @classmethod
-    def setUpClass(cls):
-        """
-        Setup necessary infrastructure to test the functions.
-        """
-
-        cls.name = NAME
-        cls.enrich_index = ENRICH_INDEX
-        super().setUpClass()
 
     def setUp(self):
         """
