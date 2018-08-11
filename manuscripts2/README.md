@@ -1,20 +1,182 @@
 # Readme
 
-This folder is an initialization to the new functions and classes that have to be added to manuscripts. This file provides a brief introduction to these classes and functions.
+<h1 align="center"> Instructions and description about manuscripts2</h1>
+
+## How do I generate a report from this?
+
+First of all, unlike the previous version of manuscripts, this version has two different data sources for GitHub data. One is `github_issues` and the other one is `github_prs`. The `github_issues` data source contains data related to both, the issues and the prs found in the repo. How ever, each item in the data source is treated as an issue i.e the items of the **pull requests** categories don't have the pull requests specific data. The `github_prs` data source, on the other hand, only has pull requests and the data related to them (github_issues data source will have more items than github_prs data source).
+
+Throughout this tutorial, we will be enriching and analysing the [grimoirelab-perceval](https://github.com/chaoss/grimoirelab-perceval) repository.
+
+<h3 align="center">Enrichment</h3>
+
+These data sources have their own ES indices from which they query data from. This helps us separate the issues and PRs in a github repository.
 
 
-### TODO:
-- Is popping from dict and then creating the nested aggregation the most efficient way to do this?
-- How do you parse 3 level nested aggregation? 
-- Create a Metrics class which takes the data from the Query class, processes it and gives us an output?
+- **You can produce an index for the the `github_issues` data source using the following command:**
+```bash
+$ p2o.py --enrich --index <raw_index_name> --index-enrich <enrich_index_name> -e <es_url> \
+--no_inc --debug --db-host <db_host> --db-sortinghat <db_name> --db-user <db_user> \
+--db-password <db_password> github <owner> <repo_name> -t <github_token>
+```
+Example:
+```bash
+$ p2o.py --enrich --index perceval_github_issues_raw --index-enrich perceval_github_issues \
+-e http://localhost:9200 --no_inc --debug --db-host localhost --db-sortinghat sortinghatDB \
+--db-user root github chaoss grimoirelab-perceval -t <github_token>
+```
 
-### Classes:
+This will create an raw index by the name of `perceval_github_issues_raw` containing the issues+prs raw data from the perceval repository. The enriched data will be stored in the `perceval_github_issues` index. The `github_token` here is a token that is being used to get data using the GitHub API. [This is how you generate a token](https://blog.github.com/2013-05-16-personal-api-tokens/).
+
+
+- **Similarly, for a `github_prs` data source we can use this command:**
+```bash
+$ p2o.py --enrich --index <raw_index_name> --index-enrich <enrich_index_name> -e <es_url> \
+--no_inc --debug --db-host <db_host> --db-sortinghat <db_name> --db-user <db_user> \
+--db-password <db_password> github <owner> <repo_name> -t <github_token> --category pull_request
+```
+Example:
+```bash
+$ p2o.py --enrich --index perceval_github_prs_raw --index-enrich perceval_github_prs \
+-e http://localhost:9200 --no_inc --debug --db-host localhost --db-sortinghat sortinghatDB \
+--db-user root github chaoss grimoirelab-perceval -t <github_token> --category pull_request
+```
+
+Here, the `--category pull_request` flag only queries the repo for pull requests data. This command will create an raw index by the name of `perceval_github_prs_raw` containing the PR only raw data from the perceval repo.
+The enriched data will be stored in the `perceval_github_prs` index.
+
+- **The index for `git` data source has no changes and can be produced as follows:**
+```bash
+$ p2o.py --enrich --index <raw_index_name> --index-enrich <enrich_index_name> -e <es_url> --no_inc \
+--debug --db-host <db_host> --db-sortinghat <db_name> --db-user <db_user> \
+--db-password <db_password> git <repository_url>
+```
+Example:
+```bash
+$ p2o.py --enrich --index perceval_git_raw --index-enrich perceval_git -e http://localhost:9200 \
+--no_inc --debug --db-host localhost --db-sortinghat sortinghatDB --db-user root \
+git https://github.com/chaoss/grimoirelab-perceval
+```
+
+The `--db-host`, `--db-sortinghat`, `--db-user` and `--db-password` are parameters of Sortinghat.
+
+**NOTE:** If you don't know how or what [Sortinghat](https://github.com/chaoss/grimoirelab-sortinghat) is, please [go through the tutorial](https://grimoirelab.gitbooks.io/tutorial/sortinghat/intro.html). Sortinghat helps us manage the identities of the contributors and manitainers. But in case, you don't need to know about it if you don't need identity management; which for the first try you likely won't need.
+
+<h3 align="center">Report Generation</h3>
+
+This is how you can use `manuscripts2` to generate the reports:
+
+```bash
+usage: manuscripts2 [-h] [-v] [-d DATA_DIR] [-e END_DATE] [-g] [-i INTERVAL]
+                    [-s START_DATE] [-u ELASTIC_URL]
+                    [--data-sources [DATA_SOURCES [DATA_SOURCES ...]]]
+                    [-n [NAME]] [--indices [INDICES [INDICES ...]]] [-l LOGO]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -v, --version         Show version
+  -d DATA_DIR, --data-dir DATA_DIR
+                        Directory to store the data results (default:
+                        GENERATED-REPORT')
+  -e END_DATE, --end-date END_DATE
+                        End date for the report (UTC) (<) (default: now)
+  -g, --debug
+  -i INTERVAL, --interval INTERVAL
+                        Analysis interval (month (default), quarter, year)
+  -s START_DATE, --start-date START_DATE
+                        Start date for the report (UTC) (>=) (default: None)
+  -u ELASTIC_URL, --elastic-url ELASTIC_URL
+                        Elastic URL with the enriched indexes
+  --data-sources [DATA_SOURCES [DATA_SOURCES ...]]
+                        Data source for the report (git, ...)
+  -n [NAME], --name [NAME]
+                        Report name (default: UnnamedReport)
+  --indices [INDICES [INDICES ...]]
+                        Indices to be used to generate the report (git_index,
+                        github_index ...)
+  -l LOGO, --logo LOGO  Provide a logo for the report. Allowed formats: .png,
+                        .pdf, .jpg, .mps, .jpeg, .jbig2, .jb2, .PNG, .PDF,
+                        .JPG, .JPEG, .JBIG2, .JB2, .eps
+```
+
+First we have to setup the module. Run:
+```bash
+$ pip install .
+$ python setup.py install
+```
+From the root (grimoirelab-manuscripts) directory to setup and configure the scripts.
+
+Now, once the indices mentioned above have been created, you can run the following command to generate the report:
+```bash
+$ manuscripts2 -n <report_name> -d <dir_name> -s <start_date> -e <end_date> -i <time_interval> \
+-u <elasticsearch_url> --data-sources <data sources to be included> \
+--indices <custom_index_names> -l <custom_logo>
+```
+- `repot_name` is the name that is to be given to the project/repository in the report. 
+- `dir_name` is the name of the report directory that will be created and in which the report will exist.
+- `start_date` is the start of the period in which the analysis is to be done. Format: YYYY-MM-DD.
+- `end_date` is the end of the period. Format: YYYY-MM-DD.
+- `time interval` is the intervals in which the data is to be gathered from. It can be a `year`, `quarter`, `month`. The default value is `month`.
+- `elasticsearch_url` is the address of the elasticsearch instance where all the indices are stored.
+- `data sources to be included` are the data sources using which the report is to be created. Currently we support only:
+  - `git`: contains data related to all the commits made in the repository.
+  - `github_issues`: contains all the tickets (issues) opened in a repository.
+  - `github_prs`: contains all the reviews of code (pull requests) made on the repository.
+  - We are working on adding support for more data sources (mailing lists, gerrit, gitlab and such).
+- `custom_index_names`: You can provide the name of the index for a corresponding data source. By default, manuscripts resolves the indices for each of the data sources as the data source names it self. These indices are connected to the data sources in the order in which they appear. For example: if we have: **github_issues github_prs** and **git** then the indices should also follow the same order.
+- `custom_logo`: This is the logo that the report will contain on its every page. By default, a Grimoirelab logo is applied to each of the pages. You can provide the path to the logo file so that that logo can be applied to the report.
+
+On running this command, a folder will be created containing different folders for different sections of the report.
+
+Example:
+
+To generate the report using the above indices and `git`, `github_issues` and `github_prs` data source:
+```bash
+manuscripts2 -n Perceval_Project -d PERCEVAL-REPORTS -s 2016-05-01 -e 2018-04-10 -i quarter \
+-u http://localhost:9200/ --data-sources git github_issues github_prs \
+--indices perceval_git perceval_github_issues perceval_github_prs -l logo.png
+```
+
+Here: `perceval_git`, `perceval_github_issues` and `perceval_github_prs` are the names of the `git`, `github_issues` and `github_prs` data sources respectively.
+
+The actual report pdf will be, you guessed it right, a file named `report.pdf` in the `PERCEVAL-REPORTS` folder.
+
+---
+
+## Tests
+
+To run the tests, first you'll have to have mysql/mariadb (10.0, 10.1) installed. This is a requirement for Sortinghat.
+Then create a database by the name of `test_sh`. The temporary identities of the authors generated during tests will be stored in this data base. To create a database, you can run:
+
+```bash
+mysqladmin -u root create test_sh
+```
+
+Then, to run the tests: from inside the tests folder type:
+```bash
+./run_tests.py
+```
+
+You can change the level of verbosity by changing the following line in `run_tests.py`, such as:
+```python
+result = unittest.TextTestRunner(buffer=True, verbosity=2).run(test_suite)
+```
+
+---
+
+## Manuscripts2: inner functionality
+
+Manuscripts2 is supposed to be the replacement of the old manuscripts code. Manuscripts2 uses external libraries such as `elasticsearch_dsl` to query ES and uses chainable functions to calculate the metrics. This gives us an edge over the old code and helps us calculate the metrics easily.
+
+This here, is a brief introduction to the classes and functions in Manuscripts2.
+
+#### Classes:
 
 - Index(): This class represents an elasticsearch index. It stores the name of an elasticsearch index and the connection to elasticsearch.
 
 - Query(): This class is used to quey data from an elasticsearch index. 
 
-### Structure:
+#### Structure:
 The main Class which is being implemented is the `Query` class. `Query` provides a connection to elasticsearch, queries it and computes the response.
 
 The important variables inside the `Query` objects are as follows:
@@ -26,7 +188,7 @@ The important variables inside the `Query` objects are as follows:
 
 Rest of the variables are self explainatory.
 
-#### In the derived classes file, we have two more classes:
+##### In the derived classes file, we have two more classes:
 
 - `PullRequests` and
 - `Issues`
@@ -34,7 +196,7 @@ Rest of the variables are self explainatory.
 These are subclasses derieved from the `Query` object. They have the initial queries: `"pull_requests":"true"` and `"pull_requests":"false"` respectively. They will have class specific functions in the future as the definitions of the metrics becomes clear.
 
 
-### Usage
+#### Usage
 
 ##### EXAMPLE 1: Basic usage
 
@@ -268,10 +430,11 @@ pull_requests = PullRequests(github_index).is_closed()\
 										  .by_period(period="week")
 
 prs_by_weeks = pull_requests.get_timeseries(dataframe=True)
-
-
-							unixtime	value
-date		
+```
+Output:
+```bash
+				unixtime	value
+date
 2015-12-28 00:00:00+00:00	1.451261e+09	1
 2016-01-04 00:00:00+00:00	1.451866e+09	3
 2016-01-11 00:00:00+00:00	1.452470e+09	0
@@ -286,9 +449,8 @@ Here, we get the number of prs closed per week since the start date until the en
 
 ---
 
-### Tests:
+## Contributing Guidelines:
 
-Run tests with the command:
-```python
-python[3.x] -m unittest -v
-```
+Please submit an issue if you have any doubts about the functionality or if you find a bug. You can also submit a Pull Request if you want to add some additional functionality and tag [@aswanipranjal](https://github.com/aswanipranjal) for assistance!
+
+Cheers!
