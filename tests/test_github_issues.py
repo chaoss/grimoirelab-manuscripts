@@ -35,7 +35,6 @@ from manuscripts2.elasticsearch import Query, Index, get_trend
 from base import TestBaseElasticSearch
 
 
-NAME = "github_issues"
 ENRICH_INDEX = "github_issues_enrich"
 
 # All values as seen on 2018-07-10
@@ -60,16 +59,6 @@ class TestGitHubIssues(TestBaseElasticSearch):
     """
     Test the github_issues data source.
     """
-
-    @classmethod
-    def setUpClass(cls):
-        """
-        Setup necessary infrastructure to test the functions.
-        """
-
-        cls.name = NAME
-        cls.enrich_index = ENRICH_INDEX
-        super().setUpClass()
 
     def setUp(self):
         """

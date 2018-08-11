@@ -21,15 +21,69 @@
 #     Santiago Dueñas <sduenas@bitergia.com>
 #
 
-import logging
+import os
 import sys
+import json
+import logging
 import unittest
+
+from elasticsearch import Elasticsearch, helpers
+
+ES_URL = "http://127.0.0.1:9200"
+
+names = ["git_commit", "github_issues", "github_prs"]
+
+# The names of the enrich indices that are to be set up in ES
+enrich_indices = ["git_enrich", "github_issues_enrich", "github_prs_enrich"]
+
+
+def setUpModule():
+    """
+    Set up the common fixtures for all the tests in the module.
+    """
+
+    es = Elasticsearch([ES_URL], timeout=3600, max_retries=50, retry_on_timeout=True)
+
+    for name, enrich_index in zip(names, enrich_indices):
+
+        with open(os.path.join("data/mappings", name + "_mappings.json")) as f:
+            mappings = json.load(f)
+
+        with open(os.path.join("data/indices", name + ".json")) as f:
+            docs = []
+            for line in f.readlines():
+                doc = json.loads(line)
+                docs.append(doc)
+
+        if es.indices.exists(index=enrich_index):
+            es.indices.delete(index=enrich_index)
+
+        es.indices.create(index=enrich_index, body=mappings)
+
+        for doc in docs:
+            doc['_index'] = enrich_index
+            es.indices.refresh(index=enrich_index)
+            helpers.bulk(es, [doc], raise_on_error=True)
+
+        es.indices.refresh(index=enrich_index)
+
+
+def tearDownModule():
+    """
+    Destroy the test fixtures.
+    """
+
+    es = Elasticsearch([ES_URL], timeout=3600, max_retries=50, retry_on_timeout=True)
+    for enrich_index in enrich_indices:
+        es.indices.delete(index=enrich_index)
 
 
 if __name__ == '__main__':
+    setUpModule()
     logging.basicConfig(level=logging.WARNING,
                         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
     test_suite = unittest.TestLoader().discover('.', pattern='test*.py')
     result = unittest.TextTestRunner(buffer=True).run(test_suite)
+    tearDownModule()
     sys.exit(not result.wasSuccessful())
