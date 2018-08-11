@@ -36,7 +36,10 @@ from utils import load_json_file
 
 # We are going to insert perceval's data into elasticsearch
 # So that we can test the the functions
+ES_URL = "http://127.0.0.1:9200"
+NAME = "git_commit"
 ENRICH_INDEX = "git_enrich"
+
 
 # Some aggregation results as seen on 10th July 2018
 NUM_COMMITS = 1217
@@ -65,6 +68,12 @@ class TestElasticsearch(TestBaseElasticSearch):
     """Base class to test new_functions.py"""
 
     maxDiff = None
+
+    @classmethod
+    def setUpClass(cls):
+        cls.name = NAME
+        cls.enrich_index = ENRICH_INDEX
+        super().setUpClass()
 
     def setUp(self):
         """Set up the necessary functions to run unittests"""

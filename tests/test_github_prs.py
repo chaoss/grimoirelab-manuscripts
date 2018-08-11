@@ -35,6 +35,7 @@ from manuscripts2.elasticsearch import Query, Index, get_trend
 from base import TestBaseElasticSearch
 
 
+NAME = "github_prs"
 ENRICH_INDEX = "github_prs_enrich"
 
 # All values as seen on 2018-07-10
@@ -59,6 +60,16 @@ class TestGitHubPRs(TestBaseElasticSearch):
     """
     Test the github_pull_requests data source.
     """
+
+    @classmethod
+    def setUpClass(cls):
+        """
+        Setup necessary infrastructure to test the functions.
+        """
+
+        cls.name = NAME
+        cls.enrich_index = ENRICH_INDEX
+        super().setUpClass()
 
     def setUp(self):
         """
