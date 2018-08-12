@@ -1,0 +1,6 @@
+metricsnames,netvalues,relativevalues,datasource
+Closed reviews,7,-1042,github\_prs
+Submitted reviews,7,-1071,github\_prs
+Commits,29,-862,git
+Closed tickets,5,-260,github\_issues
+Opened tickets,2,-800,github\_issues
