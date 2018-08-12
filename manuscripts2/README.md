@@ -1,68 +1,74 @@
-# Readme
-
-<h1 align="center"> Instructions and description about manuscripts2</h1>
+# Instructions and description about manuscripts2
 
 ## How do I generate a report from this?
 
-First of all, unlike the previous version of manuscripts, this version has two different data sources for GitHub data. One is `github_issues` and the other one is `github_prs`. The `github_issues` data source contains data related to both, the issues and the prs found in the repo. How ever, each item in the data source is treated as an issue i.e the items of the **pull requests** categories don't have the pull requests specific data. The `github_prs` data source, on the other hand, only has pull requests and the data related to them (github_issues data source will have more items than github_prs data source).
+First of all, unlike the previous version of manuscripts, this version has two different data sources for GitHub data. One is `github_issues` and the other one is `github_prs`. The `github_issues` data source contains data related to both, issues and prs found in the repo. However, each item in the data source is treated as an issue i.e the items of the **pull requests** categories don't have the pull requests specific data. The `github_prs` data source, on the other hand, only has pull requests and the data related to them (`github_issues` data source will have more items than `github_prs` data source).
 
-Throughout this tutorial, we will be enriching and analysing the [grimoirelab-perceval](https://github.com/chaoss/grimoirelab-perceval) repository.
+Note: as an example, throughout these instructions we will be enriching and analysing the [chaoss/grimoirelab-perceval](https://github.com/chaoss/grimoirelab-perceval) repository.
 
-<h3 align="center">Enrichment</h3>
+### Enrichment
 
-These data sources have their own ES indices from which they query data from. This helps us separate the issues and PRs in a github repository.
+These data sources have their own Elasticsearch indices from which they query data. This helps us separate the issues and pull requests in a GitHub repository.
 
 
-- **You can produce an index for the the `github_issues` data source using the following command:**
+- You can produce an index for the the `github_issues` data source using the following command:
+
 ```bash
 $ p2o.py --enrich --index <raw_index_name> --index-enrich <enrich_index_name> -e <es_url> \
 --no_inc --debug --db-host <db_host> --db-sortinghat <db_name> --db-user <db_user> \
 --db-password <db_password> github <owner> <repo_name> -t <github_token>
 ```
+
 Example:
+
 ```bash
 $ p2o.py --enrich --index perceval_github_issues_raw --index-enrich perceval_github_issues \
 -e http://localhost:9200 --no_inc --debug --db-host localhost --db-sortinghat sortinghatDB \
 --db-user root github chaoss grimoirelab-perceval -t <github_token>
 ```
 
-This will create an raw index by the name of `perceval_github_issues_raw` containing the issues+prs raw data from the perceval repository. The enriched data will be stored in the `perceval_github_issues` index. The `github_token` here is a token that is being used to get data using the GitHub API. [This is how you generate a token](https://blog.github.com/2013-05-16-personal-api-tokens/).
+This will create a raw index by the name of `perceval_github_issues_raw` containing the issues+prs raw data from the perceval repository. The enriched data will be stored in the `perceval_github_issues` index. The `github_token` here is a token that is being used to get data using the GitHub API. [This is how you generate a token](https://blog.github.com/2013-05-16-personal-api-tokens/).
 
 
-- **Similarly, for a `github_prs` data source we can use this command:**
+- Similarly, for a `github_prs` data source we can use this command:
+
 ```bash
 $ p2o.py --enrich --index <raw_index_name> --index-enrich <enrich_index_name> -e <es_url> \
 --no_inc --debug --db-host <db_host> --db-sortinghat <db_name> --db-user <db_user> \
 --db-password <db_password> github <owner> <repo_name> -t <github_token> --category pull_request
 ```
 Example:
+
 ```bash
 $ p2o.py --enrich --index perceval_github_prs_raw --index-enrich perceval_github_prs \
 -e http://localhost:9200 --no_inc --debug --db-host localhost --db-sortinghat sortinghatDB \
 --db-user root github chaoss grimoirelab-perceval -t <github_token> --category pull_request
 ```
 
-Here, the `--category pull_request` flag only queries the repo for pull requests data. This command will create an raw index by the name of `perceval_github_prs_raw` containing the PR only raw data from the perceval repo.
+Here, the `--category pull_request` flag only queries the repo for pull requests data. This command will create a raw index by the name of `perceval_github_prs_raw` containing raw data only for pull requests, in this case from the `chaoss/grimoirelab-perceval` GitHub repo.
 The enriched data will be stored in the `perceval_github_prs` index.
 
-- **The index for `git` data source has no changes and can be produced as follows:**
+- The index for `git` data source has no changes and can be produced as follows:
+
 ```bash
 $ p2o.py --enrich --index <raw_index_name> --index-enrich <enrich_index_name> -e <es_url> --no_inc \
 --debug --db-host <db_host> --db-sortinghat <db_name> --db-user <db_user> \
 --db-password <db_password> git <repository_url>
 ```
+
 Example:
+
 ```bash
 $ p2o.py --enrich --index perceval_git_raw --index-enrich perceval_git -e http://localhost:9200 \
 --no_inc --debug --db-host localhost --db-sortinghat sortinghatDB --db-user root \
 git https://github.com/chaoss/grimoirelab-perceval
 ```
 
-The `--db-host`, `--db-sortinghat`, `--db-user` and `--db-password` are parameters of Sortinghat.
+`--db-host`, `--db-sortinghat`, `--db-user` and `--db-password` are parameters of Sortinghat.
 
 **NOTE:** If you don't know how or what [Sortinghat](https://github.com/chaoss/grimoirelab-sortinghat) is, please [go through the tutorial](https://grimoirelab.gitbooks.io/tutorial/sortinghat/intro.html). Sortinghat helps us manage the identities of the contributors and manitainers. But in case, you don't need to know about it if you don't need identity management; which for the first try you likely won't need.
 
-<h3 align="center">Report Generation</h3>
+## Report Generation
 
 This is how you can use `manuscripts2` to generate the reports:
 
@@ -99,20 +105,21 @@ optional arguments:
                         .JPG, .JPEG, .JBIG2, .JB2, .eps
 ```
 
-First we have to setup the module. Run:
+First we have to setup the module. In the root of your clone of this repository (`chaoss/grimoirelab-manuscripts`), run:
+
 ```bash
 $ pip install .
-$ python setup.py install
 ```
-From the root (grimoirelab-manuscripts) directory to setup and configure the scripts.
 
 Now, once the indices mentioned above have been created, you can run the following command to generate the report:
+
 ```bash
 $ manuscripts2 -n <report_name> -d <dir_name> -s <start_date> -e <end_date> -i <time_interval> \
 -u <elasticsearch_url> --data-sources <data sources to be included> \
 --indices <custom_index_names> -l <custom_logo>
 ```
-- `repot_name` is the name that is to be given to the project/repository in the report. 
+
+- `report_name` is the name that is to be given to the project/repository in the report. 
 - `dir_name` is the name of the report directory that will be created and in which the report will exist.
 - `start_date` is the start of the period in which the analysis is to be done. Format: YYYY-MM-DD.
 - `end_date` is the end of the period. Format: YYYY-MM-DD.
@@ -131,15 +138,16 @@ On running this command, a folder will be created containing different folders f
 Example:
 
 To generate the report using the above indices and `git`, `github_issues` and `github_prs` data source:
+
 ```bash
 manuscripts2 -n Perceval_Project -d PERCEVAL-REPORTS -s 2016-05-01 -e 2018-04-10 -i quarter \
 -u http://localhost:9200/ --data-sources git github_issues github_prs \
 --indices perceval_git perceval_github_issues perceval_github_prs -l logo.png
 ```
 
-Here: `perceval_git`, `perceval_github_issues` and `perceval_github_prs` are the names of the `git`, `github_issues` and `github_prs` data sources respectively.
+Here `perceval_git`, `perceval_github_issues` and `perceval_github_prs` are the names of the indexes for `git`, `github_issues` and `github_prs` data sources respectively (created as commented above).
 
-The actual report pdf will be, you guessed it right, a file named `report.pdf` in the `PERCEVAL-REPORTS` folder.
+The generated report (a PDF file) will be, you guessed it right, a file named `report.pdf` in the `PERCEVAL-REPORTS` folder.
 
 ---
 
@@ -170,14 +178,14 @@ Manuscripts2 is supposed to be the replacement of the old manuscripts code. Manu
 
 This here, is a brief introduction to the classes and functions in Manuscripts2.
 
-#### Classes:
+### Classes:
 
 - Index(): This class represents an elasticsearch index. It stores the name of an elasticsearch index and the connection to elasticsearch.
 
 - Query(): This class is used to quey data from an elasticsearch index. 
 
-#### Structure:
-The main Class which is being implemented is the `Query` class. `Query` provides a connection to elasticsearch, queries it and computes the response.
+### Structure:
+The main class which is being implemented is the `Query` class. `Query` provides a connection to elasticsearch, queries it and computes the response.
 
 The important variables inside the `Query` objects are as follows:
 
@@ -196,9 +204,9 @@ Rest of the variables are self explainatory.
 These are subclasses derieved from the `Query` object. They have the initial queries: `"pull_requests":"true"` and `"pull_requests":"false"` respectively. They will have class specific functions in the future as the definitions of the metrics becomes clear.
 
 
-#### Usage
+## Examples of use in Python scripts
 
-##### EXAMPLE 1: Basic usage
+### Example 1: Basic usage
 
 The idea is that the user can use the chainability of functions to create nested aggs and add queries seamlessly.
 
@@ -210,20 +218,21 @@ sample = Query(github_index).add_query({"name1":"value1"})\
 							.add_inverse_query({"name2":"value2"}) 
 ```
 
-**github_index**:
+* github_index:
 - The github_index is initialised using the Index class.
 - It takes as input the name of the elasticsearch index to be used and an elasticsearch client/connection.
 - If the latter is not provided, the default connection is made to `http://localhost:9200` on the local server.
 
-**sample**
+* sample:
 - sample is a `Query` object which has chainable functions
 - `add_query`: appends query into the search variable of the Query object
 - `add_inverse_query`: appends an inverse query to sthe search variable of the Query object
 - This way, we can add more queries, aggregations, time periods and such to the sample object
 
----
 
-##### EXAMPLE 2: Basic aggregations- Getting the number of authors who participated in the project
+### Example 2: Basic aggregations
+
+Getting the number of authors who participated in the project.
 
 ```python
 from manuscripts2.elasticsearch import Query, Index
@@ -233,14 +242,14 @@ github = Query(github_index).get_cardinality("author_uuid")
 github.get_aggs()
 ```
 
-**Steps:**
+Steps:
 
 - Create an `Index` object containing the elasticsearch connection information 
-- Create an `Query` object using the `Index` object created
+- Create a `Query` object using the `Index` object created
 - Add an `author_uuid` aggregation to the aggregations dict inside github object
 - Get the single valued aggregation (cardinality or number of author_uuids) using the get_aggs method
 
-**Points to Note:**
+Points to note:
 
 - Aggregations similar to `get_cardinality`:
 	- Numeric fields:
@@ -253,13 +262,13 @@ github.get_aggs()
 
 	- Non Numeric:
 		- `get_terms`: get term aggregation for the said field
-**NOTE:** the `get_aggs()` function returns ony the numeric values, so in the case of `get_terms` aggregation, it will return the total count of the aggregation. It is better to use the `fetch_aggregation_results` function to get the individual terms instead.
+
+NOTE: the `get_aggs()` function returns ony the numeric values, so in the case of `get_terms` aggregation, it will return the total count of the aggregation. It is better to use the `fetch_aggregation_results` function to get the individual terms instead.
 	
-- There is also an `add_custom_aggregation` filter which takes in an `elasticsearch_dsl Aggregation` object as it's input and adds it to the `aggregations` dict of the object (PullRequests, Issues, Query).
+There is also an `add_custom_aggregation` filter which takes in an `elasticsearch_dsl Aggregation` object as it's input and adds it to the `aggregations` dict of the object (PullRequests, Issues, Query).
 
----
 
-##### EXAMPLE 3: Get all the closed issues by authors.
+### Example 3: Get all the closed issues by authors.
 
 ```python
 from manuscripts2.elasticsearch import Index
@@ -272,7 +281,7 @@ issues = Issues(github_index).is_closed()\
 response = issues.fetch_aggregation_results()
 ```
 
-**Steps:**
+Steps:
 
 - Create the index object specifying the index_name to be used
 - Create an Issues object with `github_index` as one of it's paremeters
@@ -282,21 +291,20 @@ response = issues.fetch_aggregation_results()
 - Call the `fetch_aggregation_results` function to get the number of closed issues by authors.
 - The results are stored in the `response` variable.
 
-**NOTE:**
+NOTE:
 
 `fetch_aggregation_results` loops through all the aggregations that have been added to the Object (here: `issues`) and adds them to the Search object in the sequence in which they were added. 
 Then it queries elasticsearch using the `Search().execute()` method and returns a dict of the values that it gets from elasticsearch.
 This will return a response from elasticsearch in the form of a dictionary having aggregations as one of the keys. The value for that(a dict itself) will have '0' as a key with the value containing the total number of unique authors in the repo who created an issue/pr.
 
-**Points to Note:**
+Points to note:
 
 - Aggregations similar to `by_author` are:
 	- `by_organizations`: It is similar to `by_authors` and is used to seggregate based on the organizations that the users belong to
 	- `by_period`: This creates a `date_histogram` aggregation.
 
----
 
-##### EXAMPLE 4: Moar chainability
+### Example 4: Moar chainability
 
 ```python
 from manuscripts2.elasticsearch import Index
@@ -304,17 +312,16 @@ from manuscripts2.elasticsearch import PullRequests
 
 github_index = Index(index="<github_index_name>")
 prs = PullRequests(github_index).is_closed()\
-								.get_cardinality("id_in_repo")\
-								.get_cardinality("id")\
-								.by_authors("author_name")\
-								.by_organizations()
-
+	.get_cardinality("id_in_repo")\
+	.get_cardinality("id")\
+	.by_authors("author_name")\
+	.by_organizations()
 response = prs.fetch_aggregation_results()
 ```
 
 This returns a dictionary containing the response from elasticsearch.
 
-Here, in line-7, the caveat is that if we get cardinality on the basis of `id_in_repo`, again, then the first cardinality aggregation will be overwritten because we are storing the <aggregation_name> and <aggregation> as a key-value pair in the dict. 
+Here, in line 7, the caveat is that if we get cardinality on the basis of `id_in_repo`, again, then the first cardinality aggregation will be overwritten because we are storing the <aggregation_name> and <aggregation> as a key-value pair in the dict. 
 We can also use a list, instead of an ordered dict, but that will hinder the functionality described in EXAMPLE 5.
 We can change the dict to a list if it is decided that the below functionality is not needed.
 
@@ -327,7 +334,8 @@ number_of_closed_prs = prs.get_cardinality("id_in_repo").get_aggs()
 ```
 Which gives us the number of closed PRs and clears the aggregation dict for new aggregations.
 
-What _is_ in the aggregations dict, though?
+What is there in the aggregations dict, though?
+
 ```python
 
 >> prs.aggregations
@@ -346,9 +354,8 @@ OrderedDict([
 ```
 As we can see, it has 2 aggregations. The first `terms` agg has a `field=author_org_name` and a child aggregation which is a `terms` aggregation with `field=author_name` which in-turn has a cardinality agg with `field=id`. The dict pops the last aggregation and adds it to the aggregation for `by_authors`, `by_organization` and `by_period`.
 
----
 
-##### EXAMPLE 5: Multiple nested aggregations for the same field:
+### Example 5: Multiple nested aggregations for the same field
 
 ```python
 from manuscripts2.elasticsearch import Query, Index
@@ -362,6 +369,7 @@ commits.get_sum("files_changed").by_authors()
 
 response = commits.fetch_aggregation_results()
 ```
+
 Returns a containing aggregation of the total number of lines changed, removed, added and the total number of files changed by the authors under one aggregation. The `lines_changed`, `lines_added`, `lines_removed` and `files_changed` have aggregation ids as `0,1,2,3` respectively.
 
 ```python
@@ -381,9 +389,8 @@ commits.aggregations
 
 This allows us to get all the related aggregations in one go.
 
----
 
-##### EXAMPLE 6: To get all the values from source:
+### Example 6: To get all the values from source
 
 ```python
 from manuscripts2.elasticsearch import Index
@@ -413,9 +420,8 @@ print(closed_issue_age)
 ```
 Apart from aggregations, we can ge the actual values for analysis using the `fetch_results_from_source` function.
 
----
 
-##### EXAMPLE 7: To get time series data:
+### Example 7: To get time series data
 
 ```python
 from manuscripts2.elasticsearch import Index
@@ -424,11 +430,10 @@ from manuscripts2.elasticsearch import PullRequests
 github_index = Index(index="<github_index_name>")
 
 pull_requests = PullRequests(github_index).is_closed()\
-										  .since(<start_date>)\
-										  .until(<end_date>)\
-										  .get_cardinality("id")\
-										  .by_period(period="week")
-
+	.since(<start_date>)\
+	.until(<end_date>)\
+	.get_cardinality("id")\
+	.by_period(period="week")
 prs_by_weeks = pull_requests.get_timeseries(dataframe=True)
 ```
 Output:
@@ -445,12 +450,9 @@ date
 
 Here, we get the number of prs closed per week since the start date until the end date.
 
-**For more examples, please look at the Sample_metrics.ipynb notebook inside the Examples folder in the main directory.**
+For more examples, please look at the Sample_metrics.ipynb notebook inside the Examples folder in the main directory.
 
----
 
 ## Contributing Guidelines:
 
 Please submit an issue if you have any doubts about the functionality or if you find a bug. You can also submit a Pull Request if you want to add some additional functionality and tag [@aswanipranjal](https://github.com/aswanipranjal) for assistance!
-
-Cheers!
