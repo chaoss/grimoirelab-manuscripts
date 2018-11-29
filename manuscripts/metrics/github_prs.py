@@ -147,7 +147,7 @@ class BMIPR(GitHubPRsMetrics):
                           start=self.start, end=self.end,
                           esfilters=esfilters_close, interval=self.interval)
         # For BMI we need when the ticket was closed
-        closed.DATE_FIELD = 'updated_at'
+        closed.FIELD_DATE = 'closed_at'
         submitted = SubmittedPR(self.es_url, self.es_index,
                                 start=self.start, end=self.end,
                                 esfilters=esfilters_submit,
