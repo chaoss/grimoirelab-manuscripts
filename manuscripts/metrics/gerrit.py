@@ -170,13 +170,13 @@ class BMI(GerritMetrics):
                         start=self.start, end=self.end,
                         esfilters=esfilters_merge, interval=self.interval)
         # For BMI we need when the ticket was closed
-        merged.DATE_FIELD = 'closed'
+        merged.FIELD_DATE = 'closed'
 
         abandoned = Abandoned(self.es_url, self.es_index,
                               start=self.start, end=self.end,
                               esfilters=esfilters_abandon, interval=self.interval)
         # For BMI we need when the ticket was closed
-        abandoned.DATE_FIELD = 'closed'
+        abandoned.FIELD_DATE = 'closed'
 
         submitted = Submitted(self.es_url, self.es_index,
                               start=self.start, end=self.end,
