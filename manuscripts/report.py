@@ -920,6 +920,9 @@ class Report():
             if process_ds in self.data_sources:
                 process += r"\input{process/" + process_ds + ".tex}"
 
+        if not process:
+            process = "Unfortunately, this section is empty because there are no supported sources available to perform this kind of analysis."
+
         with open(os.path.join(report_path, "process.tex"), "w") as flatex:
             flatex.write(process)
 
