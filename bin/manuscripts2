@@ -31,7 +31,8 @@ import logging
 import argparse
 
 from dateutil import parser
-from datetime import date, timedelta, timezone
+from datetime import date, timedelta
+import pytz
 
 from manuscripts2.report import Report
 from manuscripts.esquery import get_first_date_of_index
@@ -108,9 +109,9 @@ if __name__ == '__main__':
 
     # All the dates must be UTC, including those from command line
     if args.end_date == 'now':
-        end_date = parser.parse(date.today().strftime('%Y-%m-%d')).replace(tzinfo=timezone.utc)
+        end_date = parser.parse(date.today().strftime('%Y-%m-%d')).replace(tzinfo=pytz.utc)
     else:
-        end_date = parser.parse(args.end_date).replace(tzinfo=timezone.utc)
+        end_date = parser.parse(args.end_date).replace(tzinfo=pytz.utc)
     # The end date is not included, the report must finish the day before
     end_date += timedelta(microseconds=-1)
 
@@ -118,7 +119,7 @@ if __name__ == '__main__':
     # if start date is not present, it is calculated by querying all the indices given
     if not start_date:
         start_date = get_min_date(elastic, args.indices, args.data_sources)
-    start_date = parser.parse(start_date).replace(tzinfo=timezone.utc)
+    start_date = parser.parse(start_date).replace(tzinfo=pytz.utc)
 
     report = Report(es_url=elastic, start=start_date, end=end_date, data_dir=data_dir,
                     interval=args.interval, data_sources=data_sources,
