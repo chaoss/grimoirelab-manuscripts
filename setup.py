@@ -32,18 +32,9 @@ here = os.path.abspath(os.path.dirname(__file__))
 readme_md = os.path.join(here, 'README.md')
 version_py = os.path.join(here, 'manuscripts', '_version.py')
 
-# Pypi wants the description to be in reStrcuturedText, but
-# we have it in Markdown. So, let's convert formats.
-# Set up thinkgs so that if pypandoc is not installed, it
-# just issues a warning.
-try:
-    import pypandoc
-    long_description = pypandoc.convert(readme_md, 'rst')
-except (IOError, ImportError):
-    print("Warning: pypandoc module not found, or pandoc not installed. "
-          "Using md instead of rst")
-    with codecs.open(readme_md, encoding='utf-8') as f:
-        long_description = f.read()
+# Get the package description from the README.md file
+with codecs.open(readme_md, encoding='utf-8') as f:
+    long_description = f.read()
 
 
 def files_in_subdir(dir, subdir):
@@ -65,6 +56,7 @@ with codecs.open(version_py, 'r', encoding='utf-8') as fd:
 setup(name="manuscripts",
       description="Produce reports based on GrimoireLab data",
       long_description=long_description,
+      long_description_content_type='text/markdown',
       url="https://github.com/chaoss/grimoirelab-manuscripts",
       version=version,
       author="Bitergia",
