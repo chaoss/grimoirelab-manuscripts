@@ -210,8 +210,7 @@ class Report():
                 else:
                     for metric_section in ds_config[section]:
                         if ds_config[section][metric_section] is not None:
-                            if (metric_section not in new_config[section] or
-                                new_config[section][metric_section] is None):
+                            if metric_section not in new_config[section] or new_config[section][metric_section] is None:
                                 new_config[section][metric_section] = ds_config[section][metric_section]
                             else:
                                 new_config[section][metric_section] += ds_config[section][metric_section]
@@ -917,7 +916,8 @@ class Report():
                 process += r"\input{process/" + process_ds + ".tex}"
 
         if not process:
-            process = "Unfortunately, this section is empty because there are no supported sources available to perform this kind of analysis."
+            process = "Unfortunately, this section is empty because there " \
+                      "are no supported sources available to perform this kind of analysis."
 
         with open(os.path.join(report_path, "process.tex"), "w") as flatex:
             flatex.write(process)
