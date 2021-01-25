@@ -77,7 +77,7 @@ setup(name="manuscripts",
       package_data={'': template_files},
       # package_data={'': ['latex_template/report.tex']},
       install_requires=[
-          'matplotlib',
+          'matplotlib==2.0.2',
           'prettyplotlib',
           'elasticsearch-dsl',
           'grimoire-elk>=0.30.4',
