@@ -538,6 +538,66 @@ class Report():
         for file in glob.iglob(os.path.join(directory, file_type)):
             self.replace_text(file, to_replace, replacement)
 
+    def remove_logo(self, report_path):
+        """
+        Replaces the default logo with the user specified logo
+
+        :param report_path: path of the report directory where the logo will exist
+        """
+        if self.logo:
+            os.remove(os.path.join(report_path, "logo.eps"))
+            os.remove(os.path.join(report_path, "logo-eps-converted-to.pdf"))
+            print(copy_file(self.logo, os.path.join(report_path, "logo." + self.logo.split('/')[-1].split('.')[-1])))
+
+    def replace_report_name(self, report_path):
+        """
+        Replace the name of the project in all the files with the user defined project name
+
+        :param report_path: path of the report directory where all the files exist
+        """
+        report_name = self.report_name.replace(' ', r'\ ')
+        self.replace_text_dir(report_path, 'PROJECT-NAME', report_name)
+        self.replace_text_dir(os.path.join(report_path, 'overview'), 'PROJECT-NAME', report_name)
+
+    def replace_period(self, report_path):
+        """
+        Replace the default time period with a custom one from when the report is generated
+
+        :param report_path: path of the report directory where all the files exist
+        """
+        period_name = self.start_date.strftime("%y-%m") + "-" + self.end_date.strftime("%y-%m")
+        period_replace = period_name.replace(' ', r'\ ')
+        self.replace_text_dir(report_path, '2016-QUARTER', period_replace)
+        self.replace_text_dir(os.path.join(report_path, 'overview'), '2016-QUARTER', period_replace)
+
+    def replace_date_frame(self, report_path):
+        """
+        Replace the default dateframe with a custom one from when the report is generated
+
+        :param report_path: path of the report directory where all the files exist
+        """
+        quarter_start = self.end_date - relativedelta.relativedelta(months=3)
+        quarter_start += relativedelta.relativedelta(days=1)
+        dateframe = (quarter_start.strftime('%Y-%m-%d') + " to " + self.end_date.strftime('%Y-%m-%d')).replace(' ', r'\ ')
+        self.replace_text_dir(os.path.join(report_path, 'overview'), 'DATEFRAME', dateframe)
+
+    def replace_copyright(self, report_path):
+        """
+        Change the copyright year in the report
+
+        :param report_path: path of the report directory where all the files exist
+        """
+        self.replace_text_dir(report_path, '(cc) 2016', '(cc) ' + datetime.now().strftime('%Y'))
+
+    def fix_latex_special_chars(self, report_path):
+        """
+        Escape LaTeX special chars such as underscore and ampersand
+
+        :param report_path: path of the report directory where all the files exist
+        """
+        self.replace_text_dir(report_path, '&', '\&', 'data/git_top_organizations_*')
+        self.replace_text_dir(report_path, '^#', '', 'data/git_top_organizations_*')
+
     def create_pdf(self):
         """
         Create the report pdf file filling the LaTeX templates with the figs and data for the report
@@ -554,35 +614,13 @@ class Report():
         # Copy the data generated to be used in LaTeX template
         copy_tree(templates_path, report_path)
 
-        # if user specified a logo then replace it with default logo
-        if self.logo:
-            os.remove(os.path.join(report_path, "logo.eps"))
-            os.remove(os.path.join(report_path, "logo-eps-converted-to.pdf"))
-            print(copy_file(self.logo, os.path.join(report_path, "logo." + self.logo.split('/')[-1].split('.')[-1])))
-
-        # Change the project global name
-        report_name = self.report_name.replace(' ', r'\ ')
-        self.replace_text_dir(report_path, 'PROJECT-NAME', report_name)
-        self.replace_text_dir(os.path.join(report_path, 'overview'), 'PROJECT-NAME', report_name)
-
-        # TODO: customize for different interval
-        period_name = self.start_date.strftime("%y-%m") + "-" + self.end_date.strftime("%y-%m")
-        period_replace = period_name.replace(' ', r'\ ')
-        self.replace_text_dir(report_path, '2016-QUARTER', period_replace)
-        self.replace_text_dir(os.path.join(report_path, 'overview'), '2016-QUARTER', period_replace)
-
-        # Report date frame
-        quarter_start = self.end_date - relativedelta.relativedelta(months=3)
-        quarter_start += relativedelta.relativedelta(days=1)
-        dateframe = (quarter_start.strftime('%Y-%m-%d') + " to " + self.end_date.strftime('%Y-%m-%d')).replace(' ', r'\ ')
-        self.replace_text_dir(os.path.join(report_path, 'overview'), 'DATEFRAME', dateframe)
-
-        # Change the date Copyright
-        self.replace_text_dir(report_path, '(cc) 2016', '(cc) ' + datetime.now().strftime('%Y'))
-
-        # Fix LaTeX special chars
-        self.replace_text_dir(report_path, '&', '\&', 'data/git_top_organizations_*')
-        self.replace_text_dir(report_path, '^#', '', 'data/git_top_organizations_*')
+        # Sanitize the files
+        self.remove_logo(report_path)
+        self.replace_report_name(report_path)
+        self.replace_period(report_path)
+        self.replace_date_frame(report_path)
+        self.replace_copyright(report_path)
+        self.fix_latex_special_chars(report_path)
 
         # Activity section
         activity = ''
