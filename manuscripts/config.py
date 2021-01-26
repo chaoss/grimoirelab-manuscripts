@@ -26,11 +26,12 @@ import configparser
 import logging
 
 from grimoire_elk.utils import get_connectors
+from sirmordred.task import Task
 
 logger = logging.getLogger(__name__)
 
 
-class Config():
+class Config:
     """Class aimed to manage mordred configuration"""
 
     def __init__(self, conf_file, conf_list=[]):
@@ -232,6 +233,11 @@ class Config():
                     "default": True,
                     "type": bool
                 },
+                "autorefresh_interval": {
+                    "optional": True,
+                    "default": 30,
+                    "type": int
+                },
                 "user": optional_string_none,
                 "password": optional_string_none
             }
@@ -248,6 +254,36 @@ class Config():
                     "optional": True,
                     "default": "git",
                     "type": str
+                },
+                "kibiter_url": {
+                    "optional": True,
+                    "default": "git",
+                    "type": str
+                },
+                "kibiter_version": {
+                    "optional": True,
+                    "default": "git",
+                    "type": str
+                },
+                "community": {
+                    "optional": True,
+                    "default": False,
+                    "type": bool
+                },
+                "gitlab-issues": {
+                    "optional": True,
+                    "default": False,
+                    "type": bool
+                },
+                "gitlab-merges": {
+                    "optional": True,
+                    "default": False,
+                    "type": bool
+                },
+                "kafka": {
+                    "optional": True,
+                    "default": False,
+                    "type": bool
                 }
             }
         }
@@ -385,65 +421,8 @@ class Config():
             }
         }
 
-        params_enrich_onion = {
-            "enrich_onion": {
-                "in_index": {
-                    "optional": False,
-                    "default": None,
-                    "type": str
-                },
-                "out_index": {
-                    "optional": False,
-                    "default": None,
-                    "type": str
-                },
-                "contribs_field": {
-                    "optional": True,
-                    "default": "hash",
-                    "type": str
-                },
-                "no_incremental": {
-                    "optional": True,
-                    "default": True,
-                    "type": bool
-                }
-            }
-        }
-
-        params_enrich_areas_of_code = {
-            "enrich_areas_of_code": {
-                "in_index": {
-                    "optional": False,
-                    "default": None,
-                    "type": str
-                },
-                "out_index": {
-                    "optional": False,
-                    "default": None,
-                    "type": str
-                },
-                "no_incremental": {
-                    "optional": True,
-                    "default": True,
-                    "type": bool
-                }
-            }
-        }
-
-        params_enrich_demography = {
-            "enrich_demography": {
-                "no_incremental": {
-                    "optional": True,
-                    "default": True,
-                    "type": bool
-                }
-            }
-        }
-
         tasks_config_params = [params_collection, params_enrichment, params_panels,
-                               params_report, params_sortinghat, params_track_items,
-                               params_enrich_areas_of_code, params_enrich_demography,
-                               params_enrich_onion]
+                               params_report, params_sortinghat, params_track_items]
 
         for section_params in tasks_config_params:
             params.update(section_params)
@@ -503,9 +482,18 @@ class Config():
         # a backend name could include and extra ":<param>"
         # to have several backend entries with different configs
         gelk_backends = list(get_connectors().keys())
-        extra_backends = ["apache", "google_hits", "remo:activities"]
+        extra_backends = ["apache", "google_hits", "remo:activities", "gitlab:issue", "gitlab:merge"]
 
         return gelk_backends + extra_backends
+
+    @classmethod
+    def get_study_sections(cls):
+        # a study name could include and extra ":<param>"
+        # to have several backend entries with different configs
+        studies = ("enrich_demography", "enrich_areas_of_code", "enrich_onion", "kafka_kip",
+                   "enrich_pull_requests")
+
+        return studies
 
     @classmethod
     def get_global_data_sources(cls):
@@ -528,10 +516,15 @@ class Config():
         # First let's check all common sections entries
         check_params = cls.general_params()
         backend_sections = cls.get_backend_sections()
+        study_sections = cls.get_study_sections()
 
-        for section in config.keys():
-            if section in backend_sections or section[1:] in backend_sections:
+        config_sections = [section for section in config.keys() if section.split(":")[0][0] != "*"]
+
+        for section in config_sections:
+            if Task.get_backend(section) in backend_sections:
                 # backend_section or *backend_section, to be checked later
+                continue
+            if section.startswith(study_sections):
                 continue
             if section not in check_params.keys():
                 raise RuntimeError("Wrong section:", section)

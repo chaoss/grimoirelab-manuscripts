@@ -157,7 +157,7 @@ class Metrics(object):
             url = self.es_url
         else:
             url = 'http://' + self.es_url
-        es = Elasticsearch(url)
+        es = Elasticsearch(url, timeout=3600, max_retries=50, retry_on_timeout=True, verify_certs=False)
         s = Search(using=es, index=self.es_index)
         s = s.update_from_dict(query)
         try:
@@ -257,4 +257,4 @@ class Metrics(object):
         else:
             trend_percentage = int((trend / last) * 100)
 
-        return (last, trend_percentage)
+        return last, trend_percentage
