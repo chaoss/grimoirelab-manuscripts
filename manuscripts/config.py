@@ -193,7 +193,6 @@ class Config():
                 "enrichment": no_optional_true,
                 "identities": no_optional_true,
                 "panels": no_optional_true,
-                "track_items": optional_false,
                 "report": optional_false
             }
         }
@@ -372,19 +371,6 @@ class Config():
             }
         }
 
-        params_track_items = {
-            "track_items": {
-                "project": {
-                    "optional": False,
-                    "default": "TrackProject",
-                    "type": str
-                },
-                "upstream_raw_es_url": no_optional_empty_string,
-                "raw_index_gerrit": no_optional_empty_string,
-                "raw_index_git": no_optional_empty_string
-            }
-        }
-
         params_enrich_onion = {
             "enrich_onion": {
                 "in_index": {
@@ -441,7 +427,7 @@ class Config():
         }
 
         tasks_config_params = [params_collection, params_enrichment, params_panels,
-                               params_report, params_sortinghat, params_track_items,
+                               params_report, params_sortinghat,
                                params_enrich_areas_of_code, params_enrich_demography,
                                params_enrich_onion]
 
